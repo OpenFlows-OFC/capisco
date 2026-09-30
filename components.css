@@ -1,0 +1,141 @@
+/* =========================================================
+   CAPISCO · Componentes v1.0  (requer tokens.css)
+   ========================================================= */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:700 var(--fs-body)/var(--lh-body) var(--font-body)}
+:focus-visible{outline:3px solid var(--ceu-400);outline-offset:3px;border-radius:var(--r-sm)}
+
+/* ---------- Logo ---------- */
+.cp-logo{display:inline-flex;align-items:center;gap:.35em;font:800 1em/1 var(--font-display);color:var(--brand);letter-spacing:-.02em;text-decoration:none}
+.cp-logo .wm{position:relative;display:inline-block}
+.cp-logo .i{position:relative;display:inline-block}
+.cp-logo .i::before{content:"";position:absolute;left:50%;top:-.02em;width:.3em;height:.3em;transform:translateX(-50%);border-radius:50%;background:var(--reward);box-shadow:inset -.04em -.05em 0 var(--reward-press)}
+.cp-logo svg{width:1.25em;height:1.25em;flex:none}
+.cp-logo.mono{color:var(--text)}
+.cp-logo.inverse{color:#fff}
+
+/* ---------- Botões (3D) ---------- */
+.cp-btn{--c:var(--brand);--cp:var(--brand-press);--fg:var(--on-brand);
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--s-2);
+  min-height:50px;padding:0 var(--s-6);border-radius:var(--r-md);border:2px solid transparent;
+  background:var(--c);color:var(--fg);box-shadow:0 var(--depth) 0 var(--cp);
+  font:800 15px var(--font-display);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  transition:transform var(--t-fast),box-shadow var(--t-fast),filter var(--t-fast);user-select:none;text-decoration:none}
+.cp-btn:hover{filter:brightness(1.06)}
+.cp-btn:active{transform:translateY(var(--depth));box-shadow:0 0 0 var(--cp)}
+.cp-btn.reward{--c:var(--reward);--cp:var(--reward-press)}
+.cp-btn.secondary{--c:var(--surface);--cp:var(--line);--fg:var(--brand);border-color:var(--line)}
+.cp-btn.ghost{--c:transparent;--cp:transparent;--fg:var(--brand);box-shadow:none}
+.cp-btn[disabled]{--c:var(--line);--cp:var(--line-strong);--fg:var(--text-muted);cursor:not-allowed;filter:none}
+.cp-btn.block{width:100%}
+.cp-btn.sm{min-height:38px;padding:0 var(--s-4);font-size:13px}
+
+/* ---------- Tipografia utilitária ---------- */
+.cp-hero{font:800 var(--fs-hero)/var(--lh-tight) var(--font-display);letter-spacing:-.02em;margin:0}
+.cp-h1{font:800 var(--fs-h1)/var(--lh-tight) var(--font-display);margin:0}
+.cp-h2{font:800 var(--fs-h2)/1.15 var(--font-display);margin:0}
+.cp-h3{font:800 var(--fs-h3)/1.2 var(--font-display);margin:0}
+.cp-q{font:800 var(--fs-q)/1.35 var(--font-body);margin:0}
+.cp-body{font:600 var(--fs-body)/var(--lh-body) var(--font-body);color:var(--text-soft);margin:0}
+.cp-label{font:900 var(--fs-label)/1 var(--font-body);letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+.cp-num{font:700 var(--fs-sm) var(--font-mono);font-variant-numeric:tabular-nums}
+
+/* ---------- Cards ---------- */
+.cp-card{background:var(--surface);border:2px solid var(--line);border-radius:var(--r-lg);box-shadow:0 var(--depth) 0 var(--line);padding:var(--s-5)}
+
+/* ---------- Alternativas ---------- */
+.cp-opt{display:flex;gap:var(--s-3);align-items:center;width:100%;text-align:left;
+  background:var(--surface);color:var(--text);border:2px solid var(--line);border-radius:var(--r-md);
+  box-shadow:0 var(--depth) 0 var(--line);padding:var(--s-4);font:700 var(--fs-sm)/1.35 var(--font-body);cursor:pointer;transition:transform var(--t-fast)}
+.cp-opt:active{transform:translateY(2px);box-shadow:0 2px 0 var(--line)}
+.cp-opt .key{flex:none;width:28px;height:28px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font:800 13px var(--font-mono);color:var(--text-muted)}
+.cp-opt[aria-checked="true"]{border-color:var(--rio-300);background:var(--brand-soft);color:var(--ok-text);box-shadow:0 var(--depth) 0 var(--rio-300)}
+.cp-opt[aria-checked="true"] .key{border-color:var(--rio-300);color:var(--ok-text)}
+
+/* ---------- Progresso da rodada ---------- */
+.cp-progress{height:16px;background:var(--line);border-radius:var(--r-pill);overflow:hidden}
+.cp-progress>b{display:block;height:100%;background:var(--brand);border-radius:inherit;box-shadow:inset 0 5px 0 rgba(255,255,255,.3);transition:width var(--t-slow) var(--ease-out)}
+
+/* ---------- Faixa de retorno ---------- */
+.cp-feedback{border-radius:var(--r-lg);padding:var(--s-5);display:flex;flex-direction:column;gap:var(--s-2)}
+.cp-feedback .t{font:800 22px var(--font-display);display:flex;gap:var(--s-2);align-items:center}
+.cp-feedback p{margin:0;font:600 var(--fs-sm)/1.45 var(--font-body)}
+.cp-feedback.ok{background:var(--ok-soft);color:var(--ok-text)}
+.cp-feedback.partial{background:var(--partial-soft);color:var(--partial-text)}
+.cp-feedback.miss{background:var(--miss-soft);color:var(--miss-text);border:2px solid var(--line)}
+
+/* ---------- Checagem por etapa (quase-acerto verdadeiro) ---------- */
+.cp-step{display:flex;gap:var(--s-2);align-items:flex-start;font:700 var(--fs-sm)/1.4 var(--font-body)}
+.cp-step::before{flex:none;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font:900 13px var(--font-body);color:#fff}
+.cp-step.ok::before{content:"✓";background:var(--ok)}
+.cp-step.miss::before{content:"?";background:var(--partial)}
+
+/* ---------- Fonte do material ---------- */
+.cp-source{border-left:4px solid var(--sched);background:var(--sched-soft);border-radius:4px var(--r-md) var(--r-md) 4px;padding:var(--s-3) var(--s-4);font:600 var(--fs-sm)/1.45 var(--font-body);color:var(--text-soft)}
+.cp-source cite{display:block;margin-top:var(--s-1);font:700 var(--fs-xs) var(--font-mono);color:var(--ceu-600);font-style:normal}
+
+/* ---------- Nós do mapa ---------- */
+.cp-node{--c:var(--brand);--cp:var(--brand-press);width:72px;height:64px;border-radius:50%;border:0;display:grid;place-items:center;
+  background:var(--c);box-shadow:0 var(--depth-lg) 0 var(--cp);color:#fff;font:900 24px var(--font-body);cursor:pointer;position:relative;transition:transform var(--t-fast)}
+.cp-node:active{transform:translateY(var(--depth-lg));box-shadow:none}
+.cp-node.done{--c:var(--reward);--cp:var(--reward-press)}
+.cp-node.due{--c:var(--due);--cp:var(--coral-600)}
+.cp-node.sched{--c:var(--sched);--cp:var(--ceu-600)}
+.cp-node.new{--c:var(--new);--cp:var(--uva-600)}
+.cp-node.lock{--c:var(--line);--cp:var(--line-strong);color:var(--text-muted);cursor:not-allowed}
+.cp-node.now{outline:6px solid var(--brand-soft);outline-offset:4px}
+.cp-node.boss{width:96px;height:84px;border-radius:28px}
+
+/* ---------- Chips / badges ---------- */
+.cp-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:var(--r-pill);font:800 var(--fs-xs) var(--font-body);background:var(--bg-soft);color:var(--text-soft);border:2px solid var(--line)}
+.cp-chip.due{background:var(--due-soft);color:var(--coral-600);border-color:transparent}
+.cp-chip.sched{background:var(--sched-soft);color:var(--ceu-600);border-color:transparent}
+.cp-chip.new{background:var(--new-soft);color:var(--uva-600);border-color:transparent}
+.cp-chip.ok{background:var(--ok-soft);color:var(--ok-text);border-color:transparent}
+
+/* ---------- Caixas de domínio (Leitner) ---------- */
+.cp-boxes{display:inline-flex;gap:5px}
+.cp-boxes i{width:26px;height:12px;border-radius:4px;background:var(--line)}
+.cp-boxes i.on{background:var(--brand);box-shadow:inset 0 -3px 0 var(--brand-press)}
+
+/* ---------- Bilhete da partida ---------- */
+.cp-ticket{background:var(--surface);border:2px solid var(--line);border-radius:var(--r-lg);box-shadow:0 var(--depth) 0 var(--line);overflow:hidden}
+.cp-ticket>*{padding:var(--s-4) var(--s-5)}
+.cp-ticket>*+*{border-top:2px dashed var(--line)}
+.cp-ticket .prize{background:var(--reward-soft);font:800 var(--fs-sm)/1.4 var(--font-body);color:var(--tang-700)}
+
+/* ---------- Calendário de constância (nunca zera) ---------- */
+.cp-cal{display:grid;grid-template-columns:repeat(7,32px);gap:6px}
+.cp-cal i{width:32px;height:32px;border-radius:9px;background:var(--line);font:900 12px/32px var(--font-body);text-align:center;font-style:normal;color:#fff}
+.cp-cal i.on{background:var(--reward);box-shadow:inset 0 -4px 0 var(--reward-press)}
+
+/* ---------- Toggle ---------- */
+.cp-toggle{appearance:none;width:52px;height:30px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;transition:background var(--t-med)}
+.cp-toggle::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 0 rgba(0,0,0,.15);transition:transform var(--t-med) var(--ease-pop)}
+.cp-toggle:checked{background:var(--brand)}
+.cp-toggle:checked::after{transform:translateX(22px)}
+
+/* ---------- Input ---------- */
+.cp-input{width:100%;min-height:52px;padding:var(--s-3) var(--s-4);border-radius:var(--r-md);border:2px solid var(--line);background:var(--bg-soft);color:var(--text);font:700 var(--fs-body) var(--font-body)}
+.cp-input:focus{outline:none;border-color:var(--sched);background:var(--surface)}
+textarea.cp-input{min-height:120px;resize:vertical;line-height:1.5}
+
+/* ---------- Animações de celebração (intensidade = ganho real) ---------- */
+@keyframes cp-pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes cp-bounce{40%{transform:translateY(-10px)}}
+@keyframes cp-fill{from{transform:scaleX(0)}to{transform:none}}
+.cp-anim-pop{animation:cp-pop var(--t-med) var(--ease-pop)}
+.cp-anim-bounce{animation:cp-bounce var(--t-slow) var(--ease-out)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- Marca v2: ícone + wordmark (Fredoka) ---------- */
+.cp-brand{display:inline-flex;align-items:center;gap:.32em;text-decoration:none;color:var(--brand);line-height:1}
+.cp-brand .ic{width:1.3em;height:1.3em;flex:none;display:block;filter:drop-shadow(0 .04em 0 rgba(0,0,0,.12))}
+.cp-brand .wm2{font:700 1em/1 var(--font-brand);letter-spacing:-.025em;-webkit-text-stroke:.012em currentColor;position:relative;display:inline-block;padding-top:.12em}
+.cp-brand.inverse{color:#fff}
+.cp-brand.ink{color:var(--n-900)}
+/* wordmark: limpo, com um único corte — o "o" final é a bolinha marcada do cartão-resposta */
+.cp-brand .wm2{letter-spacing:-.02em}
+.cp-brand .wm2 .o{display:inline-block;position:relative;width:.6em;height:.585em;margin-left:.02em;border:.15em solid currentColor;border-radius:50%;box-sizing:border-box;vertical-align:baseline;transform:translateY(.012em)}
+.cp-brand .wm2 .o::after{content:"";position:absolute;inset:.08em;border-radius:50%;background:currentColor}
+.cp-brand .wm3{display:block;flex:none;overflow:visible}

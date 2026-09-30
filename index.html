@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Capisco Design System</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<script src="capi.js"></script>
+<script src="marca/wordmark.js"></script>
+<style>
+.doc{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+nav{position:sticky;top:0;height:100vh;overflow:auto;border-right:2px solid var(--line);padding:var(--s-6) var(--s-5);display:flex;flex-direction:column;gap:var(--s-1);background:var(--bg-soft)}
+nav a{color:var(--text-soft);text-decoration:none;font:800 var(--fs-sm) var(--font-body);padding:6px 10px;border-radius:var(--r-sm)}
+nav a:hover{background:var(--line);color:var(--text)}
+nav .cp-label{margin:var(--s-4) 0 var(--s-1) 10px}
+main{padding:var(--s-10) var(--s-8) var(--s-16);max-width:1100px;display:flex;flex-direction:column;gap:var(--s-16);min-width:0}
+section{display:flex;flex-direction:column;gap:var(--s-5);scroll-margin-top:20px}
+section>header{display:flex;flex-direction:column;gap:var(--s-2);max-width:680px}
+.grid{display:grid;gap:var(--s-4)}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.sw{border-radius:var(--r-md);overflow:hidden;border:2px solid var(--line)}
+.sw .c{height:84px;display:flex;align-items:flex-end;padding:8px 10px;font:800 12px var(--font-mono);color:#fff}
+.sw .m{padding:10px;display:flex;flex-direction:column;gap:2px;background:var(--surface)}
+.sw .m b{font:800 14px var(--font-body)}
+.sw .m span{font:600 12px var(--font-mono);color:var(--text-muted)}
+.ramp{display:flex;border-radius:var(--r-md);overflow:hidden;border:2px solid var(--line)}
+.ramp div{flex:1;height:56px;display:flex;align-items:flex-end;padding:6px;font:700 10px var(--font-mono)}
+.do,.dont{border-radius:var(--r-lg);padding:var(--s-5);display:flex;flex-direction:column;gap:var(--s-2);font:600 var(--fs-sm)/1.45 var(--font-body)}
+.do{background:var(--ok-soft);color:var(--ok-text)} .dont{background:var(--due-soft);color:var(--coral-600)}
+.do b,.dont b{font:900 var(--fs-label) var(--font-body);letter-spacing:.1em;text-transform:uppercase}
+.logo-stage{border-radius:var(--r-xl);display:grid;place-items:center;min-height:220px;padding:var(--s-8)}
+.row{display:flex;flex-wrap:wrap;gap:var(--s-4);align-items:center}
+.mascots{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--s-4)}
+.mascots .cp-card{display:flex;flex-direction:column;align-items:center;gap:var(--s-2);padding:var(--s-4)}
+.mascots small{font:600 12px/1.35 var(--font-body);color:var(--text-muted);text-align:center}
+.phone{width:300px;max-width:100%;background:var(--surface);border:3px solid var(--line);border-radius:32px;box-shadow:0 8px 0 var(--line);padding:var(--s-5);display:flex;flex-direction:column;gap:var(--s-3);min-height:560px}
+table{border-collapse:collapse;width:100%;font:600 var(--fs-sm) var(--font-body)}
+th,td{text-align:left;padding:10px 8px;border-bottom:2px solid var(--line);vertical-align:top}
+th{font:900 var(--fs-label) var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.tbl{overflow-x:auto}
+code{font:600 13px var(--font-mono);background:var(--bg-soft);padding:2px 6px;border-radius:6px;border:1px solid var(--line)}
+.spec{display:flex;align-items:center;gap:var(--s-4)}
+.spec .bar{height:16px;background:var(--brand);border-radius:4px}
+.hero-ds{background:var(--brand);color:#fff;border-radius:var(--r-xl);padding:var(--s-10) var(--s-8);display:flex;justify-content:space-between;align-items:center;gap:var(--s-6);flex-wrap:wrap}
+.hero-ds .cp-logo{font-size:84px}
+.hero-ds .hero3d{margin:-40px -10px -44px 0;filter:drop-shadow(0 12px 14px rgba(0,0,0,.18))}
+.hero-ds p{margin:var(--s-2) 0 0;font:700 18px var(--font-body);opacity:.9}
+@media (max-width:860px){.doc{grid-template-columns:1fr}nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:2px solid var(--line)}nav .cp-label{display:none}.g3,.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}main{padding:var(--s-6) var(--s-4)}.hero-ds .cp-logo{font-size:56px}}
+</style>
+</head>
+<body>
+<div class="doc">
+<nav>
+ <a href="#top" id="navLogo" style="padding:0 10px 10px;text-decoration:none"></a>
+ <span class="cp-label">Marca</span>
+ <a href="#principios">Princípios</a><a href="#logo">Logo</a><a href="#capi">Capi</a><a href="#voz">Voz e tom</a>
+ <span class="cp-label">Fundamentos</span>
+ <a href="#cores">Cores</a><a href="#tipo">Tipografia</a><a href="#espaco">Espaço e forma</a><a href="#movimento">Movimento e som</a>
+ <span class="cp-label">Componentes</span>
+ <a href="#botoes">Botões</a><a href="#pergunta">Pergunta</a><a href="#retorno">Retorno</a><a href="#mapa">Mapa</a><a href="#bilhete">Bilhete</a><a href="#progresso">Progresso</a><a href="#forms">Formulários</a>
+ <span class="cp-label">Aplicação</span>
+ <a href="#telas">Telas do jogo</a><a href="jogo/index.html">▶ Abrir o jogo</a><a href="jogo/app/index.html">📱 Versão app</a><a href="#proibido">Anti-padrões</a>
+</nav>
+
+<main id="top">
+ <div class="hero-ds">
+  <div><span id="heroLogo"></span>
+   <p>Design System v1.0 · o método RAID em forma de jogo</p></div>
+  <div id="heroCapi"></div>
+ </div>
+
+ <!-- PRINCÍPIOS -->
+ <section id="principios">
+  <header><span class="cp-label">01 · Marca</span><h2 class="cp-h1">Princípios</h2>
+  <p class="cp-body">Cada decisão visual responde a um pilar do método. Quando houver dúvida, volte aqui.</p></header>
+  <div class="grid g3">
+   <div class="cp-card"><h3 class="cp-h3">Divertido, nunca ansioso</h3><p class="cp-body">Cores vivas, cantos redondos, botões que afundam. Nada de cronômetro, sirene ou tela vermelha.</p></div>
+   <div class="cp-card"><h3 class="cp-h3">Honesto no sinal</h3><p class="cp-body">A comemoração cresce com o ganho real. Erro nunca recebe festa; acerto pequeno nunca vira fogos.</p></div>
+   <div class="cp-card"><h3 class="cp-h3">Legível sempre</h3><p class="cp-body">Estado de domínio, regras e próxima revisão ficam à vista. Contraste alto no que importa.</p></div>
+   <div class="cp-card"><h3 class="cp-h3">Prêmio anunciado</h3><p class="cp-body">Todo ganho aparece antes da partida no bilhete. Sem sorteio, sem baú surpresa, sem moeda.</p></div>
+   <div class="cp-card"><h3 class="cp-h3">Partida com fim</h3><p class="cp-body">A tela final muda de clima, a Capi vai dormir e não existe botão "só mais uma".</p></div>
+   <div class="cp-card"><h3 class="cp-h3">O ganho é do aluno</h3><p class="cp-body">A única unidade é o domínio do tópico. Nada de XP, gemas ou ranking contra outros.</p></div>
+  </div>
+ </section>
+
+ <!-- LOGO -->
+ <section id="logo">
+  <header><span class="cp-label">02 · Marca</span><h2 class="cp-h1">Logo</h2>
+  <p class="cp-body">Ícone da Capi + wordmark em Fredoka SemiBold vetorizada, minúsculo, com o pingo do "i" no formato da cabeça da Capi. Detalhes na <a href="logo.html">página da marca</a>.</p></header>
+  <div class="grid g2">
+   <div class="logo-stage" style="background:var(--bg-soft);border:2px solid var(--line)"><span data-logo="72"></span></div>
+   <div class="logo-stage" style="background:var(--brand)"><span data-logo="72" data-variant="inverse" data-noicon></span></div>
+   <div class="logo-stage" style="background:var(--n-900)"><span data-logo="44" data-variant="inverse"></span></div>
+   <div class="logo-stage" style="background:var(--bg-soft);border:2px solid var(--line)"><div class="row" id="icons"></div></div>
+  </div>
+  <div class="grid g3">
+   <div class="do"><b>Faça</b>Use o logo em verde-rio ou branco. Deixe em volta um respiro igual à altura do "c".</div>
+   <div class="dont"><b>Não faça</b>Não escreva "Capisco" com maiúscula no logo, não enfeite as letras, não aplique gradiente.</div>
+   <div class="do"><b>Ícone do app</b>Rosto da Capi num quadrado de raio 25%. Use a partir de 24px.</div>
+  </div>
+ </section>
+
+ <!-- CAPI -->
+ <section id="capi">
+  <header><span class="cp-label">03 · Marca</span><h2 class="cp-h1">Capi, a mascote</h2>
+  <p class="cp-body">Capivara calma, que nunca pressiona. Veste uma roupa por matéria (veja o <a href='capi.html'>guarda-roupa</a>). Ela reage ao que aconteceu de verdade: nunca finge alegria sobre um erro e nunca some quando você erra. Modelada em 3D no Blender (8 roupas × 6 expressões). Use <code>capi3d({expr, roupa, size})</code> em <code>capi.js</code>; a versão 2D <code>capi()</code> continua como fallback leve.</p></header>
+  <div class="mascots" id="mascots"></div>
+ </section>
+
+ <!-- VOZ -->
+ <section id="voz">
+  <header><span class="cp-label">04 · Marca</span><h2 class="cp-h1">Voz e tom</h2>
+  <p class="cp-body">A Capi fala como um colega do 3º ano que já passou no vestibular: informal, direto, gentil. Fala do conteúdo, nunca de você ("você é burro", "você é gênio").</p></header>
+  <div class="tbl"><table>
+   <tr><th>Momento</th><th>Escreva</th><th>Evite</th><th>Por quê</th></tr>
+   <tr><td>Acerto</td><td>"Capiscou! AA e Aa têm a mesma cara."</td><td>"Você é um gênio!!!"</td><td>Feedback sobre a tarefa, não sobre a pessoa (Hattie e Timperley)</td></tr>
+   <tr><td>Quase</td><td>"Quase! Faltou um passo: fenótipo, não genótipo."</td><td>"Errado."</td><td>O "quase" precisa apontar o que faltou</td></tr>
+   <tr><td>Erro</td><td>"Ainda não. Olha esse trecho da apostila."</td><td>"Que pena! Você perdeu uma vida 💔"</td><td>Erro recebe sinal neutro e uma pista</td></tr>
+   <tr><td>Notificação</td><td>"Heredogramas está quase escapando da memória. 3 min resolvem."</td><td>"ÚLTIMA CHANCE! Sua ofensiva vai acabar!"</td><td>Urgência verdadeira, não inventada</td></tr>
+   <tr><td>Fim</td><td>"Pronto por hoje. Te vejo sexta pra revisar."</td><td>"Só mais uma fase?"</td><td>A partida acaba de verdade</td></tr>
+  </table></div>
+ </section>
+
+ <!-- CORES -->
+ <section id="cores">
+  <header><span class="cp-label">05 · Fundamentos</span><h2 class="cp-h1">Cores</h2>
+  <p class="cp-body">Duas cores de marca: <b>Rio</b> (água onde a capivara vive: progresso e ação) e <b>Tangerina</b> (conquista). Neutros puxados para o caramelo. As cores de estado sempre vêm acompanhadas de forma ou ícone.</p></header>
+  <div class="grid g4" id="brandSw"></div>
+  <span class="cp-label">Escala Rio</span><div class="ramp" id="rampRio"></div>
+  <span class="cp-label">Escala Tangerina</span><div class="ramp" id="rampTang"></div>
+  <span class="cp-label">Estados do jogo</span><div class="grid g4" id="stateSw"></div>
+  <span class="cp-label">Matérias</span><div class="grid g4" id="subSw"></div>
+ </section>
+
+ <!-- TIPO -->
+ <section id="tipo">
+  <header><span class="cp-label">06 · Fundamentos</span><h2 class="cp-h1">Tipografia</h2>
+  <p class="cp-body"><b>Baloo 2</b> para marca, títulos e botões (redonda e amigável). <b>Nunito</b> para perguntas e texto (legível em tela pequena). <b>JetBrains Mono</b> para números, datas e regras do sistema.</p></header>
+  <div class="cp-card" style="display:flex;flex-direction:column;gap:18px">
+   <div class="spec"><span class="cp-label" style="width:120px">Hero · 64</span><span class="cp-hero">Capiscou!</span></div>
+   <div class="spec"><span class="cp-label" style="width:120px">H1 · 36</span><span class="cp-h1">Sua trilha de Biologia</span></div>
+   <div class="spec"><span class="cp-label" style="width:120px">H2 · 28</span><span class="cp-h2">1ª Lei de Mendel</span></div>
+   <div class="spec"><span class="cp-label" style="width:120px">H3 · 22</span><span class="cp-h3">Rodada concluída</span></div>
+   <div class="spec"><span class="cp-label" style="width:120px">Pergunta · 20</span><span class="cp-q">Aa × Aa. Qual a proporção de fenótipos?</span></div>
+   <div class="spec"><span class="cp-label" style="width:120px">Corpo · 17</span><span class="cp-body">Com dominância completa, AA e Aa produzem o mesmo fenótipo.</span></div>
+   <div class="spec"><span class="cp-label" style="width:120px">Label · 12</span><span class="cp-label">Biologia · Genética</span></div>
+   <div class="spec"><span class="cp-label" style="width:120px">Dado · 15</span><span class="cp-num">caixa 2 → 3 · revisão em 4d · sex 3 out</span></div>
+  </div>
+ </section>
+
+ <!-- ESPAÇO -->
+ <section id="espaco">
+  <header><span class="cp-label">07 · Fundamentos</span><h2 class="cp-h1">Espaço e forma</h2>
+  <p class="cp-body">Grade de 4px. Tudo que é tocável tem <b>profundidade</b>: uma borda inferior sólida de 4px que some quando pressionado. Superfícies de leitura ficam planas.</p></header>
+  <div class="grid g2">
+   <div class="cp-card" style="display:flex;flex-direction:column;gap:8px" id="spaceSpec"></div>
+   <div class="cp-card" style="display:flex;flex-direction:column;gap:14px">
+    <div class="row"><div style="width:64px;height:64px;background:var(--brand-soft);border:2px solid var(--rio-300);border-radius:var(--r-sm)"></div><div style="width:64px;height:64px;background:var(--brand-soft);border:2px solid var(--rio-300);border-radius:var(--r-md)"></div><div style="width:64px;height:64px;background:var(--brand-soft);border:2px solid var(--rio-300);border-radius:var(--r-lg)"></div><div style="width:64px;height:64px;background:var(--brand-soft);border:2px solid var(--rio-300);border-radius:var(--r-xl)"></div></div>
+    <p class="cp-num" style="margin:0">r-sm 10 · r-md 14 · r-lg 20 · r-xl 28 · pill</p>
+    <p class="cp-body">Botões e alternativas: <code>r-md</code>. Cards: <code>r-lg</code>. Telas e painéis: <code>r-xl</code>.</p>
+   </div>
+  </div>
+ </section>
+
+ <!-- MOVIMENTO -->
+ <section id="movimento">
+  <header><span class="cp-label">08 · Fundamentos</span><h2 class="cp-h1">Movimento e som</h2>
+  <p class="cp-body">Regra única e verificável: <b>a intensidade do retorno é proporcional ao ganho real de domínio</b>. É a inversão direta das "perdas disfarçadas de ganho" das bets.</p></header>
+  <div class="tbl"><table>
+   <tr><th>Nível</th><th>Evento</th><th>Visual</th><th>Som</th><th>Capi</th><th></th></tr>
+   <tr><td class="cp-num">0</td><td>Erro</td><td>Faixa neutra cinza, sem tremor</td><td>1 nota grave e curta, volume baixo</td><td>pensando</td><td><button class="cp-btn secondary sm" data-lvl="0">Ouvir</button></td></tr>
+   <tr><td class="cp-num">1</td><td>Quase</td><td>Faixa sol, etapas ✓/?</td><td>2 notas neutras</td><td>quase</td><td><button class="cp-btn secondary sm" data-lvl="1">Ouvir</button></td></tr>
+   <tr><td class="cp-num">2</td><td>Acerto</td><td>Faixa rio + pop</td><td>1 nota aguda</td><td>feliz</td><td><button class="cp-btn secondary sm" data-lvl="2">Ouvir</button></td></tr>
+   <tr><td class="cp-num">3</td><td>Subiu de caixa</td><td>Caixa preenche com bounce</td><td>2 notas subindo</td><td>feliz</td><td><button class="cp-btn secondary sm" data-lvl="3">Ouvir</button></td></tr>
+   <tr><td class="cp-num">4</td><td>Rodada concluída</td><td>Faixa tangerina + confete</td><td>Arpejo de 4 notas</td><td>comemora</td><td><button class="cp-btn secondary sm" data-lvl="4">Ouvir</button></td></tr>
+   <tr><td class="cp-num">5</td><td>Fim da partida</td><td>Fundo muda, trilha para</td><td>Silêncio</td><td>dormindo</td><td></td></tr>
+  </table></div>
+  <p class="cp-body">Durações: <code>t-fast 120ms</code> para toque, <code>t-med 260ms</code> para aparecer, <code>t-slow 600ms</code> para celebração. Com <code>prefers-reduced-motion</code>, tudo fica estático.</p>
+ </section>
+
+ <!-- BOTÕES -->
+ <section id="botoes">
+  <header><span class="cp-label">09 · Componentes</span><h2 class="cp-h1">Botões</h2>
+  <p class="cp-body">Classe <code>.cp-btn</code>. Um botão primário por tela. Tangerina só para conquista (resgatar prêmio do bilhete). Clique para sentir o afundar.</p></header>
+  <div class="cp-card row">
+   <button class="cp-btn">Verificar</button>
+   <button class="cp-btn reward">Começar partida</button>
+   <button class="cp-btn secondary">Pular por agora</button>
+   <button class="cp-btn ghost">Ver regra</button>
+   <button class="cp-btn" disabled>Verificar</button>
+   <button class="cp-btn sm">Pequeno</button>
+  </div>
+  <div class="cp-card row">
+   <span class="cp-chip due">▲ Vencido</span><span class="cp-chip sched">◷ Revisar hoje</span><span class="cp-chip new">✦ Novo</span><span class="cp-chip ok">● Consolidado</span><span class="cp-chip">○ Não iniciado</span>
+  </div>
+ </section>
+
+ <!-- PERGUNTA -->
+ <section id="pergunta">
+  <header><span class="cp-label">10 · Componentes</span><h2 class="cp-h1">Pergunta e alternativas</h2>
+  <p class="cp-body"><code>.cp-opt</code> com <code>role="radio"</code>. A tela de pergunta tem só 4 coisas: barra de progresso, enunciado, alternativas e botão. Sem timer, sem pontos.</p></header>
+  <div class="cp-card" style="display:flex;flex-direction:column;gap:12px;max-width:520px" id="optDemo">
+   <span class="cp-label" style="color:var(--sub-bio)">Biologia · 1ª Lei de Mendel</span>
+   <p class="cp-q">Aa × Aa. Qual a proporção esperada de fenótipos?</p>
+   <button class="cp-opt" role="radio" aria-checked="false"><span class="key">1</span>1 AA : 2 Aa : 1 aa</button>
+   <button class="cp-opt" role="radio" aria-checked="true"><span class="key">2</span>3 dominantes : 1 recessivo</button>
+   <button class="cp-opt" role="radio" aria-checked="false"><span class="key">3</span>Todos dominantes</button>
+  </div>
+ </section>
+
+ <!-- RETORNO -->
+ <section id="retorno">
+  <header><span class="cp-label">11 · Componentes</span><h2 class="cp-h1">Retorno</h2>
+  <p class="cp-body">Três camadas, de cima para baixo: <b>verificação</b> (faixa), <b>elaboração</b> (etapas + fonte) e <b>regulação</b> (o que fazer agora).</p></header>
+  <div class="grid g3">
+   <div class="cp-feedback ok"><span class="t">✓ Capiscou!</span><p>AA e Aa têm a mesma aparência, por isso fica 3 : 1.</p></div>
+   <div class="cp-feedback partial"><span class="t">½ Quase!</span><p>Você separou os alelos certo. Faltou lembrar que a pergunta era de fenótipo.</p></div>
+   <div class="cp-feedback miss"><span class="t">· Ainda não</span><p>Essa é a proporção do cruzamento-teste. Veja o trecho abaixo.</p></div>
+  </div>
+  <div class="grid g2">
+   <div class="cp-card" style="display:flex;flex-direction:column;gap:10px">
+    <span class="cp-label">Etapas do raciocínio</span>
+    <div class="cp-step ok">Os alelos se separam na formação dos gametas</div>
+    <div class="cp-step miss">AA e Aa mostram o mesmo fenótipo</div>
+   </div>
+   <div class="cp-source">"Com dominância completa, AA e Aa produzem o mesmo fenótipo."<cite>Apostila Bio 1 · cap. 2 · p. 14</cite></div>
+  </div>
+ </section>
+
+ <!-- MAPA -->
+ <section id="mapa">
+  <header><span class="cp-label">12 · Componentes</span><h2 class="cp-h1">Nós do mapa</h2>
+  <p class="cp-body"><code>.cp-node</code>. Cada estado tem cor <b>e</b> ícone próprio, para funcionar com daltonismo. O chefão (<code>.boss</code>) é o simulado do capítulo.</p></header>
+  <div class="cp-card row" style="gap:28px;padding:32px">
+   <div style="text-align:center"><button class="cp-node done">★</button><p class="cp-label" style="margin-top:14px">Consolidado</p></div>
+   <div style="text-align:center"><button class="cp-node due">!</button><p class="cp-label" style="margin-top:14px">Vencido</p></div>
+   <div style="text-align:center"><button class="cp-node sched">◷</button><p class="cp-label" style="margin-top:14px">Revisar hoje</p></div>
+   <div style="text-align:center"><button class="cp-node now">▶</button><p class="cp-label" style="margin-top:14px">Em prática</p></div>
+   <div style="text-align:center"><button class="cp-node new">✦</button><p class="cp-label" style="margin-top:14px">Novo</p></div>
+   <div style="text-align:center"><button class="cp-node lock">🔒</button><p class="cp-label" style="margin-top:14px">Bloqueado</p></div>
+   <div style="text-align:center"><button class="cp-node boss lock">🏰</button><p class="cp-label" style="margin-top:14px">Chefão</p></div>
+  </div>
+ </section>
+
+ <!-- BILHETE -->
+ <section id="bilhete">
+  <header><span class="cp-label">13 · Componentes</span><h2 class="cp-h1">Bilhete da partida</h2>
+  <p class="cp-body"><code>.cp-ticket</code>. O "bilhete de aposta" virado do avesso: o prêmio é certo e aparece antes de jogar.</p></header>
+  <div class="cp-ticket" style="max-width:440px">
+   <div class="row" style="justify-content:space-between"><span class="cp-label">Bilhete · 2 rodadas</span><span class="cp-num">~8 min</span></div>
+   <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="row" style="justify-content:space-between"><span class="cp-chip due">▲ 1ª Lei de Mendel</span><span class="cp-num">caixa 2 → 3</span></div>
+    <div class="row" style="justify-content:space-between"><span class="cp-chip sched">◷ Heredogramas</span><span class="cp-num">caixa 3 → 4</span></div>
+   </div>
+   <div class="prize">🍊 Prêmio garantido: os dois tópicos sobem de caixa e a próxima revisão fica marcada. Sem sorteio.</div>
+   <div><button class="cp-btn reward block">Começar partida</button></div>
+  </div>
+ </section>
+
+ <!-- PROGRESSO -->
+ <section id="progresso">
+  <header><span class="cp-label">14 · Componentes</span><h2 class="cp-h1">Progresso e constância</h2>
+  <p class="cp-body">Barra de rodada, caixas de domínio (Leitner) e calendário de 14 dias. O calendário <b>nunca zera</b>: é registro, não ameaça.</p></header>
+  <div class="grid g3">
+   <div class="cp-card" style="display:flex;flex-direction:column;gap:12px"><span class="cp-label">Rodada</span><div class="cp-progress"><b style="width:60%"></b></div></div>
+   <div class="cp-card" style="display:flex;flex-direction:column;gap:12px"><span class="cp-label">Caixa de domínio</span><span class="cp-boxes"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="cp-num">caixa 3 · revisão em 4 dias</span></div>
+   <div class="cp-card" style="display:flex;flex-direction:column;gap:12px"><span class="cp-label">9 de 14 dias</span>
+    <div class="cp-cal"><i class="on">S</i><i class="on">T</i><i>Q</i><i class="on">Q</i><i class="on">S</i><i class="on">S</i><i>D</i><i class="on">S</i><i>T</i><i class="on">Q</i><i class="on">Q</i><i class="on">S</i><i>S</i><i class="on">D</i></div></div>
+  </div>
+ </section>
+
+ <!-- FORMS -->
+ <section id="forms">
+  <header><span class="cp-label">15 · Componentes</span><h2 class="cp-h1">Formulários</h2>
+  <p class="cp-body">Usados na evocação livre ("escreva de memória") e nas configurações.</p></header>
+  <div class="grid g2">
+   <div class="cp-card" style="display:flex;flex-direction:column;gap:10px"><label class="cp-label" for="f1">Evocação livre</label><textarea id="f1" class="cp-input" placeholder="Explique a 1ª Lei de Mendel com suas palavras..."></textarea></div>
+   <div class="cp-card" style="display:flex;flex-direction:column;gap:14px">
+    <label class="cp-label" for="f2">Data da prova</label><input id="f2" class="cp-input" value="ENEM · 8 nov 2026">
+    <label class="row" style="justify-content:space-between"><span class="cp-body">Som de retorno</span><input type="checkbox" class="cp-toggle" checked></label>
+    <label class="row" style="justify-content:space-between"><span class="cp-body">Modo escuro</span><input type="checkbox" class="cp-toggle" id="darkT"></label>
+   </div>
+  </div>
+ </section>
+
+ <!-- TELAS -->
+ <section id="telas">
+  <header><span class="cp-label">16 · Aplicação</span><h2 class="cp-h1">Telas do jogo</h2>
+  <p class="cp-body">As quatro telas do laço, montadas só com os componentes acima.</p></header>
+  <div class="row" style="align-items:flex-start;gap:24px">
+   <div class="phone">
+    <div class="row" style="justify-content:space-between"><span data-logo="18"></span><span class="cp-chip">🧬 Bio</span></div>
+    <span class="cp-label">Briefing</span><h3 class="cp-h3">Bora fechar Genética?</h3>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0">
+     <button class="cp-node done" style="width:56px;height:50px;font-size:18px">★</button>
+     <button class="cp-node due now" style="width:56px;height:50px;font-size:18px;margin-left:60px">!</button>
+     <button class="cp-node sched" style="width:56px;height:50px;font-size:18px;margin-left:-30px">◷</button>
+     <button class="cp-node lock" style="width:56px;height:50px;font-size:18px">🔒</button>
+    </div>
+    <div class="grow" style="flex:1"></div>
+    <div class="cp-ticket"><div class="prize" style="padding:10px 12px;font-size:13px">🍊 2 tópicos sobem de caixa</div></div>
+    <button class="cp-btn reward block">Começar partida</button>
+   </div>
+   <div class="phone">
+    <div class="row"><span style="color:var(--text-muted);font-size:22px">✕</span><div class="cp-progress" style="flex:1"><b style="width:40%"></b></div></div>
+    <span class="cp-label" style="color:var(--sub-bio)">1ª Lei de Mendel</span>
+    <p class="cp-q">Aa × Aa. Qual a proporção de fenótipos?</p>
+    <button class="cp-opt" role="radio" aria-checked="false"><span class="key">1</span>1 AA : 2 Aa : 1 aa</button>
+    <button class="cp-opt" role="radio" aria-checked="true"><span class="key">2</span>3 : 1</button>
+    <button class="cp-opt" role="radio" aria-checked="false"><span class="key">3</span>1 : 1</button>
+    <div style="flex:1"></div><button class="cp-btn block">Verificar</button>
+   </div>
+   <div class="phone">
+    <div class="row"><span style="color:var(--text-muted);font-size:22px">✕</span><div class="cp-progress" style="flex:1"><b style="width:40%"></b></div></div>
+    <div class="row" style="flex-wrap:nowrap"><span id="capiQuase"></span><div class="cp-feedback partial" style="flex:1;padding:12px"><span class="t" style="font-size:18px">Quase!</span></div></div>
+    <div class="cp-step ok">Alelos se separam nos gametas</div>
+    <div class="cp-step miss">AA e Aa = mesmo fenótipo</div>
+    <div class="cp-source" style="font-size:13px">"AA e Aa produzem o mesmo fenótipo."<cite>Apostila · p. 14</cite></div>
+    <div style="flex:1"></div><button class="cp-btn block">Continuar</button>
+   </div>
+   <div class="phone" style="background:var(--rio-700);border-color:var(--rio-700);box-shadow:0 8px 0 var(--rio-900);color:#fff;align-items:center;text-align:center">
+    <div style="flex:1"></div><span id="capiSleep"></span>
+    <h3 class="cp-h2" style="color:#fff">Pronto por hoje.</h3>
+    <p style="margin:0;font:700 15px var(--font-body);opacity:.85">2 tópicos subiram de caixa · 7 min</p>
+    <div style="background:rgba(255,255,255,.12);border-radius:var(--r-lg);padding:14px;width:100%"><span class="cp-label" style="color:rgba(255,255,255,.7)">Próxima revisão</span><div class="cp-h2" style="color:var(--tang-300)">sex, 3 out</div></div>
+    <div style="flex:1"></div><button class="cp-btn secondary block">Voltar ao mapa</button>
+   </div>
+  </div>
+ </section>
+
+ <!-- PROIBIDO -->
+ <section id="proibido">
+  <header><span class="cp-label">17 · Aplicação</span><h2 class="cp-h1">Anti-padrões proibidos</h2>
+  <p class="cp-body">Estes elementos não entram no Capisco, nem "só para testar". Cada um viola uma linha do Quadro 1 do TCC.</p></header>
+  <div class="grid g2">
+   <div class="dont"><b>Baú ou caixa surpresa</b>Recompensa aleatória = reforço de razão variável (linha 1).</div>
+   <div class="dont"><b>Ofensiva que zera</b>Aversão à perda como regulação externa (linha 4).</div>
+   <div class="dont"><b>Gemas, moedas, XP</b>Unidade intermediária que esconde o valor real (linha 5).</div>
+   <div class="dont"><b>"Só mais uma fase"</b>Sessão sem fim, a "zona da máquina" (linha 6).</div>
+   <div class="dont"><b>"Sua oferta expira!"</b>Urgência inventada (linha 7).</div>
+   <div class="dont"><b>Ranking público</b>Comparação que desmotiva quem mais precisa (linha 8).</div>
+   <div class="dont"><b>Cronômetro na pergunta</b>Carga extra que atrapalha lembrar (seção 5.5).</div>
+   <div class="dont"><b>Festa em resposta errada</b>Perda disfarçada de ganho (linha 3).</div>
+  </div>
+ </section>
+</main>
+</div>
+
+<script>
+document.getElementById('navLogo').innerHTML=capiscoLogo({size:26});
+document.getElementById('heroLogo').innerHTML=capiscoLogo({size:72,variant:'inverse',icon:false});
+document.getElementById('heroCapi').innerHTML=capi3d({expr:'comemora',size:230,cls:'hero3d'});
+document.getElementById('icons').innerHTML=[96,64,40,24].map(s=>capiscoIcon(s)).join('');
+document.querySelectorAll('[data-logo]').forEach(el=>el.innerHTML=capiscoLogo({size:+el.dataset.logo,variant:el.dataset.variant||'brand',icon:!('noicon' in el.dataset)}));
+document.getElementById('capiQuase').innerHTML=capi3d({expr:'quase',roupa:'bio',size:84});
+document.getElementById('capiSleep').innerHTML=capi3d({expr:'dormindo',size:190});
+const M=[['neutra','Padrão, mapa e briefing'],['pensando','Depois de um erro: calma, sem drama'],['quase','Acerto parcial'],['feliz','Acerto e subida de caixa'],['comemora','Só no fim da rodada'],['dormindo','Fim da partida: vá descansar']];
+document.getElementById('mascots').innerHTML=M.map(([e,d])=>`<div class="cp-card">${capi3d({expr:e,size:130})}<b class="cp-h3" style="font-size:18px">${e}</b><small>${d}</small></div>`).join('');
+
+const cs=getComputedStyle(document.documentElement),v=n=>cs.getPropertyValue(n).trim();
+const sw=(name,tok,desc,txt='#fff')=>`<div class="sw"><div class="c" style="background:var(${tok});color:${txt}">${v(tok)}</div><div class="m"><b>${name}</b><span>${tok}</span><span>${desc}</span></div></div>`;
+document.getElementById('brandSw').innerHTML=sw('Rio','--rio-500','Ação, progresso, acerto')+sw('Tangerina','--tang-500','Conquista e prêmio')+sw('Caramelo','--capi-500','Só a mascote')+sw('Tinta','--n-900','Texto');
+document.getElementById('stateSw').innerHTML=sw('Quase','--sol-400','Acerto parcial','#5a4000')+sw('Vencido','--coral-400','Revisão atrasada (nunca p/ erro)')+sw('Agendado','--ceu-400','Revisar hoje / fonte')+sw('Novo','--uva-400','Conteúdo liberado');
+document.getElementById('subSw').innerHTML=[['Biologia','--sub-bio'],['Química','--sub-qui'],['Física','--sub-fis'],['Matemática','--sub-mat'],['História','--sub-his'],['Geografia','--sub-geo'],['Português','--sub-por'],['Redação','--sub-red']].map(([n,t])=>sw(n,t,'Cor da matéria')).join('');
+const ramp=(id,p,steps)=>document.getElementById(id).innerHTML=steps.map(s=>`<div style="background:var(--${p}-${s});color:${s>=400?'#fff':'#2b2825'}">${s}</div>`).join('');
+ramp('rampRio','rio',[50,100,200,300,400,500,600,700,900]);ramp('rampTang','tang',[50,100,300,400,500,600,700]);
+document.getElementById('spaceSpec').innerHTML=[1,2,3,4,5,6,8,10,12,16].map(n=>`<div class="spec"><span class="cp-num" style="width:70px">s-${n}</span><div class="bar" style="width:var(--s-${n})"></div><span class="cp-num" style="color:var(--text-muted)">${v('--s-'+n)}</span></div>`).join('');
+
+document.querySelectorAll('#optDemo .cp-opt,.phone .cp-opt').forEach(b=>b.onclick=()=>{b.parentElement.querySelectorAll('.cp-opt').forEach(o=>o.setAttribute('aria-checked','false'));b.setAttribute('aria-checked','true')});
+document.getElementById('darkT').onchange=e=>document.documentElement.dataset.theme=e.target.checked?'dark':'light';
+
+let ac;
+function tone(l){try{ac=ac||new AudioContext()}catch(e){return}
+ const S=[[[220,.05,.12]],[[392,.07,.1],[392,.07,.12]],[[784,.12,.14]],[[659,.13,.1],[988,.15,.18]],[[523,.15,.12],[659,.16,.12],[784,.18,.12],[1047,.2,.4]]][l];
+ let t=ac.currentTime;S.forEach(([f,g,d])=>{const o=ac.createOscillator(),a=ac.createGain();o.type=l?'triangle':'sine';o.frequency.value=f;a.gain.setValueAtTime(0,t);a.gain.linearRampToValueAtTime(g,t+.01);a.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(a).connect(ac.destination);o.start(t);o.stop(t+d+.02);t+=d*.8})}
+document.querySelectorAll('[data-lvl]').forEach(b=>b.onclick=()=>tone(+b.dataset.lvl));
+</script>
+</body>
+</html>

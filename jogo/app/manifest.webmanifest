@@ -1,0 +1,23 @@
+{
+  "name": "Capisco",
+  "short_name": "Capisco",
+  "description": "Estudo gamificado pelo método RAID: partidas com fim, revisão espaçada e nenhuma sorte no meio.",
+  "lang": "pt-BR",
+  "start_url": "./#/aprender",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8f7f5",
+  "theme_color": "#0fa292",
+  "categories": ["education", "games"],
+  "icons": [
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icone-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icone.svg", "sizes": "any", "type": "image/svg+xml" }
+  ],
+  "shortcuts": [
+    { "name": "Jogar", "url": "./#/briefing", "icons": [{ "src": "icone-192.png", "sizes": "192x192" }] },
+    { "name": "Revisões", "url": "./#/revisoes", "icons": [{ "src": "icone-192.png", "sizes": "192x192" }] }
+  ]
+}

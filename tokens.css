@@ -1,0 +1,85 @@
+/* =========================================================
+   CAPISCO · Design Tokens v1.0
+   Importe este arquivo antes de components.css.
+   ========================================================= */
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap");
+
+:root{
+  /* ---------- Marca ---------- */
+  --rio-50:#e6f8f5; --rio-100:#c4efe8; --rio-200:#8fdfd3; --rio-300:#55cbbb;
+  --rio-400:#22b6a4; --rio-500:#0fa292; --rio-600:#0b8577; --rio-700:#08685e; --rio-900:#03352f;
+  --tang-50:#fff4e5; --tang-100:#ffe2bd; --tang-300:#ffbb5c; --tang-400:#ffa42e;
+  --tang-500:#ff8f0a; --tang-600:#db6f00; --tang-700:#a85400;
+  --capi-100:#f6e3cc; --capi-300:#e3b27c; --capi-500:#c98a4b; --capi-700:#9c6634; --capi-900:#3c2412;
+
+  /* ---------- Semânticas de jogo ---------- */
+  --sol-100:#fff5d6; --sol-400:#ffc62e; --sol-600:#d99a00;   /* parcial / "quase" */
+  --coral-100:#ffecea; --coral-400:#ff7a6b; --coral-600:#d9493a; /* vencido (nunca usado p/ punir erro) */
+  --ceu-100:#e3f2fe; --ceu-400:#3fa9f5; --ceu-600:#1a7fca;   /* agendado / fonte do material */
+  --uva-100:#efe9ff; --uva-400:#8b6cff; --uva-600:#6a45e6;   /* novo / desbloqueado */
+
+  /* ---------- Neutros (levemente quentes, puxados p/ capivara) ---------- */
+  --n-0:#ffffff; --n-50:#f8f7f5; --n-100:#efedea; --n-200:#e2dfda; --n-300:#c9c5be;
+  --n-500:#8a857d; --n-700:#4d4944; --n-900:#2b2825;
+
+  /* ---------- Papéis (use estes nos componentes) ---------- */
+  --bg:var(--n-0); --bg-soft:var(--n-50); --surface:var(--n-0);
+  --line:var(--n-200); --line-strong:var(--n-300);
+  --text:var(--n-900); --text-soft:var(--n-700); --text-muted:var(--n-500);
+  --brand:var(--rio-500); --brand-press:var(--rio-600); --brand-soft:var(--rio-50); --on-brand:#fff;
+  --reward:var(--tang-500); --reward-press:var(--tang-600); --reward-soft:var(--tang-50);
+  --ok:var(--rio-500); --ok-soft:var(--rio-50); --ok-text:var(--rio-700);
+  --partial:var(--sol-400); --partial-soft:var(--sol-100); --partial-text:#8a6200;
+  --miss:var(--n-500); --miss-soft:var(--n-50); --miss-text:var(--n-700);  /* erro = neutro */
+  --due:var(--coral-400); --due-soft:var(--coral-100);
+  --sched:var(--ceu-400); --sched-soft:var(--ceu-100);
+  --new:var(--uva-400); --new-soft:var(--uva-100);
+
+  /* ---------- Matérias ---------- */
+  --sub-bio:#58b847; --sub-qui:#3fa9f5; --sub-fis:#8b6cff; --sub-mat:#ff7a6b;
+  --sub-his:#e0a100; --sub-geo:#0fa292; --sub-por:#c98a4b; --sub-red:#e05c9a;
+
+  /* ---------- Tipografia ---------- */
+  --font-brand:"Fredoka","Baloo 2",system-ui,sans-serif;     /* só o wordmark */
+  --font-display:"Baloo 2","Nunito",system-ui,sans-serif;  /* logo, títulos, botões */
+  --font-body:"Nunito",system-ui,sans-serif;               /* texto, perguntas */
+  --font-mono:"JetBrains Mono",ui-monospace,monospace;     /* números, regras, dados */
+  --fs-hero:clamp(40px,6vw,64px); --fs-h1:36px; --fs-h2:28px; --fs-h3:22px;
+  --fs-q:20px; --fs-body:17px; --fs-sm:15px; --fs-xs:13px; --fs-label:12px;
+  --lh-tight:1.1; --lh-body:1.5;
+
+  /* ---------- Espaço (base 4) ---------- */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px; --s-8:32px; --s-10:40px; --s-12:48px; --s-16:64px;
+
+  /* ---------- Raios ---------- */
+  --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+
+  /* ---------- Profundidade "chunky" (borda inferior sólida) ---------- */
+  --depth:4px; --depth-lg:6px;
+
+  /* ---------- Movimento ---------- */
+  --ease-pop:cubic-bezier(.2,1.5,.4,1); --ease-out:cubic-bezier(.2,.8,.2,1);
+  --t-fast:120ms; --t-med:260ms; --t-slow:600ms;
+}
+
+/* ---------- Modo escuro (estudo à noite) ---------- */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191b; --bg-soft:#1c2124; --surface:#1f2528;
+    --line:#2f373b; --line-strong:#3d474c;
+    --text:#eef1f2; --text-soft:#c4cbce; --text-muted:#8b969b;
+    --brand-soft:#0f2e2a; --reward-soft:#33230c; --ok-soft:#0f2e2a; --ok-text:var(--rio-200);
+    --partial-soft:#33290c; --partial-text:var(--sol-400); --miss-soft:#1c2124; --miss-text:#c4cbce;
+    --due-soft:#3a1d1a; --sched-soft:#122a3b; --new-soft:#241d3d;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191b; --bg-soft:#1c2124; --surface:#1f2528;
+  --line:#2f373b; --line-strong:#3d474c;
+  --text:#eef1f2; --text-soft:#c4cbce; --text-muted:#8b969b;
+  --brand-soft:#0f2e2a; --reward-soft:#33230c; --ok-soft:#0f2e2a; --ok-text:var(--rio-200);
+  --partial-soft:#33290c; --partial-text:var(--sol-400); --miss-soft:#1c2124; --miss-text:#c4cbce;
+  --due-soft:#3a1d1a; --sched-soft:#122a3b; --new-soft:#241d3d;
+  color-scheme:dark;
+}

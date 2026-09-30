@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>Capisco</title>
+<meta name="theme-color" content="#0fa292">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Capisco">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="../../tokens.css">
+<link rel="stylesheet" href="../../components.css">
+<link rel="stylesheet" href="../ui/jogo.css">
+<style>
+  /* app: toque nativo, sem seleção acidental, rolagem só no conteúdo */
+  body.app{overscroll-behavior-y:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+  body.app input,body.app textarea,body.app .cp-body,body.app .cp-source{-webkit-user-select:text;user-select:text}
+  body.app .cp-btn,body.app .cp-opt,body.app .cp-node{-webkit-touch-callout:none}
+</style>
+<script>window.CAPI3D_BASE='../../capi3d/sm/';window.CAPI3D_EXT='.webp';</script>
+<script src="../../capi.js"></script>
+<script src="../../marca/wordmark.js"></script>
+<script src="../core/conteudo/bio.js"></script>
+<script src="../core/conteudo/qui.js"></script>
+<script src="../core/conteudo/fis.js"></script>
+<script src="../core/conteudo/mat.js"></script>
+<script src="../core/conteudo/his.js"></script>
+<script src="../core/conteudo/geo.js"></script>
+<script src="../core/conteudo/por.js"></script>
+<script src="../core/conteudo/red.js"></script>
+<script src="../core/motor.js"></script>
+<script src="../core/estado.js"></script>
+<script src="../ui/base.js"></script>
+<script src="../ui/telas.js"></script>
+<script src="../ui/partida.js"></script>
+</head>
+<body>
+<div id="raiz"></div>
+<script>
+  const A = CAPISCO.app;
+  // convite de instalação (Android / Chrome / Edge); no iOS: Compartilhar → Adicionar à Tela de Início
+  let convite = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); convite = e; A.instalavel = true;
+    if (/inicio|mais/.test(location.hash)) A.render();
+  });
+  A.instalar = async () => {
+    if (!convite) return;
+    convite.prompt();
+    const r = await convite.userChoice;
+    convite = null; A.instalavel = false; A.render();
+    if (r.outcome === 'accepted') A.toast('Instalado. O Capisco agora abre como app.');
+  };
+  window.addEventListener('appinstalled', () => { A.instalavel = false; });
+  if (matchMedia('(display-mode: standalone)').matches) document.documentElement.classList.add('instalado');
+  // offline: service worker só funciona via http(s) ou localhost
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js');
+  A.montar('app');
+</script>
+</body>
+</html>
