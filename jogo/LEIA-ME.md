@@ -4,16 +4,27 @@ Protótipo funcional do jogo descrito no capítulo 5 do TCC, implementando os 7 
 
 ## Como abrir
 
-| Versão | Como abrir | Observação |
-|---|---|---|
-| **Web** | Dê dois cliques em `jogo/index.html` | Funciona direto do arquivo, sem instalar nada. |
-| **App (PWA)** | Rode `npx serve prototipo/capisco` e abra `http://localhost:3000/jogo/app/` | Só via `http` o app funciona offline, pode ser instalado e envia avisos. Pelo arquivo ele também abre, mas sem essas três funções. |
+**Online**
+- Celular: https://openflows-ofc.github.io/capisco/jogo/app/
+  - iPhone: Safari → Compartilhar → **Adicionar à Tela de Início**
+  - Android: Chrome → **Instalar app**
+- Computador: https://openflows-ofc.github.io/capisco/jogo/
 
-No celular, abra o endereço do app no navegador e escolha **Instalar app** (Android) ou **Compartilhar → Adicionar à Tela de Início** (iPhone).
+**Local:** dois cliques em `jogo/index.html` (sem offline e sem avisos) ou `npx serve` dentro de `prototipo/capisco`.
 
-Para a apresentação:
+**Atualizar o site:** dentro de `prototipo/capisco`, faça commit e `git push`. O GitHub Pages publica em cerca de 1 minuto.
+
+**Para a apresentação**
 - Na primeira tela, **"Ver com dados de exemplo"** carrega 3 semanas de uso simulado, com todos os estados do mapa.
-- Em **Ajustes → Demonstração**, dá para avançar o tempo (+1 dia, +7 dias) e mostrar as revisões vencendo.
+- Em **Mais → Ajustes → Demonstração**, dá para avançar o tempo (+1 dia, +7 dias) e mostrar as revisões vencendo.
+
+## Como o jogo funciona (v2)
+- **Aprender**: a trilha da matéria. Tocar num tópico abre um balão com o objetivo e o que se ganha, que é o briefing do Pilar I. Cada unidade termina num **Chefão**, um simulado com a unidade inteira.
+- **Revisar**: o que o agendador trouxe para hoje, a agenda dos próximos dias e a montagem da partida de revisão.
+- **Lição**: pergunta → Verificar → faixa de resultado (acertou, quase ou ainda não; por quê; o que vem) → fim de rodada.
+- **Fim de partida**: resumo → recompensas (anunciadas antes, conferidas item a item) → "Pronto por hoje" (tela escura, sem "só mais uma").
+- **Recompensas**: o tópico sobe de caixa, libera o próximo e libera o Chefão. Vencer o Chefão dá o troféu da unidade e a roupa da Capi. Treinar um tópico antes do dia da revisão não sobe a caixa.
+- **Perfil**: números, constância (não zera), domínio por matéria, troféus e guarda-roupa.
 
 ## Arquitetura
 
