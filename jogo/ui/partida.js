@@ -12,7 +12,7 @@
   const fmtDe = item => (item.tipo === 'transfer' ? item.formato : item.tipo);
 
   /* ---------------- cabeçalho: sair + rodadas da partida ---------------- */
-  const topo = ss => `<div class="l-topo"><button class="sair" data-a="sair" aria-label="Sair da partida">✕</button>
+  const topo = ss => `<div class="l-topo"><button class="sair" data-a="sair" aria-label="Sair da partida">${A.ic('fechar', 26, 2.8)}</button>
     <div class="rodadas" aria-label="Rodada ${ss.i + 1} de ${ss.itens.length}">${ss.itens.map((_, k) => `<i class="${k < ss.i ? 'feita' : k === ss.i ? 'agora' : ''}"></i>`).join('')}</div></div>`;
 
   /* ---------------- corpo da questão (fica visível no resultado) ---------------- */
@@ -57,7 +57,7 @@
     let det = '';
     if (f === 'mc') {
       const certa = item.opcoes.find(o => o.ok);
-      det = res === 'ok' ? '' : `<p>${av.erroOpcao ? `Essa alternativa pega quem ${esc(av.erroOpcao.charAt(0).toLowerCase() + av.erroOpcao.slice(1))}. ` : ''}A certa é: <b>${esc(certa.t)}</b></p>`;
+      det = res === 'ok' ? '' : `<p>${av.erroOpcao ? `Essa alternativa pega quem ${esc(av.erroOpcao.charAt(0).toLowerCase() + av.erroOpcao.slice(1).replace(/[.s]+$/, ''))}. ` : ''}A certa é: <b>${esc(certa.t)}</b></p>`;
     } else if (f === 'multi') {
       det = res === 'ok' ? '' : `<div class="etapas">${av.etapas.filter(e => !e.certo).map(e => `<div class="cp-step miss">${esc(e.t)} <span class="muted">${e.ok ? '(era certa e ficou de fora)' : '(não era: ' + esc(e.erro || 'não se aplica') + ')'}</span></div>`).join('')}</div>`;
     } else if (f === 'aberta') {
@@ -81,13 +81,13 @@
     const botao = `<div class="pe"><div class="in"><div class="acoes"><button class="cp-btn ${ultima ? 'reward' : ''}" data-a="seguir">${ultima ? 'Ver resultado da partida' : 'Continuar'}</button></div></div></div>`;
     const cj = R.idx().conjuntos[T.conjunto];
     let h;
-    if (f.chefe && f.venceu) h = `${A.capi('comemora', T.materia, 210)}<h1 class="ok">Chefão vencido!</h1><p class="sub">${esc(cj.titulo)} está concluída. 🏆</p>${f.roupa ? `<p class="sub">E a Capi ganhou a roupa de ${A.mat(f.roupa).n}.</p>` : ''}<p class="regra-mini">${esc(f.regra)}</p>`;
+    if (f.chefe && f.venceu) h = `${A.capi('comemora', T.materia, 210)}<h1 class="ok">Chefão vencido!</h1><p class="sub">${esc(cj.titulo)} está concluída.</p>${f.roupa ? `<p class="sub">E a Capi ganhou a roupa de ${A.mat(f.roupa).n}.</p>` : ''}<p class="regra-mini">${esc(f.regra)}</p>`;
     else if (f.chefe) h = `${A.capi('pensando', T.materia, 190)}<h1>O Chefão ganhou essa.</h1><p class="sub">${f.revisar && f.revisar.length ? `${esc(A.lista(f.revisar.map(id => R.topico(id).nome)))} ${f.revisar.length > 1 ? 'entram' : 'entra'} na revisão de hoje.` : ''}</p><p class="regra-mini">${esc(f.regra)}</p>`;
     else if (f.venceu && f.extra) h = `${A.capi('feliz', T.materia, 200)}<h1 class="ok">Treino concluído!</h1><p class="sub">${esc(T.nome)} em ${A.plural(f.tentativas, 'tentativa', 'tentativas')}.</p><p class="regra-mini">${esc(f.regra)}</p>`;
     else if (f.venceu) h = `${A.capi('comemora', T.materia, 210)}<h1 class="ok">Rodada vencida!</h1><p class="sub">${esc(T.nome)} em ${A.plural(f.tentativas, 'tentativa', 'tentativas')}.</p>
       <div class="caixa-salto" aria-label="caixa ${f.caixaAntes} para ${f.caixaDepois}">${[1, 2, 3, 4, 5].map(k => `<i class="${k <= f.caixaDepois ? 'on' : ''} ${k > f.caixaAntes && k <= f.caixaDepois ? 'novo' : ''}"></i>`).join('')}</div>
       <span class="caixa-legenda">caixa ${f.caixaAntes} → ${f.caixaDepois}${f.proxima ? ` · volta ${D.fmtData(f.proxima, true)}` : ''}</span>
-      ${f.liberou.length || f.chefeLiberado ? `<div class="linha" style="justify-content:center">${f.liberou.map(id => `<span class="st novo"><i>✦</i>Liberou ${esc(R.topico(id).nome)}</span>`).join('')}${f.chefeLiberado ? '<span class="st consolidado"><i>🏆</i>Chefão liberado</span>' : ''}</div>` : ''}
+      ${f.liberou.length || f.chefeLiberado ? `<div class="linha" style="justify-content:center">${f.liberou.map(id => `<span class="st novo"><i>${A.ic('aberto', 12, 3)}</i>Liberou ${esc(R.topico(id).nome)}</span>`).join('')}${f.chefeLiberado ? `<span class="st consolidado"><i>${A.ic('trofeu', 12, 2.6)}</i>Chefão liberado</span>` : ''}</div>` : ''}
       <p class="regra-mini">${esc(f.regra)}</p>`;
     else h = `${A.capi('pensando', T.materia, 190)}<h1>Essa pediu base.</h1><p class="sub">${esc(T.nome)} chegou ao teto de ${R.P.teto} tentativas. Não é fracasso: falta consolidar o que vem antes.</p><p class="regra-mini">${esc(f.regra)}</p>${f.redireciona && ss.inserida ? `<p class="sub">A próxima rodada virou <b>${esc(R.topico(f.redireciona).nome)}</b>.</p>` : ''}`;
     return `<section class="cheia">${h}</section>${botao}`;
@@ -213,16 +213,16 @@
     const venceu = id => up.fechamentos.some(f => f.id === id && f.venceu);
     const vistos = new Set();
     for (const x of up.anunciado) {
-      let ok = false, ico = '⭐', texto = A.textoRecompensa(x);
-      if (x.tipo === 'caixa') { ok = venceu(x.id); ico = '📦'; const f = up.fechamentos.find(f => f.id === x.id && f.venceu); if (f) texto = `<b>${esc(R.topico(x.id).nome)}</b> ${f.caixaAntes ? `subiu da caixa ${f.caixaAntes} para a ${f.caixaDepois}` : 'entrou na caixa 1'}`; vistos.add(x.id); }
-      if (x.tipo === 'libera') { ok = R.estado(s, x.id) !== 'bloqueado'; ico = '🔓'; }
-      if (x.tipo === 'chefe') { ok = R.chefeEstado(s, x.conjunto) !== 'bloqueado'; ico = '🏆'; }
-      if (x.tipo === 'trofeu') { ok = !!(s.chefes || {})[x.conjunto]; ico = '🏆'; }
+      let ok = false, ico = A.ic('estrela', 30), texto = A.textoRecompensa(x);
+      if (x.tipo === 'caixa') { ok = venceu(x.id); ico = A.ic('caixa', 30); const f = up.fechamentos.find(f => f.id === x.id && f.venceu); if (f) texto = `<b>${esc(R.topico(x.id).nome)}</b> ${f.caixaAntes ? `subiu da caixa ${f.caixaAntes} para a ${f.caixaDepois}` : 'entrou na caixa 1'}`; vistos.add(x.id); }
+      if (x.tipo === 'libera') { ok = R.estado(s, x.id) !== 'bloqueado'; ico = A.ic('aberto', 30); }
+      if (x.tipo === 'chefe') { ok = R.chefeEstado(s, x.conjunto) !== 'bloqueado'; ico = A.ic('trofeu', 30); }
+      if (x.tipo === 'trofeu') { ok = !!(s.chefes || {})[x.conjunto]; ico = A.ic('trofeu', 30); }
       if (x.tipo === 'roupa') { ok = (s.roupas || []).includes(x.materia); ico = `<img src="${capi3dSrc('feliz', ok ? x.materia : 'nenhuma')}" alt="">`; }
       out.push({ ok, ico, texto });
     }
-    for (const f of up.fechamentos) if (!f.chefe && !vistos.has(f.id) && f.venceu && f.caixaDepois > f.caixaAntes) out.push({ ok: true, ico: '📦', texto: `<b>${esc(R.topico(f.id).nome)}</b> subiu da caixa ${f.caixaAntes} para a ${f.caixaDepois}` });
-    for (const f of up.fechamentos) for (const id of f.liberou || []) if (!up.anunciado.some(x => x.tipo === 'libera' && x.id === id)) out.push({ ok: true, ico: '🔓', texto: `Libera <b>${esc(R.topico(id).nome)}</b>` });
+    for (const f of up.fechamentos) if (!f.chefe && !vistos.has(f.id) && f.venceu && f.caixaDepois > f.caixaAntes) out.push({ ok: true, ico: A.ic('caixa', 30), texto: `<b>${esc(R.topico(f.id).nome)}</b> subiu da caixa ${f.caixaAntes} para a ${f.caixaDepois}` });
+    for (const f of up.fechamentos) for (const id of f.liberou || []) if (!up.anunciado.some(x => x.tipo === 'libera' && x.id === id)) out.push({ ok: true, ico: A.ic('aberto', 30), texto: `Libera <b>${esc(R.topico(id).nome)}</b>` });
     return out;
   }
 
@@ -254,7 +254,7 @@
         titulo: 'Recompensas',
         html: `<div class="licao"><section class="cheia" style="justify-content:flex-start;padding-top:40px">
           <h1>Recompensas</h1><p class="sub">O que foi anunciado antes de começar, conferido item por item.</p>
-          <div class="premios">${pr.map((p, i) => `<div class="premio" style="animation-delay:${i * 90}ms;${p.ok ? '' : 'opacity:.55'}"><span class="ico">${p.ico}</span><span style="flex:1"><span class="tx">${p.texto}</span><small>${p.ok ? 'Entregue' : 'Ficou pra próxima: a rodada não foi vencida'}</small></span>${p.ok ? '<span class="st consolidado"><i>✓</i>ok</span>' : ''}</div>`).join('')}</div></section>
+          <div class="premios">${pr.map((p, i) => `<div class="premio" style="animation-delay:${i * 90}ms;${p.ok ? '' : 'opacity:.55'}"><span class="ico">${p.ico}</span><span style="flex:1"><span class="tx">${p.texto}</span><small>${p.ok ? 'Entregue' : 'Ficou pra próxima: a rodada não foi vencida'}</small></span>${p.ok ? `<span class="st consolidado"><i>${A.ic('check', 12, 3.4)}</i>ok</span>` : ''}</div>`).join('')}</div></section>
           <div class="pe"><div class="in"><div class="acoes"><a class="cp-btn" href="#/fim/tchau">Continuar</a></div></div></div></div>`,
         depois() { if (pr.some(p => p.ok)) A.som(3); },
       };

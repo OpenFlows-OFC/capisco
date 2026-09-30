@@ -47,11 +47,35 @@
   const fmtRel = s => { const n = diff(hoje(), s); return n === 0 ? 'hoje' : n === 1 ? 'amanhã' : n === -1 ? 'ontem' : n > 0 ? `em ${n} dias` : `há ${-n} dias`; };
 
   /* ---------------- índice do conteúdo ---------------- */
+  /* Cartão de evocação vira questão objetiva: nada de "você lembrou?" (autoavaliação não é dado).
+     As alternativas erradas são respostas de OUTRAS perguntas da mesma unidade, escolhidas de forma
+     determinística (hash do id), e o retorno diz de qual pergunta cada uma é. */
+  const hash = t => { let h = 7; for (const c of String(t)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+  function cartoesViramQuestao(cj) {
+    const itens = cj.topicos.flatMap(t => t.itens || []);
+    const pool = [
+      ...itens.filter(i => i.tipo === 'cartao' || i._cartao).map(i => ({ id: i.id, t: i._cartao ? i._cartao.verso : i.verso, de: i._cartao ? i._cartao.frente : i.frente })),
+      ...itens.filter(i => i.tipo === 'mc' && !i._cartao).map(i => ({ id: i.id, t: (i.opcoes.find(o => o.ok) || {}).t, de: i.enunciado })),
+    ].filter(p => p.t);
+    for (const it of itens) {
+      if (it.tipo !== 'cartao') continue;
+      const outros = pool.filter(p => p.id !== it.id && p.t !== it.verso)
+        .sort((x, y) => hash(it.id + x.id) - hash(it.id + y.id)).slice(0, 3);
+      if (outros.length < 3) continue; // conjunto pequeno demais: fica como está
+      it._cartao = { frente: it.frente, verso: it.verso };
+      it.tipo = 'mc';
+      it.enunciado = it.frente;
+      it.opcoes = [{ t: it.verso, ok: true }, ...outros.map(p => ({ t: p.t, erro: `confunde com outra ideia da unidade: essa frase responde "${p.de}"` }))]
+        .sort((x, y) => hash(it.id + x.t) - hash(it.id + y.t));
+    }
+  }
+
   let IDX = null;
   function indexar(st) {
     const conjuntos = [...C.conteudo, ...((st && st.conjuntosUsuario) || [])];
     const idx = { conjuntos: {}, topicos: {}, itens: {}, dependentes: {} };
     for (const cj of conjuntos) {
+      cartoesViramQuestao(cj);
       idx.conjuntos[cj.id] = cj;
       cj.topicos.forEach((t, ordem) => {
         idx.topicos[t.id] = Object.assign(t, { conjunto: cj.id, materia: cj.materia, ordem });

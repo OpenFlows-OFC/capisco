@@ -369,3 +369,70 @@ details.dobra>div{padding:0 0 14px;display:flex;flex-direction:column;gap:10px}
 .modal h2{margin:0;font:800 21px var(--font-display)}
 .modal .acoes{display:flex;flex-direction:column;gap:10px}
 .modal .acoes .cp-btn{width:100%}
+
+/* =========================================================
+   v2.1 · Ícones próprios com cor da marca + modo escuro caprichado
+   No escuro, a cor de cada ícone vira o tom claro da mesma família
+   (contraste invertido), e as faixas de resultado seguem o tema.
+   ========================================================= */
+:root{--ic-rio:var(--rio-500);--ic-azul:var(--ceu-400);--ic-laranja:var(--tang-500);--ic-ouro:#f2a100;--ic-uva:var(--uva-400);--ic-rosa:#e05c9a;--ic-verde:var(--rio-500);--ic-capi:var(--capi-500)}
+.escuro{--ic-rio:var(--rio-300);--ic-azul:#7cc4f8;--ic-laranja:var(--tang-300);--ic-ouro:#ffd35c;--ic-uva:#b3a0ff;--ic-rosa:#f38fc0;--ic-verde:var(--rio-300);--ic-capi:var(--capi-300)}
+.ic-svg{display:block;flex:none}
+.ic-rio{color:var(--ic-rio)}.ic-azul{color:var(--ic-azul)}.ic-laranja{color:var(--ic-laranja)}.ic-ouro{color:var(--ic-ouro)}.ic-uva{color:var(--ic-uva)}.ic-rosa{color:var(--ic-rosa)}.ic-verde{color:var(--ic-verde)}.ic-capi{color:var(--ic-capi)}
+/* navegação: cada aba com a sua cor, sempre colorida */
+.nav .ic,.tabs a .ic{display:grid;place-items:center;filter:none!important;opacity:1!important}
+[data-nav="aprender"] .ic{color:var(--ic-rio)}[data-nav="revisar"] .ic{color:var(--ic-azul)}[data-nav="perfil"] .ic{color:var(--ic-capi)}[data-nav="mais"] .ic{color:var(--ic-uva)}
+.tabs a .ic{line-height:0;height:28px}
+.nav[aria-current="page"],.tabs a[aria-current="page"]{color:var(--text)}
+.escuro .nav[aria-current="page"],.escuro .tabs a[aria-current="page"]{border-color:var(--ic-azul);background:rgba(124,196,248,.1)}
+/* contadores do topo */
+.stat .e{display:grid;place-items:center;line-height:0}
+.stat.laranja{color:var(--ic-laranja)}.stat.azul{color:var(--ic-azul)}.stat.verde{color:var(--ic-verde)}
+.stat.mat-atual{color:var(--text);gap:6px}.stat.mat-atual .e{color:var(--m)}.stat.mat-atual>.ic-svg{color:var(--text-muted)}
+.h-ic{display:flex;align-items:center;gap:8px}
+.aviso-rev span{display:flex;align-items:center;gap:8px}
+/* nós e chips */
+.no{color:#fff}.no .ic-svg{position:relative}
+.no.bloqueado{color:var(--text-muted)}
+.st i{color:#fff}.st i .ic-svg{width:12px;height:12px}
+.item .bola .ic-svg{color:#fff}
+.num .e{display:grid;place-items:center}
+.trofeu .e{color:var(--ic-ouro);display:grid;place-items:center;height:40px}
+.trofeu.nao .e{color:var(--line-strong);filter:none;opacity:1}
+.premio .ico{color:var(--ic-laranja)}
+.escolha .e{display:grid;place-items:center;color:var(--ic-verde)}
+.bullets div span{display:grid;place-items:center}
+.menu .ic{display:grid;place-items:center}
+.menu .seta{display:grid;place-items:center}
+.l-topo .sair{display:grid;place-items:center}
+.passo.atual{padding-top:46px}
+/* ícone da regra (balança) desenhado, sem emoji */
+.regra::before{content:"";background:var(--text-muted);border:0;border-radius:0;width:18px;height:18px;margin-top:2px;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v16M7.5 20h9M5 7.5h14M5 7.5l-2.6 6.2a3.2 3.2 0 0 0 5.2 0zM19 7.5l-2.6 6.2a3.2 3.2 0 0 0 5.2 0z'/%3E%3C/svg%3E") center/18px no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v16M7.5 20h9M5 7.5h14M5 7.5l-2.6 6.2a3.2 3.2 0 0 0 5.2 0zM19 7.5l-2.6 6.2a3.2 3.2 0 0 0 5.2 0z'/%3E%3C/svg%3E") center/18px no-repeat}
+/* faixa de resultado segue o tema (antes ficava clara no modo escuro) */
+.pe.ok{background:var(--ok-soft)}.pe.quase{background:var(--partial-soft)}.pe.erro{background:var(--miss-soft)}
+.pe.erro .res h3{color:var(--miss-text)}
+.pe.erro .cp-btn{--c:var(--n-500);--cp:var(--n-700)}
+.pop.cinza{--m:var(--bg-soft);color:var(--text);border:2px solid var(--line)}
+/* tons fixos que precisam clarear no escuro */
+.escuro .st.consolidado{color:var(--tang-300)}.escuro .st.novo{color:#b3a0ff}.escuro .st.agendado{color:#7cc4f8}.escuro .st.vencido{color:var(--coral-400)}
+.escuro .ganha{color:var(--tang-300)}
+.escuro .cp-source cite,.escuro .res details summary,.escuro a.muted{color:#7cc4f8}
+.escuro .cheia h1.ok{color:var(--tang-300)}
+.escuro .aviso-rev{color:var(--coral-400);border-color:rgba(255,122,107,.5)}
+.escuro .aviso-demo{background:var(--partial-soft);color:var(--sol-400)}
+.escuro .cp-opt.certa{box-shadow:0 4px 0 var(--rio-700)}
+.escuro .unidade,.escuro .no:not(.bloqueado){filter:saturate(.92)}
+.escuro .passo.atual .no::after{background:var(--surface);border-color:var(--line-strong)}
+.escuro .tile{background:var(--surface)}
+.escuro .cal i:not(.on){background:var(--line);color:var(--text-muted)}
+/* ícone dentro de texto fica na linha; em flex/grid continua centralizado */
+.ic-svg{display:inline-block;vertical-align:-.22em}
+.unidade .t span .ic-svg,.l-onde .ic-svg{margin-right:6px;vertical-align:-4px}
+/* faixa de resultado nunca cobre a tela inteira: rola por dentro */
+.pe .res .txt{max-height:min(52vh,420px);overflow:auto;overscroll-behavior:contain;padding-right:4px}
+/* a alternativa errada marcada fica neutra (erro nunca é vermelho nem "verde de selecionado") */
+.cp-opt.errada[aria-checked="true"]{border-color:var(--line-strong);background:var(--bg-soft);color:var(--text-muted);box-shadow:0 4px 0 var(--line-strong)}
+.cp-opt.errada .key{border-color:var(--line-strong);color:var(--text-muted)}
+.cp-opt.certa .key{border-color:var(--brand);color:var(--ok-text)}

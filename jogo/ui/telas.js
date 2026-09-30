@@ -66,7 +66,7 @@
         : e === 'bloqueado' ? 'Bloqueado' : e === 'novo' ? 'Novo' : e === 'pratica' ? 'Em prática' : e === 'vencido' ? 'Revisão atrasada' : e === 'agendado' ? 'Revisar hoje' : `Caixa ${cx} de 5`;
       return `<div class="passo ${i === atual ? 'atual' : ''}" data-i="${i}" data-x="${x}" style="--dx:${x}">
         ${i === atual ? `<img class="capi3d capi-aqui" style="${lado}" src="${capi3dSrc('neutra', A.roupaDe(cj.materia))}" alt="">` : ''}
-        <button class="no ${e} ${chefe ? 'chefe' : ''}" data-no="${esc(id)}" aria-label="${esc(T.nome)}: ${legenda}">${!chefe && cx && e !== 'bloqueado' ? anel(cx) : ''}${chefe ? '🏆' : A.ICONE[e]}</button>
+        <button class="no ${e} ${chefe ? 'chefe' : ''}" data-no="${esc(id)}" aria-label="${esc(T.nome)}: ${legenda}">${!chefe && cx && e !== 'bloqueado' ? anel(cx) : ''}${chefe ? A.ic('trofeu', 44, 2.2) : A.ICONE[e]}</button>
         <span class="nome">${chefe ? 'Chefão da unidade' : esc(T.nome)}</span><span class="cx">${legenda}</span></div>`;
     }).join('');
     return {
@@ -74,7 +74,7 @@
       html: `
       <div class="unidade" style="--m:${m.c}"><div class="t"><span>${m.e} ${m.n} · ${R.dominioMateria(s, cj.materia)}% dominado</span><b>${esc(cj.titulo)}</b></div>
         <button class="troca" data-a="materia">Trocar</button></div>
-      ${dueTotal ? `<a class="aviso-rev" href="#/briefing"><span>🔁 ${A.plural(dueTotal, 'revisão', 'revisões')} para hoje${dueAqui && dueAqui < dueTotal ? ` (${dueAqui} nesta unidade)` : ''}</span><b>Revisar →</b></a>` : ''}
+      ${dueTotal ? `<a class="aviso-rev" href="#/briefing"><span class="linha" style="gap:8px;flex-wrap:nowrap">${A.ic('revisar', 22, 2.5)}${A.plural(dueTotal, 'revisão', 'revisões')} para hoje${dueAqui && dueAqui < dueTotal ? ` (${dueAqui} nesta unidade)` : ''}</span><b class="linha" style="gap:2px;flex-wrap:nowrap">Revisar${A.ic('seta', 18, 2.8)}</b></a>` : ''}
       <section class="trilha" id="trilha"><svg class="caminho" aria-hidden="true"></svg>${passos}</section>
       <div class="fim-trilha">${R.chefeEstado(s, cj.id) === 'vencido'
         ? `${A.capi('comemora', cj.materia, 130)}<b style="font:800 18px var(--font-display)">Unidade concluída!</b><p class="muted">As revisões continuam chegando na hora certa pra não esquecer.</p>`
@@ -131,7 +131,7 @@
     const e = R.estado(s, id), iv = R.intervalos(s), o = oferta(id);
     const deps = R.idx().dependentes[id] || [];
     const hist = t.tentativas.slice(-10).reverse();
-    const sim = { ok: ['✓', 'var(--ok)'], quase: ['½', 'var(--sol-600)'], erro: ['–', 'var(--n-500)'] };
+    const sim = { ok: [A.ic('check', 18, 3), 'var(--ok)'], quase: [A.ic('meia', 18, 2.6), 'var(--sol-600)'], erro: [A.ic('traco', 18, 3), 'var(--n-500)'] };
     return {
       titulo: T.nome,
       html: `${volta('#/aprender', 'Trilha')}
@@ -143,8 +143,8 @@
         ${t.proxima ? `<p class="muted">Próxima revisão: <b>${D.fmtData(t.proxima, true)}</b> (${D.fmtRel(t.proxima)}).</p>` : ''}
         <p class="muted">Cada caixa volta mais tarde: ${[1, 2, 3, 4, 5].map(k => `${k}→${iv[k]}d`).join(' · ')}. Os intervalos vêm da data da prova.</p></section>
       ${(T.prereq || []).length || deps.length ? `<section class="box"><h3>Na trilha</h3><div class="lista">
-        ${(T.prereq || []).map(p => `<a class="item" href="#/topico/${p}"><span class="bola" style="--m:var(--line-strong)">↑</span><span class="t"><b>${esc(R.topico(p).nome)}</b><small>Vem antes · ${R.ROTULO[R.estado(s, p)]}</small></span><span class="seta">›</span></a>`).join('')}
-        ${deps.map(p => `<a class="item" href="#/topico/${p}"><span class="bola" style="--m:var(--line-strong)">↓</span><span class="t"><b>${esc(R.topico(p).nome)}</b><small>Libera depois · ${R.ROTULO[R.estado(s, p)]}</small></span><span class="seta">›</span></a>`).join('')}</div></section>` : ''}
+        ${(T.prereq || []).map(p => `<a class="item" href="#/topico/${p}"><span class="bola" style="--m:var(--line-strong)">↑</span><span class="t"><b>${esc(R.topico(p).nome)}</b><small>Vem antes · ${R.ROTULO[R.estado(s, p)]}</small></span><span class="seta">${A.ic('seta', 20, 2.6)}</span></a>`).join('')}
+        ${deps.map(p => `<a class="item" href="#/topico/${p}"><span class="bola" style="--m:var(--line-strong)">↓</span><span class="t"><b>${esc(R.topico(p).nome)}</b><small>Libera depois · ${R.ROTULO[R.estado(s, p)]}</small></span><span class="seta">${A.ic('seta', 20, 2.6)}</span></a>`).join('')}</div></section>` : ''}
       <section class="box"><div class="entre"><h3>Histórico</h3><span class="muted">${A.plural(t.tentativas.length, 'tentativa', 'tentativas')}</span></div>
         ${hist.length ? `<div class="lista">${hist.map(h => { const it = R.idx().itens[h.item]; return `<div class="item"><span class="bola" style="--m:${sim[h.res][1]};width:30px;height:30px;font-size:14px">${sim[h.res][0]}</span><span class="t"><b style="font-size:14px;font-weight:700">${esc(it ? (it.enunciado || it.frente || '').slice(0, 80) : h.item)}</b><small>${D.fmtData(h.dia, true)}</small></span></div>`; }).join('')}</div>` : '<p class="muted">Nenhuma tentativa ainda.</p>'}</section>
       <div class="cp-source">Material de origem<cite>${esc(T.fonte || R.idx().conjuntos[T.conjunto].titulo)}</cite></div>
@@ -253,19 +253,19 @@
       html: `<div class="perfil-cab" style="--m:${fav ? A.mat(fav).c : 'var(--brand)'}"><div class="av">${A.capi('feliz', fav, 112)}</div>
         <div><b>${esc(s.perfil.nome)}</b><p class="muted">${esc(s.perfil.provaNome || 'Prova')} em ${R.horizonte(s)} dias · desde ${D.fmtData(s.perfil.criado || D.hoje())}</p><a class="muted" href="#/ajustes" style="color:var(--ceu-600)">Editar perfil</a></div></div>
       <div class="nums">
-        <div class="num"><span class="e">⭐</span><div><b>${ids.filter(id => (s.topicos[id] || {}).caixa).length}/${ids.length}</b><small>consolidados</small></div></div>
-        <div class="num"><span class="e">📅</span><div><b>${dias.filter(d => d.on).length}</b><small>dias em 14</small></div></div>
-        <div class="num"><span class="e">⏱️</span><div><b>${minutos}</b><small>minutos</small></div></div>
-        <div class="num"><span class="e">🏆</span><div><b>${Object.keys(s.chefes || {}).length}</b><small>troféus</small></div></div></div>
+        <div class="num"><span class="e ic-ouro">${A.ic('estrela', 28)}</span><div><b>${ids.filter(id => (s.topicos[id] || {}).caixa).length}/${ids.length}</b><small>consolidados</small></div></div>
+        <div class="num"><span class="e ic-laranja">${A.ic('calendario', 28)}</span><div><b>${dias.filter(d => d.on).length}</b><small>dias em 14</small></div></div>
+        <div class="num"><span class="e ic-azul">${A.ic('relogio', 28)}</span><div><b>${minutos}</b><small>minutos</small></div></div>
+        <div class="num"><span class="e ic-ouro">${A.ic('trofeu', 28)}</span><div><b>${Object.keys(s.chefes || {}).length}</b><small>troféus</small></div></div></div>
       <section class="box"><div class="entre"><h3>Constância</h3><span class="muted">últimas 2 semanas</span></div>
         <div class="cal">${dias.map(d => `<i class="${d.on ? 'on' : ''}" title="${D.fmtData(d.dia, true)}">${D.parse(d.dia).getDate()}</i>`).join('')}</div>
         <p class="muted">É registro, não ameaça: pular um dia não apaga nada, só muda quando cada tópico volta.</p></section>
-      <section class="box"><h3>Domínio por matéria</h3>${cjs.map(cj => { const m = A.mat(cj.materia), p = R.dominioMateria(s, cj.materia); return `<a href="#/aprender" data-cj="${cj.id}" style="--m:${m.c};text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:6px"><span class="entre"><b style="font:800 15px var(--font-body)">${m.e} ${esc(cj.titulo)} ${(s.chefes || {})[cj.id] ? '🏆' : ''}</b><span class="mono" style="color:var(--text-muted)">${p}%</span></span><div class="barra"><i style="width:${p}%"></i></div></a>`; }).join('') || '<p class="muted">Nenhuma matéria ativa.</p>'}</section>
+      <section class="box"><h3>Domínio por matéria</h3>${cjs.map(cj => { const m = A.mat(cj.materia), p = R.dominioMateria(s, cj.materia); return `<a href="#/aprender" data-cj="${cj.id}" style="--m:${m.c};text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:6px"><span class="entre"><b style="font:800 15px var(--font-body)"><span style="color:${m.c}">${m.e}</span> ${esc(cj.titulo)} ${(s.chefes || {})[cj.id] ? `<span class="ic-ouro" style="vertical-align:-3px">${A.ic('trofeu', 18)}</span>` : ''}</b><span class="mono" style="color:var(--text-muted)">${p}%</span></span><div class="barra"><i style="width:${p}%"></i></div></a>`; }).join('') || '<p class="muted">Nenhuma matéria ativa.</p>'}</section>
       <section class="box"><h3>Troféus</h3><p class="muted">Um por unidade: vença o Chefão no fim da trilha.</p>
-        <div class="grade">${cjs.map(cj => { const ok = (s.chefes || {})[cj.id]; return `<div class="trofeu ${ok ? '' : 'nao'}"><span class="e">🏆</span>${esc(A.mat(cj.materia).n)}</div>`; }).join('')}</div></section>
+        <div class="grade">${cjs.map(cj => { const ok = (s.chefes || {})[cj.id]; return `<div class="trofeu ${ok ? '' : 'nao'}" style="--m:${A.mat(cj.materia).c}"><span class="e">${A.ic('trofeu', 36)}</span>${esc(A.mat(cj.materia).n)}</div>`; }).join('')}</div></section>
       <section class="box"><h3>Guarda-roupa da Capi</h3><p class="muted">Cada roupa vem com o troféu da unidade. Toque numa liberada pra Capi usar no perfil.</p>
         <div class="grade">${Object.keys(R.MATERIAS).map(k => { const m = R.MATERIAS[k], tem = (s.roupas || []).includes(k); return `<button class="roupa ${tem ? '' : 'nao'}" style="--m:${m.c}" ${tem ? `data-roupa="${k}" aria-pressed="${fav === k}"` : 'disabled'}><img src="${capi3dSrc(tem ? 'feliz' : 'neutra', k)}" alt="">${m.n}</button>`; }).join('')}</div></section>
-      <section class="box"><h3>Partidas recentes</h3>${sess.length ? `<div class="lista">${sess.map(x => `<div class="item"><span class="bola" style="--m:${x.completa === false ? 'var(--line-strong)' : 'var(--brand)'}">${x.completa === false ? '⏸' : '✓'}</span><span class="t"><b>${x.vencidas ?? '–'} de ${x.rodadas} rodadas</b><small>${D.fmtData(x.dia, true)} · ${Math.max(1, Math.round((x.fim - x.inicio) / 60000))} min</small></span></div>`).join('')}</div>` : '<p class="muted">Nenhuma partida ainda.</p>'}</section>`,
+      <section class="box"><h3>Partidas recentes</h3>${sess.length ? `<div class="lista">${sess.map(x => `<div class="item"><span class="bola" style="--m:${x.completa === false ? 'var(--line-strong)' : 'var(--brand)'}">${x.completa === false ? A.ic('pausa', 18, 3) : A.ic('check', 18, 3)}</span><span class="t"><b>${x.vencidas ?? '–'} de ${x.rodadas} rodadas</b><small>${D.fmtData(x.dia, true)} · ${Math.max(1, Math.round((x.fim - x.inicio) / 60000))} min</small></span></div>`).join('')}</div>` : '<p class="muted">Nenhuma partida ainda.</p>'}</section>`,
       depois(el) {
         el.addEventListener('click', e => {
           const rb = e.target.closest('[data-roupa]'); if (rb) { s.roupaFavorita = rb.dataset.roupa; A.salvar(); A.toast('A Capi trocou de roupa.'); return A.render(); }
@@ -283,13 +283,13 @@
     return {
       titulo: 'Mais',
       html: `<h1 class="tit">Mais</h1>
-      ${inst ? `<section class="box" style="flex-direction:row;align-items:center">${capiscoIcon(52)}<div style="flex:1"><b style="font:800 16px var(--font-body)">Instalar o Capisco</b><p class="muted">${A.ehIOS() ? 'No Safari: toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.' : 'Abre como app, funciona offline e avisa as revisões.'}</p></div>${A.instalavel ? '<button class="cp-btn sm" data-a="instalar">Instalar</button>' : ''}</section>` : ''}
+      ${inst ? `<section class="box" style="flex-direction:row;align-items:center">${capiscoIcon(52)}<div style="flex:1"><b style="font:800 16px var(--font-body)">Instalar o Capisco</b><p class="muted">${A.ehIOS() ? 'No Safari: toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.' : 'Abre como app, funciona offline e avisa as revisões.'}</p></div>${A.instalavel ? '<button class="cp-btn sm" data-a="instalar" style="align-self:center">Instalar</button>' : ''}</section>` : ''}
       <section class="box" style="padding:4px 16px"><div class="menu">
-        <a href="#/conjuntos"><span class="ic">📚</span><span>Matérias e conjuntos<small>Adicionar, tirar ou criar conteúdo</small></span><span class="seta">›</span></a>
-        <a href="#/grupo"><span class="ic">👥</span><span>Grupo de estudo<small>Meta coletiva, sem ranking</small></span><span class="seta">›</span></a>
-        <a href="#/regras"><span class="ic">⚖️</span><span>Como o jogo decide<small>Todas as regras, à vista</small></span><span class="seta">›</span></a>
-        <a href="#/ajustes"><span class="ic">⚙️</span><span>Ajustes e dados<small>Perfil, acessibilidade, exportar</small></span><span class="seta">›</span></a>
-        <a href="../index.html"><span class="ic">🎨</span><span>Design system<small>Marca, cores e componentes</small></span><span class="seta">›</span></a></div></section>
+        <a href="#/conjuntos"><span class="ic ic-rio">${A.ic('livros')}</span><span>Matérias e conjuntos<small>Adicionar, tirar ou criar conteúdo</small></span><span class="seta">${A.ic('seta', 20, 2.6)}</span></a>
+        <a href="#/grupo"><span class="ic ic-uva">${A.ic('grupo')}</span><span>Grupo de estudo<small>Meta coletiva, sem ranking</small></span><span class="seta">${A.ic('seta', 20, 2.6)}</span></a>
+        <a href="#/regras"><span class="ic ic-laranja">${A.ic('balanca')}</span><span>Como o jogo decide<small>Todas as regras, à vista</small></span><span class="seta">${A.ic('seta', 20, 2.6)}</span></a>
+        <a href="#/ajustes"><span class="ic ic-azul">${A.ic('ajustes')}</span><span>Ajustes e dados<small>Perfil, acessibilidade, exportar</small></span><span class="seta">${A.ic('seta', 20, 2.6)}</span></a>
+        <a href="../index.html"><span class="ic ic-rosa">${A.ic('paleta')}</span><span>Design system<small>Marca, cores e componentes</small></span><span class="seta">${A.ic('seta', 20, 2.6)}</span></a></div></section>
       <p class="muted" style="text-align:center">Capisco · regras v${R.versao} · seus dados ficam neste aparelho</p>`,
       depois(el) { el.querySelector('[data-a=instalar]')?.addEventListener('click', A.instalar); },
     };
@@ -464,7 +464,7 @@
         <h3>Todos os tópicos de ${esc(cj ? cj.titulo : '—')} na caixa ${g.meta.caixa} até ${D.fmtData(g.meta.prazo, true)}</h3>
         <div class="entre"><span class="muted">Progresso do grupo</span><b class="mono">${coletivo}%</b></div><div class="cp-progress"><b style="width:${coletivo}%"></b></div>
         <p class="muted">Faltam ${Math.max(0, D.diff(D.hoje(), g.meta.prazo))} dias. O grupo só vê este número.</p></section>
-      <section class="box"><div class="entre"><h3>Sua parte</h3><span class="st pratica"><i>🔒</i>só você vê</span></div>
+      <section class="box"><div class="entre"><h3>Sua parte</h3><span class="st pratica"><i>${A.ic('cadeado', 12, 3)}</i>só você vê</span></div>
         <b class="mono" style="font-size:26px">${meus} de ${total} tópicos</b><div class="barra"><i style="width:${(meus / total) * 100}%"></i></div>
         ${cj ? `<button class="cp-btn secondary" data-cj="${cj.id}">Abrir a trilha</button>` : ''}</section>
       <section class="box"><h3>Quem está no grupo</h3><div class="membros">${todos.map((n, i) => `<span class="membro"><i style="background:${cores[i % cores.length]}">${esc(n[0] || '?')}</i>${esc(n)}${n === s.perfil.nome ? ' (você)' : ''}</span>`).join('')}</div>
@@ -589,7 +589,7 @@
     if (bv.passo === 2) {
       const iv = R.intervalos({ perfil: { prova: bv.prova } });
       corpo = `${fala('pensando', `Beleza, ${esc(bv.nome)}! Pra quando você precisa lembrar de tudo?`)}
-        <div class="pilha">${['ENEM', 'Vestibular', 'Prova da escola'].map(n => `<button class="escolha" data-prova="${n}" aria-pressed="${bv.provaNome === n}"><span class="e">${{ ENEM: '🎯', Vestibular: '🎓', 'Prova da escola': '📝' }[n]}</span>${n}</button>`).join('')}</div>
+        <div class="pilha">${['ENEM', 'Vestibular', 'Prova da escola'].map(n => `<button class="escolha" data-prova="${n}" aria-pressed="${bv.provaNome === n}"><span class="e">${A.ic({ ENEM: 'alvo', Vestibular: 'formatura', 'Prova da escola': 'folha' }[n], 30)}</span>${n}</button>`).join('')}</div>
         <div class="campo"><label for="prova">Data</label><input class="cp-input" type="date" id="prova" min="${D.hoje()}" value="${esc(bv.prova)}"></div>
         <p class="muted">Faltam ${Math.max(7, D.diff(D.hoje(), bv.prova))} dias. Quanto mais longe a prova, mais espaçadas as revisões (a maior fica em ${iv[5]} dias).</p>`;
       pe = `<button class="cp-btn block" data-a="prox">Continuar</button>`;
@@ -601,17 +601,17 @@
     }
     if (bv.passo === 4) {
       corpo = `${fala('feliz', 'Quanto você quer jogar por partida?')}
-        <div class="pilha">${[[2, 'Leve', '2 rodadas · uns 5 min'], [3, 'Normal', '3 rodadas · uns 8 min'], [5, 'Puxado', '5 rodadas · uns 15 min']].map(([n, t, d]) => `<button class="escolha" data-ritmo="${n}" aria-pressed="${bv.ritmo === n}"><span class="e">${{ 2: '🌱', 3: '🌿', 5: '🌳' }[n]}</span><span>${t}<small>${d}</small></span></button>`).join('')}</div>
+        <div class="pilha">${[[2, 'Leve', '2 rodadas · uns 5 min'], [3, 'Normal', '3 rodadas · uns 8 min'], [5, 'Puxado', '5 rodadas · uns 15 min']].map(([n, t, d]) => `<button class="escolha" data-ritmo="${n}" aria-pressed="${bv.ritmo === n}"><span class="e">${A.ic({ 2: 'broto', 3: 'planta', 5: 'arvore' }[n], 30)}</span><span>${t}<small>${d}</small></span></button>`).join('')}</div>
         <p class="muted">Toda partida tem fim. Dá pra mudar depois em Ajustes.</p>`;
       pe = `<button class="cp-btn block" data-a="prox">Continuar</button>`;
     }
     if (bv.passo === 5) {
       corpo = `${fala('comemora', 'Só quatro coisas pra saber:')}
         <div class="bullets">
-          <div><span>🎯</span><p style="margin:0"><b>Você sabe o que ganha antes</b>Toque num tópico da trilha: ele mostra o objetivo e a recompensa. Sem sorteio.</p></div>
-          <div><span>✍️</span><p style="margin:0"><b>Responde antes, entende depois</b>Tentar lembrar é o que fixa. A explicação vem logo em seguida.</p></div>
-          <div><span>🔁</span><p style="margin:0"><b>Revisão na hora certa</b>Cada tópico volta quando está quase escapando da memória.</p></div>
-          <div><span>🏆</span><p style="margin:0"><b>Cada unidade termina num Chefão</b>Venceu, ganha troféu e roupa nova pra Capi.</p></div></div>`;
+          <div><span class="ic-verde">${A.ic('alvo', 26)}</span><p style="margin:0"><b>Você sabe o que ganha antes</b>Toque num tópico da trilha: ele mostra o objetivo e a recompensa. Sem sorteio.</p></div>
+          <div><span class="ic-azul">${A.ic('lapis', 26)}</span><p style="margin:0"><b>Responde antes, entende depois</b>Tentar lembrar é o que fixa. A explicação vem logo em seguida.</p></div>
+          <div><span class="ic-uva">${A.ic('revisar', 26, 2.4)}</span><p style="margin:0"><b>Revisão na hora certa</b>Cada tópico volta quando está quase escapando da memória.</p></div>
+          <div><span class="ic-ouro">${A.ic('trofeu', 26)}</span><p style="margin:0"><b>Cada unidade termina num Chefão</b>Venceu, ganha troféu e roupa nova pra Capi.</p></div></div>`;
       pe = `<button class="cp-btn reward block" data-a="fim">Bora pra primeira rodada</button>`;
     }
     return {

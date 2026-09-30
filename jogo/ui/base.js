@@ -15,14 +15,17 @@
   /* ---------------- utilidades ---------------- */
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   A.esc = esc;
-  A.mat = id => R.MATERIAS[id] || { n: id, c: '#0fa292', e: '📘' };
+  const I = C.icones;
+  A.ic = I.ic;
+  A.icMat = I.icMat;
+  A.mat = id => Object.assign({ n: id, c: '#0fa292' }, R.MATERIAS[id], { e: I.icMat(id, 20) });
   A.roupaDe = mat => ((st.roupas || []).includes(mat) ? mat : 'nenhuma');
   A.capi = (expr, mat, size = 160, cls = '') =>
     `<img class="capi3d ${cls}" src="${capi3dSrc(expr, mat ? A.roupaDe(mat) : 'nenhuma')}" width="${size}" height="${size}" alt="" decoding="async">`;
   A.capiFav = (expr, size) => A.capi(expr, st.roupaFavorita && (st.roupas || []).includes(st.roupaFavorita) ? st.roupaFavorita : null, size);
-  const ICONE = { vencido: '!', agendado: '◷', consolidado: '★', novo: '✦', pratica: '↻', bloqueado: '🔒' };
-  A.ICONE = ICONE;
-  A.chip = e => `<span class="st ${e}"><i aria-hidden="true">${ICONE[e]}</i>${R.ROTULO[e]}</span>`;
+  // glifo branco dentro do nó da trilha e do chip de estado
+  A.ICONE = Object.fromEntries(Object.keys(I.ESTADO).map(k => [k, I.icEstado(k, 32, 3)]));
+  A.chip = e => `<span class="st ${e}"><i aria-hidden="true">${I.icEstado(e, 12, 3.2)}</i>${R.ROTULO[e]}</span>`;
   A.num = n => String(n).replace('.', ',');
   A.plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
   A.lista = xs => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' e ' + xs[xs.length - 1];
@@ -71,7 +74,11 @@
     if (a.tema === 'claro') document.documentElement.dataset.theme = 'light';
     else if (a.tema === 'escuro') document.documentElement.dataset.theme = 'dark';
     else delete document.documentElement.dataset.theme;
+    const escuro = a.tema === 'escuro' || (a.tema !== 'claro' && matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('escuro', escuro);
+    const meta = document.querySelector('meta[name=theme-color]'); if (meta) meta.content = escuro ? '#15191b' : '#0fa292';
   }
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => aplicarAjustes()); } catch (e) {}
   A.aplicarAjustes = aplicarAjustes;
 
   /* ---------------- toast, modal e folha ---------------- */
@@ -171,26 +178,27 @@
     const rev = A.revisoesHoje().length;
     const dias = R.ultimos14(st).filter(d => d.on).length;
     const cj = R.idx().conjuntos[A.cjAtual()];
-    const m = cj ? A.mat(cj.materia) : { e: '📚', n: 'Matérias' };
+    const m = cj ? A.mat(cj.materia) : { e: I.ic('livros', 20), n: 'Matérias' };
+    const mi = cj ? I.icMat(cj.materia, 24) : I.ic('livros', 24);
     const topo = document.getElementById('topo');
     if (topo) topo.innerHTML = `
-      <button class="stat" data-a="materia" aria-label="Trocar matéria: ${m.n}"><span class="e">${m.e}</span>${m.n}</button>
+      <button class="stat mat-atual" data-a="materia" aria-label="Trocar matéria: ${m.n}" style="--m:${cj ? m.c : 'var(--brand)'}"><span class="e">${mi}</span>${m.n}${I.ic('baixo', 16, 2.6)}</button>
       <span class="linha" style="gap:2px;flex-wrap:nowrap">
-        <a class="stat laranja" href="#/perfil" title="Dias com prática nas últimas 2 semanas"><span class="e">📅</span>${dias}</a>
-        <a class="stat azul" href="#/revisar" title="Revisões para hoje"><span class="e">🔁</span>${rev}</a>
-        <a class="stat verde" href="#/ajustes" title="Dias até a prova"><span class="e">🎯</span>${R.horizonte(st)}d</a></span>`;
+        <a class="stat laranja" href="#/perfil" title="Dias com prática nas últimas 2 semanas"><span class="e">${I.ic('calendario', 22)}</span>${dias}</a>
+        <a class="stat azul" href="#/revisar" title="Revisões para hoje"><span class="e">${I.ic('revisar', 22, 2.4)}</span>${rev}</a>
+        <a class="stat verde" href="#/ajustes" title="Dias até a prova"><span class="e">${I.ic('alvo', 22)}</span>${R.horizonte(st)}d</a></span>`;
     const rail = document.getElementById('rail');
     if (rail) {
       const prox = R.proximaRevisao(st);
       const trof = Object.keys(st.chefes || {}).length;
       rail.innerHTML = `
-        <div class="entre"><button class="stat" data-a="materia"><span class="e">${m.e}</span>${m.n} ▾</button>
-          <span class="linha" style="gap:2px"><a class="stat laranja" href="#/perfil" title="Dias com prática nas últimas 2 semanas"><span class="e">📅</span>${dias}</a><a class="stat azul" href="#/revisar" title="Revisões para hoje"><span class="e">🔁</span>${rev}</a></span></div>
-        <section class="box"><h3>Revisões de hoje</h3>
+        <div class="entre"><button class="stat mat-atual" data-a="materia" style="--m:${cj ? m.c : 'var(--brand)'}"><span class="e">${mi}</span>${m.n}${I.ic('baixo', 16, 2.6)}</button>
+          <span class="linha" style="gap:2px"><a class="stat laranja" href="#/perfil" title="Dias com prática nas últimas 2 semanas"><span class="e">${I.ic('calendario', 22)}</span>${dias}</a><a class="stat azul" href="#/revisar" title="Revisões para hoje"><span class="e">${I.ic('revisar', 22, 2.4)}</span>${rev}</a></span></div>
+        <section class="box"><h3 class="h-ic"><span class="ic-azul">${I.ic('revisar', 22, 2.4)}</span>Revisões de hoje</h3>
           ${rev ? `<p class="muted">${A.plural(rev, 'tópico está', 'tópicos estão')} no ponto de revisar: lembrar ainda dá, mas já pede esforço.</p><a class="cp-btn" href="#/briefing">Revisar agora</a>`
             : `<p class="muted">Tudo em dia.${prox ? ` Próxima revisão: <b>${D.fmtData(prox, true)}</b>.` : ''}</p>`}</section>
-        <section class="box"><h3>🎯 ${esc(st.perfil.provaNome || 'Prova')}</h3><p class="muted">Faltam <b>${R.horizonte(st)} dias</b>. Seu ritmo: ${A.plural(st.perfil.ritmo || 3, 'rodada', 'rodadas')} por partida. Hoje: ${R.minutosHoje(st)} min.</p></section>
-        <section class="box"><h3>🏆 Unidades concluídas</h3><p class="muted">${trof} de ${R.ativos(st).length}. Cada unidade termina num Chefão, e vencer ele dá troféu e roupa nova para a Capi.</p></section>
+        <section class="box"><h3 class="h-ic"><span class="ic-verde">${I.ic('alvo', 22)}</span>${esc(st.perfil.provaNome || 'Prova')}</h3><p class="muted">Faltam <b>${R.horizonte(st)} dias</b>. Seu ritmo: ${A.plural(st.perfil.ritmo || 3, 'rodada', 'rodadas')} por partida. Hoje: ${R.minutosHoje(st)} min.</p></section>
+        <section class="box"><h3 class="h-ic"><span class="ic-ouro">${I.ic('trofeu', 22)}</span>Unidades concluídas</h3><p class="muted">${trof} de ${R.ativos(st).length}. Cada unidade termina num Chefão, e vencer ele dá troféu e roupa nova para a Capi.</p></section>
         <p class="muted" style="font-size:12px">Sem sorte, sem moeda, sem ranking. <a href="#/regras">Como o jogo decide</a></p>`;
     }
   }
@@ -202,10 +210,10 @@
       <div class="shell">
         <aside class="side" aria-label="Navegação">
           <a class="brand" href="#/aprender">${capiscoLogo({ size: 30 })}</a>
-          <a class="nav" href="#/aprender" data-nav="aprender"><span class="ic">🏠</span>Aprender</a>
-          <a class="nav" href="#/revisar" data-nav="revisar"><span class="ic">🔁</span>Revisar</a>
-          <a class="nav" href="#/perfil" data-nav="perfil"><span class="ic">👤</span>Perfil</a>
-          <a class="nav" href="#/mais" data-nav="mais"><span class="ic">☰</span>Mais</a>
+          <a class="nav" href="#/aprender" data-nav="aprender"><span class="ic">${I.ic('trilha', 26, 2.3)}</span>Aprender</a>
+          <a class="nav" href="#/revisar" data-nav="revisar"><span class="ic">${I.ic('revisar', 26, 2.3)}</span>Revisar</a>
+          <a class="nav" href="#/perfil" data-nav="perfil"><span class="ic">${I.ic('capi', 26, 2.3)}</span>Perfil</a>
+          <a class="nav" href="#/mais" data-nav="mais"><span class="ic">${I.ic('mais', 26, 2.3)}</span>Mais</a>
           <span class="grow"></span>
           <small>Seus dados ficam neste aparelho · regras v${R.versao}</small>
         </aside>
@@ -216,10 +224,10 @@
         <aside class="rail" id="rail" aria-label="Resumo"></aside>
       </div>
       <nav class="tabs" aria-label="Abas">
-        <a href="#/aprender" data-nav="aprender"><span class="ic">🏠</span>Aprender</a>
-        <a href="#/revisar" data-nav="revisar"><span class="ic">🔁</span>Revisar</a>
-        <a href="#/perfil" data-nav="perfil"><span class="ic">👤</span>Perfil</a>
-        <a href="#/mais" data-nav="mais"><span class="ic">☰</span>Mais</a>
+        <a href="#/aprender" data-nav="aprender"><span class="ic">${I.ic('trilha', 26, 2.3)}</span>Aprender</a>
+        <a href="#/revisar" data-nav="revisar"><span class="ic">${I.ic('revisar', 26, 2.3)}</span>Revisar</a>
+        <a href="#/perfil" data-nav="perfil"><span class="ic">${I.ic('capi', 26, 2.3)}</span>Perfil</a>
+        <a href="#/mais" data-nav="mais"><span class="ic">${I.ic('mais', 26, 2.3)}</span>Mais</a>
       </nav>`;
     document.addEventListener('click', e => { if (e.target.closest('[data-a="materia"]')) A.trocarMateria(); });
     aplicarAjustes();

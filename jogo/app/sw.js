@@ -1,5 +1,5 @@
 /* CAPISCO · service worker: guarda o jogo no aparelho para funcionar offline (persistência local, TCC 5.6) */
-const VERSAO = 'capisco-v2';
+const VERSAO = 'capisco-v3';
 const ARQUIVOS = [
  "./",
  "index.html",
@@ -9,6 +9,7 @@ const ARQUIVOS = [
  "icone-512.png",
  "icone-maskable.png",
  "../ui/jogo.css",
+ "../ui/icones.js",
  "../ui/base.js",
  "../ui/telas.js",
  "../ui/partida.js",
