@@ -513,3 +513,45 @@ body.sem-mov .cp-btn.espera[disabled]::after{animation:none;transform:scaleX(1);
 .pe .resolucao{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:4px;font-weight:600}
 .caixa-legenda{font-family:var(--font-body)!important;font-weight:700}
 .escuro .cp-btn.espera[disabled]{background:transparent;border:2px solid var(--line-strong);box-shadow:none}
+
+/* ===== v2.3 · layout no Safari (iPhone) ===== */
+/* SVG absoluto não estica só com inset no WebKit: tamanho explícito */
+.anel{inset:auto;top:-9px;left:-9px;width:calc(100% + 18px);height:calc(100% + 18px)}
+.trilha svg.caminho{top:0;left:0}
+/* Capi ao lado do nó atual, na altura dele */
+.passo.atual .capi-aqui{top:42px}
+/* rótulos sem fundo: o caminho já não passa por baixo deles */
+.passo .nome,.passo .cx{background:none;padding:0 4px}
+/* campos nunca maiores que o contêiner; data no iOS tem largura mínima própria */
+.cp-input{box-sizing:border-box;max-width:100%;min-width:0}
+input[type=date].cp-input{-webkit-appearance:none;appearance:none;display:block;width:100%;text-align:left}
+input[type=date].cp-input::-webkit-date-and-time-value{text-align:left;margin:0}
+input[type=date].cp-input::-webkit-datetime-edit{padding:0}
+.campo{min-width:0}
+/* botões do iOS herdam padding e cor próprios */
+button{-webkit-tap-highlight-color:transparent}
+.no{padding:0;-webkit-appearance:none;appearance:none}
+/* respiro entre os nós da trilha: o caminho pontilhado aparece entre eles, nunca sob o texto */
+.trilha{gap:24px}
+/* barras fixas sempre acima do conteúdo rolado (balão aberto inclusive) */
+.topo{z-index:60}.tabs{z-index:60}
+.unidade{z-index:40}
+.passo:has(.pop),.passo.aberto{z-index:35}
+/* iPhone com notch: o topo cresce com a área segura, o banner gruda logo abaixo dele */
+body.app .unidade{top:calc(68px + env(safe-area-inset-top))}
+@media (max-width:900px){.unidade{top:calc(68px + env(safe-area-inset-top))}}
+/* alvos de toque */
+.stat.mat-atual{min-height:44px}
+.seg button{min-height:44px}
+.bv .cp-btn.ghost.sm[data-a=ant]{min-width:44px}
+.cp-toggle{flex:none}
+/* Capi do nó atual: base alinhada com a base do nó, sem encostar no nome */
+.passo.atual .capi-aqui{top:24px}
+@media (max-width:520px){.passo.atual .capi-aqui{top:44px}}
+/* folha de matérias em tela estreita */
+.mat img{flex:none}
+.mat > span{min-width:0;flex:1}
+.mat b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folha .cp-btn{text-align:center;justify-content:center}
+/* balão: o deslocamento que centraliza fica na propriedade translate, separado da animação (que mexe só em transform) */
+.pop{transform:none;translate:calc(-50% - var(--dx) * var(--k) * 1px) 0}

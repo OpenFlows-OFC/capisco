@@ -205,6 +205,7 @@
     document.body.classList.toggle('fim', false);
     const velho = document.getElementById('tela');
     const main = velho.cloneNode(false);
+    main.removeAttribute('style'); // estilos temporários (ex.: espaço do balão aberto) não passam para a próxima tela
     velho.replaceWith(main);
     if (A._tecla) { document.removeEventListener('keydown', A._tecla); A._tecla = null; }
     window.onresize = null;

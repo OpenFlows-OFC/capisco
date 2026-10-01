@@ -62,7 +62,7 @@
     const passos = ids.map((id, i) => {
       const e = estados[i], x = desloc[i % desloc.length], T = R.topico(id), chefe = R.ehChefe(id);
       const cx = (s.topicos[id] || {}).caixa || 0;
-      const lado = x > 0 ? 'right:calc(100% - 6px)' : 'left:calc(100% - 6px)';
+      const lado = x > 0 ? 'right:calc(50% + 46px)' : 'left:calc(50% + 46px)';
       const legenda = chefe ? { vencido: 'Vencido', disponivel: 'Liberado', bloqueado: 'Bloqueado' }[R.chefeEstado(s, cj.id)]
         : e === 'bloqueado' ? 'Bloqueado' : e === 'novo' ? 'Novo' : e === 'pratica' ? 'Em prática' : e === 'vencido' ? 'Revisão atrasada' : e === 'agendado' ? 'Revisar hoje' : `Nível ${cx} · ${R.NIVEL[cx]}`;
       return `<div class="passo ${i === atual ? 'atual' : ''}" data-i="${i}" data-x="${x}" style="--dx:${x}">
@@ -85,9 +85,16 @@
         const desenhar = () => {
           const tr = el.querySelector('#trilha'); if (!tr) return;
           const svg = tr.querySelector('svg'), meio = tr.clientWidth / 2, k = +getComputedStyle(tr).getPropertyValue('--k') || 1;
-          const pts = [...tr.querySelectorAll('.passo')].map(p => { const n = p.querySelector('.no'); return [meio + +p.dataset.x * k, p.offsetTop + n.offsetTop + n.offsetHeight / 2]; });
-          let d = `M${pts[0][0]} ${pts[0][1]}`;
-          for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], my = (y0 + y1) / 2; d += ` C${x0} ${my} ${x1} ${my} ${x1} ${y1}`; }
+          // o caminho liga o fim dos rótulos de um nó ao topo do seguinte: nunca passa por baixo de texto
+          const ps = [...tr.querySelectorAll('.passo')];
+          let d = '';
+          for (let i = 1; i < ps.length; i++) {
+            const a = ps[i - 1], b = ps[i], rot = a.querySelector('.cx') || a.querySelector('.no'), nb = b.querySelector('.no');
+            const x0 = meio + +a.dataset.x * k, y0 = a.offsetTop + rot.offsetTop + rot.offsetHeight + 8;
+            const x1 = meio + +b.dataset.x * k, y1 = b.offsetTop + nb.offsetTop - (b.classList.contains('atual') ? 42 : 8);
+            if (y1 - y0 < 8) continue;
+            const my = (y0 + y1) / 2; d += `M${x0} ${y0} C${x0} ${my} ${x1} ${my} ${x1} ${y1} `;
+          }
           svg.innerHTML = `<path d="${d}" fill="none" stroke="var(--line)" stroke-width="8" stroke-linecap="round" stroke-dasharray="1 16"/>`;
         };
         requestAnimationFrame(desenhar);
