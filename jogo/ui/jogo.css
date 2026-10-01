@@ -436,3 +436,80 @@ details.dobra>div{padding:0 0 14px;display:flex;flex-direction:column;gap:10px}
 .cp-opt.errada[aria-checked="true"]{border-color:var(--line-strong);background:var(--bg-soft);color:var(--text-muted);box-shadow:0 4px 0 var(--line-strong)}
 .cp-opt.errada .key{border-color:var(--line-strong);color:var(--text-muted)}
 .cp-opt.certa .key{border-color:var(--brand);color:var(--ok-text)}
+
+/* ===== v2.2 · ajustes da revisão adversarial ===== */
+/* contraste AA do texto secundário (#8a857d dava 3,6:1 no branco) */
+:root{--text-muted:#6b665f}
+.escuro{--text-muted:#9aa4a8}
+body.contraste{--text-muted:var(--n-700)}
+/* alvos de toque de no mínimo 44px */
+.cp-btn.sm{min-height:44px}
+.l-topo .sair{width:44px;height:44px}
+.volta{display:inline-flex;align-items:center;min-height:44px}
+.pop .det{display:flex;align-items:center;justify-content:center;min-height:44px}
+/* barra da partida: a rodada atual enche conforme as tentativas; contador ao lado */
+.rodadas i.agora{background:linear-gradient(90deg,var(--brand) calc(var(--p,0)*100%),var(--rio-200) 0)}
+.escuro .rodadas i.agora{background:linear-gradient(90deg,var(--brand) calc(var(--p,0)*100%),var(--rio-700) 0)}
+.l-topo .tent{flex:none;font:800 13px var(--font-mono);color:var(--text-muted);min-width:34px;text-align:right}
+/* alternativas: texto e marca de certa/sua escolha */
+.cp-opt .t{flex:1}
+.cp-opt .marca{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%}
+.cp-opt.certa .marca{background:var(--brand);color:#fff}
+.cp-opt.errada .marca{background:var(--line-strong);color:var(--surface)}
+/* "Continuar" esperando a leitura: barra que enche, em vez de botão cinza que parece quebrado */
+.cp-btn.espera[disabled]{position:relative;overflow:hidden;opacity:1;background:var(--bg-soft);color:var(--text-soft);box-shadow:0 4px 0 var(--line);cursor:progress}
+.cp-btn.espera[disabled]::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;background:var(--brand);transform-origin:left;animation:cp-espera var(--t,1200ms) linear both}
+@keyframes cp-espera{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+body.sem-mov .cp-btn.espera[disabled]::after{animation:none;transform:scaleX(1);opacity:.4}
+/* explicação sempre aberta */
+.pe .porque{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.pe .porque > b{font:900 12px var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+.pe .porque p{margin:0}
+/* rodapé fixo acompanha o teclado do celular */
+.pe{bottom:var(--teclado,0px)}
+/* modal: fundo mais escuro no tema escuro e botões iguais lado a lado */
+.escuro .modal-fundo{background:rgba(0,0,0,.72)}
+.modal .acoes.iguais{flex-direction:row}
+.modal .acoes.iguais .cp-btn{flex:1}
+/* trilha: rótulos legíveis sobre o caminho pontilhado */
+.passo .nome,.passo .cx{background:var(--bg);padding:1px 8px;border-radius:8px;position:relative;z-index:1}
+.passo .nome{margin-top:4px}
+.pop .vit{font-size:14px}
+/* recompensa não entregue: cinza com cadeado, sem opacidade que apaga o texto */
+.premio.nao{border-style:dashed;background:var(--bg-soft)}
+.premio.nao .ico{color:var(--text-muted)}
+.premio.nao .tx{color:var(--text-soft)}
+/* resumo da partida */
+.etapas.resumo{width:100%;max-width:460px;text-align:left}
+/* mini-mapa da unidade */
+.mini-wrap{display:flex;flex-direction:column;gap:6px}
+.mini-wrap small{font:800 12px var(--font-body);color:var(--text-muted)}
+.mini-mapa{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center}
+.mini-wrap .mini-mapa{justify-content:flex-start}
+.mini-mapa i{width:16px;height:16px;border-radius:5px;background:var(--line)}
+.mini-mapa i.consolidado{background:var(--reward)}
+.mini-mapa i.agendado{background:var(--sched)}
+.mini-mapa i.vencido{background:var(--due)}
+.mini-mapa i.pratica{background:var(--brand)}
+.mini-mapa i.novo{background:var(--new)}
+.mini-mapa i.chefe{width:22px;height:22px;display:grid;place-items:center;border-radius:7px;background:var(--bg-soft);color:var(--text-muted)}
+.mini-mapa i.chefe.disponivel{background:var(--reward-soft);color:var(--tang-700)}
+.mini-mapa i.chefe.vencido{background:var(--reward);color:#fff}
+.encerra .mini-mapa i{background:rgba(255,255,255,.25)}
+.encerra .mini-mapa i.consolidado{background:var(--reward)}
+.encerra .mini-mapa i.agendado,.encerra .mini-mapa i.vencido{background:#7cc4f8}
+.encerra .mini-mapa i.pratica{background:var(--rio-300)}
+/* aviso de partida em andamento */
+.aviso-partida{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-radius:var(--r-lg);background:var(--sched-soft);color:var(--ceu-600);font:800 14px var(--font-body);text-decoration:none}
+.escuro .aviso-partida{color:#7cc4f8}
+/* topo: rótulo pequeno embaixo do número */
+.stat .v{display:flex;flex-direction:column;align-items:flex-start;line-height:1}
+.stat .v small{font:800 10px var(--font-body);color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+.topo{overflow:hidden}
+.topo .mat-atual{min-width:0;flex:0 1 auto}
+.topo .mat-nome{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topo > .linha{flex:none}
+@media (max-width:420px){.topo{padding-left:8px;padding-right:8px;gap:4px}.topo .stat{padding:6px 5px;gap:4px}.topo .stat .v small{font-size:9px;letter-spacing:.02em}.topo .mat-nome{max-width:72px}}
+.pe .resolucao{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:4px;font-weight:600}
+.caixa-legenda{font-family:var(--font-body)!important;font-weight:700}
+.escuro .cp-btn.espera[disabled]{background:transparent;border:2px solid var(--line-strong);box-shadow:none}
