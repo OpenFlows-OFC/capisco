@@ -23,7 +23,14 @@ async function parteA(motor, tema) {
     confere(/dias estudados/.test(await U.texto(pg)), 'constância com "N dias estudados"');
     confere((await pg.$('.linha-data .pr-risquinhos line')) !== null && (await pg.$('.chama')) === null, 'risquinhos (sem chama) na linha da data');
     await cap(pg, 'hoje-exemplo', true);
-    if (vm.bloco && vm.bloco.atrasada) confere(await tem(vm.bloco.atrasada), 'linha da revisão atrasada');
+    // atraso: um só recado. Se o "Hoje vence" do topo já conta as atrasadas, o bloco não repete a linha;
+    // e o marca-texto fica só no que vence hoje (atraso em texto normal, sem cobrança em destaque)
+    const vh = vm.venceHoje;
+    if (vh && vh.atrasadas) {
+      confere(await tem(vh.vence), 'aviso das revisões atrasadas no topo');
+      if (vm.bloco && vm.bloco.atrasada) confere(!(await tem(vm.bloco.atrasada)), 'atraso sem repetir no bloco da missão');
+      if (!vh.hoje) confere((await pg.$('.vence-hoje .grifo')) === null, 'atraso sem marca-texto');
+    } else if (vm.bloco && vm.bloco.atrasada) confere(await tem(vm.bloco.atrasada), 'linha da revisão atrasada');
 
     // missão do exemplo: revisão(ões) e mão de cards
     await pg.click('[data-ev="COMECAR"]');
@@ -39,7 +46,8 @@ async function parteA(motor, tema) {
           await U.escolher(pg, await U.erradaDe(pg, 'E'));
           await pg.waitForSelector('.feedback');
           const t = await U.texto(pg);
-          confere(/A revisão de .+ volta para amanhã\. Seus dias estudados e seu histórico continuam\./.test(t), 'revisão errada: texto de c.3h');
+          // o núcleo diz quando a revisão volta com o dia ("volta amanhã, qua 18/11." ou "volta na sex, 20/11.")
+          confere(/A revisão d[eoa] .+ volta (amanhã|n[ao] ).+\. Seus dias estudados e seu histórico continuam\./.test(t), 'revisão errada: texto de c.3h');
           confere(!/perdeu/i.test(t), 'revisão errada sem "perdeu"');
           confere((await pg.$('.nivel i.novo')) === null, 'nível que desce sem animação');
           await cap(pg, 'revisao-errada', true);
@@ -106,7 +114,7 @@ async function parteA(motor, tema) {
           await pg.waitForTimeout(150);
           await cap(pg, 'hoje-folga-estudar-mesmo-assim', true);
         }
-        if (chave === 'retorno') confere(/revis(ão passou|ões passaram) para hoje; a missão de hoje tem só revisões\./.test(await U.texto(pg)), 'modo retorno: texto');
+        if (chave === 'retorno') confere(/a missão tem só revisões\./.test(await U.texto(pg)), 'modo retorno: texto');
         if (chave === 'questaoDoDia') confere(/questões dos capítulos que você já abriu|questão dos capítulos que você já abriu/.test(await U.texto(pg)), 'Questão do dia: texto');
       }
     }

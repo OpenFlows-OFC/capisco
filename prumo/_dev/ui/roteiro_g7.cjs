@@ -39,7 +39,7 @@ async function roteiro(motor, tema) {
     await pg.click('#folha-raiz .folha-pe [data-acao="fecharFolha"]');
     await pg.click('[data-folha="porQue"]'); await cap(pg, 'por-que');
     await pg.click('[data-acao="verRegraPorQue"]'); await cap(pg, 'ver-a-regra');
-    confere(await tem('R8 sim'), 'ver a regra: "R8 sim"');
+    confere(/\d+\. sim: /.test(await U.texto(pg)), 'ver a regra: a linha da regra que decidiu ("N. sim: …")');
     await pg.click('#folha-raiz .folha-pe [data-acao="fecharFolha"]');
     await pg.waitForTimeout(150);
     confere(!(await pg.$('#folha-raiz .folha')), 'folha fechada');
@@ -74,12 +74,15 @@ async function roteiro(motor, tema) {
     await pg.click('[data-acao="termineiLer"]');
     await pg.waitForSelector('.alternativas');
     confere(await tem('Confira a p. 1'), 'checagem da p. 1');
-    confere(await tem('Isso fica só no seu celular. Ninguém da escola vê.'), 'aviso da primeira checagem');
+    confere(await tem('Isso fica só neste aparelho. Ninguém da escola vê.'), 'aviso da primeira checagem');
     await cap(pg, 'checagem-p1');
     await U.responderCerta(pg);
     await pg.waitForSelector('.feedback');
     confere(await tem('Certa.'), 'checagem certa');
-    confere((await pg.$('.casa.cheia')) !== null && (await tem('Para fechar: 2 certas seguidas, falta 1')), 'medidor: checagem cheia e "Para fechar: 2 certas seguidas, falta 1"');
+    const mdChecagem = await pg.evaluate(() => { const v = window.__prumo.nucleo.tela().vm; const t = v && (v.topo || {}); return t.medidor ? t.medidor.texto : null; });
+    console.log(`  [${motor} ${tema}] medidor depois da checagem: ${mdChecagem}`);
+    // a frase do medidor é do núcleo (hoje: "Falta acertar uma questão do Enem", a casa que falta); a tela mostra a que vier
+    confere((await pg.$('.casa.cheia')) !== null && !!mdChecagem && (await tem(mdChecagem)), 'medidor: checagem cheia e a frase do que falta');
     confere((await pg.getAttribute('[data-continuar]', 'aria-disabled')) === 'true', 'intervalo deliberativo: Continuar começa travado');
     confere(await tem('Leia a explicação'), '"Leia a explicação" durante a pausa');
     await cap(pg, 'feedback-checagem');
@@ -173,7 +176,7 @@ async function roteiro(motor, tema) {
     confere(await tem('Pronto por hoje'), 'título do colofão');
     confere(await tem('1 dia estudado'), '"1 dia estudado"');
     confere(await tem('O capítulo Parte fixa e parte que varia entrou no nível 1 de 5. Próxima revisão: amanhã'), 'linha do nível novo');
-    confere(await tem('Amanhã você vê se acertou a pergunta de entrada da p. 2.'), 'gancho do próximo dia');
+    confere(await tem('Amanhã você vê se acertou a pergunta antes da p. 2.'), 'gancho do próximo dia');   // núcleo: "pergunta antes da p. N"
     confere((await pg.$('.pr-visto')) !== null && /\d\d\/\d\d\/\d{4}/.test(await pg.textContent('.pr-visto-data')), 'visto do dia com a data dd/mm/aaaa');
     await cap(pg, 'pronto-por-hoje', true);
     const nt = await U.tentativas(pg);

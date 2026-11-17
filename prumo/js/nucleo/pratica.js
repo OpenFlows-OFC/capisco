@@ -11,7 +11,7 @@
    (recomendador.js) e acrescenta as regras P1–P3 dos tópicos.
    ========================================================= */
 import * as R from './relogio.js';
-import { criarMotor, NIVEL } from './motor.js';   // NIVEL: só reexportado (chave interna)
+import { criarMotor, NIVEL, revisaoAtrasada } from './motor.js';   // NIVEL: só reexportado (chave interna)
 import { montarMissao, MIN } from './recomendador.js';
 import { capacidade } from './plano.js';
 
@@ -39,7 +39,20 @@ const LICENCA_INEP = 'https://creativecommons.org/licenses/by-nd/3.0/legalcode';
 export const SEP = ':';   // id de item de prática: '<tópico>:<questão>' (ex.: 'mat-porcentagem:enem-2023-143')
 /** Quantas questões do Enem cabem numa rodada de tópico, pelos minutos do plano. */
 export const QUESTOES_POR_MINUTOS = { 15: 3, 25: 4, 40: 6 };
-export const MIN_TEORIA = 6;   // estimativa da equipe para ler a teoria (min)
+export const MIN_TEORIA = 6;   // rever a apostila já lida (min); a primeira leitura usa minutosApostila()
+
+/** Minutos para ler a apostila pela primeira vez: palavras/140 + 1,5 por exemplo resolvido (mínimo 5).
+ *  É a mesma conta da capa da apostila ("cerca de N min"); o view model da teoria leva o número pronto. */
+export function minutosApostila(te) {
+  const secoes = Array.isArray(te && te.secoes) ? te.secoes : [];
+  const s = x => (Array.isArray(x) ? x.filter(y => typeof y === 'string') : []);
+  let palavras = 0, nEx = 0;
+  for (const x of secoes) {
+    palavras += s(x && x.paragrafos).join(' ').split(/\s+/).length;
+    nEx += [x && x.exemplo, ...(x && Array.isArray(x.exemplos) ? x.exemplos : [])].filter(e => e && typeof e.enunciado === 'string').length;
+  }
+  return Math.max(5, Math.round(palavras / 140 + nEx * 1.5));
+}
 
 const texto = (x, max = 4000) => (typeof x === 'string' ? x.slice(0, max) : '');
 const curto = t => String(t || '').split(':')[0].trim();
@@ -93,6 +106,8 @@ export class Praticas {
       alternativas: LETRAS.filter(l => typeof q.alternativas[l] === 'string').map(l => ({ letra: l, texto: q.alternativas[l], html: true, certa: l === q.gabarito, falta: l === q.gabarito ? null : texto((q.faltou || {})[l], 800) || null, paragrafo: null })),
       gabarito: q.gabarito, explicacao: texto(q.explicacao, 2000), rodape: fonte, atribuicao: fonte, licencaUrl: LICENCA_INEP,
       dif: Number.isFinite(q.b) ? q.b : 0, nivel: q.nivel || null, habilidade: q.habilidade || null,
+      // seção da apostila que a questão cobra (1, 2…), quando o conteúdo informa: "Rever a apostila" abre nela
+      secao: Number.isInteger(q.secao) && q.secao >= 1 ? q.secao : null,
     };
   }
   /** A pergunta de antes da teoria, no mesmo formato (sem cabeçalho de caderno: é da equipe). */
@@ -121,6 +136,8 @@ export class Praticas {
       opcoes: item.alternativas.map(a => ({ t: a.texto, ok: a.certa, erro: a.falta || undefined })) };
   }
   questoes(id) { return ((this._t[id] || {}).itens || []).map(x => x.id); }
+  /** Minutos da primeira leitura da apostila do tópico (a conta da capa). */
+  minutosTeoria(id) { const t = this._t[id]; if (!t) return MIN_TEORIA; if (t.minTeoria == null) t.minTeoria = minutosApostila(t.teoria); return t.minTeoria; }
 }
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -169,14 +186,14 @@ export function passoRevisaoPratica(st, prat, id, d, reservados) {
   if (!q) return null;
   reservados.add(q);
   const t = st.topicos[id];
-  return { t: 'revisao', fonte: 'pratica', id: q, cap: id, papel: 'aplicar', origem: 'enem', atrasada: !!(t && t.proxima && t.proxima < d), motivo: visto(st, q) ? 'questão vista há mais tempo' : 'questão do Enem inédita' };
+  return { t: 'revisao', fonte: 'pratica', id: q, cap: id, papel: 'aplicar', origem: 'enem', atrasada: !!(t && revisaoAtrasada(st, t.proxima, d)), motivo: visto(st, q) ? 'questão vista há mais tempo' : 'questão do Enem inédita' };
 }
 /** Regra da rodada de um tópico de prática, anunciada antes (b.3, versão do tópico: só questões do Enem). */
 export function regraTopico(titulo) {
   return {
     frase: 'Acerte 2 questões seguidas e o tópico entra no nível 1 de 5',
     insercao: 'Depois de um erro, valem as 2 próximas certas seguidas.',
-    ganho: `Acerte 2 questões seguidas: ${titulo} entra no nível 1 de 5.`,
+    ganho: `Acerte 2 questões seguidas e ${titulo} entra no nível 1 de 5.`,
     falta: 'Para fechar: 2 certas seguidas, falta 1',
   };
 }
@@ -207,9 +224,16 @@ export function passosTopico(st, prat, id, d, reservados = new Set(), { livre = 
   }
   return { passos: out, modo: extra ? 'antecipada' : 'rodada' };
 }
-export function estimarMinutosTopico(passos) {
+/** Minutos da apostila nesta missão: a primeira leitura pela conta da capa; depois de já ter
+ *  respondido questões do tópico, é rever (MIN_TEORIA), e dá para pular com "Já sei isto". */
+export function minutosDaTeoriaNaMissao(st, prat, id) {
+  if (!prat || !prat.existe(id)) return MIN_TEORIA;
+  const leu = st && ((st.topicos[id] || {}).tentativas || []).length > 0;
+  return leu ? Math.min(MIN_TEORIA, prat.minutosTeoria(id)) : prat.minutosTeoria(id);
+}
+export function estimarMinutosTopico(passos, prat = null, st = null) {
   let m = 0;
-  for (const p of passos) m += p.t === 'pre' ? MIN.pre : p.t === 'teoria' ? MIN_TEORIA : p.t === 'questao' ? MIN.enem : p.t === 'revisao' ? MIN.revisao : 0;
+  for (const p of passos) m += p.t === 'pre' ? MIN.pre : p.t === 'teoria' ? minutosDaTeoriaNaMissao(st, prat, p.cap) : p.t === 'questao' ? MIN.enem : p.t === 'revisao' ? MIN.revisao : 0;
   return m;
 }
 
@@ -222,7 +246,12 @@ export function estimarMinutosTopico(passos) {
  * Pura: não muda o estado. Mesmo estado e mesma data dão a mesma missão.
  */
 export function montarMissaoGeral(st, pack, M, prat, d, opts = {}) {
-  const base = montarMissao(st, pack, M, d, opts);
+  // as revisões de tópico que o P1 vai somar entram já nas frases da árvore do caderno ("Por que esta missão?")
+  const comTopicos = !!(prat && prat.ids().length && !opts.soCaderno && !opts.topico && !opts.livre);
+  const vencP1 = comTopicos ? vencidas(st, prat, d) : [];
+  const extraP1 = vencP1.slice(0, Math.max(1, Math.min(vencP1.length, capacidade(st))))
+    .map(id => ({ nome: prat.titulo(id), atrasada: revisaoAtrasada(st, st.topicos[id].proxima, d) }));
+  const base = montarMissao(st, pack, M, d, Object.assign({}, opts, { revisoesExtra: vencP1.length ? extraP1 : [] }));
   if (!prat || !prat.ids().length || opts.soCaderno) return base;
   if (base.tipo === 'folga' || base.tipo === 'pausa') return base;
   const trilha = base.trilha;
@@ -232,13 +261,16 @@ export function montarMissaoGeral(st, pack, M, prat, d, opts = {}) {
   const minutos = (st.perfil || {}).minutos || 25;
   const nome = id => prat.titulo(id);
   const comecados = prat.ids().filter(id => estadoTopico(st, prat, id, d) === 'pratica');
-  const topico = (id, regra, frase) => {
+  // revisões vencidas: as do caderno, que a árvore já pôs na missão, e as dos outros tópicos
+  const revsBase = base.passos.filter(p => p.t === 'revisao');
+  const revsDe = id => [...revsBase, ...vencP.filter(x => x !== id).map(x => passoRevisaoPratica(st, prat, x, d, reservados)).filter(Boolean)];
+  const topico = (id, regra, frase, { revisoes = [], fora = [] } = {}) => {
     const { passos } = passosTopico(st, prat, id, d, reservados, { livre: !!opts.livre });
-    if (opts.livre) return Object.assign({}, base, { regra: 'L', tipo: 'topico', cap: id, frase, passos, retorno: false, reta: null, minutos: estimarMinutosTopico(passos) });
-    const orc = minutos - estimarMinutosTopico(passos);
-    const revsP = vencP.filter(x => x !== id).slice(0, Math.max(0, Math.floor(orc / MIN.revisao))).map(x => passoRevisaoPratica(st, prat, x, d, reservados)).filter(Boolean);
-    const out = Object.assign({}, base, { regra, tipo: 'topico', cap: id, frase, passos: [...revsP.filter(p => p.atrasada), ...passos, ...revsP.filter(p => !p.atrasada)], retorno: false, reta: null });
-    out.minutos = estimarMinutosTopico(out.passos);
+    // fora: as revisões que ficam para o próximo dia de estudo porque, junto com um tópico, entram até capacidade(st)
+    const limpo = { retorno: false, reta: null, capAdiado: null, revisoesForaDoOrcamento: fora.length, foraPor: fora.length ? 'capacidade' : null, revisoesFora: fora.map(p => p.cap) };
+    if (opts.livre) return Object.assign({}, base, limpo, { regra: 'L', tipo: 'topico', cap: id, frase, passos, minutos: estimarMinutosTopico(passos, prat, st) });
+    const out = Object.assign({}, base, limpo, { regra, tipo: 'topico', cap: id, frase, passos: [...revisoes.filter(p => p.atrasada), ...passos, ...revisoes.filter(p => !p.atrasada)] });
+    out.minutos = estimarMinutosTopico(out.passos, prat, st);
     return out;
   };
   if (opts.livre && opts.topico && prat.existe(opts.topico)) {
@@ -247,18 +279,30 @@ export function montarMissaoGeral(st, pack, M, prat, d, opts = {}) {
   }
   if (opts.topico && prat.existe(opts.topico)) {
     r('P0', true, `Você escolheu ${nome(opts.topico)} em Estudar`);
-    return topico(opts.topico, 'P0', `Você escolheu estudar ${nome(opts.topico)} hoje.`);
+    // o tópico escolhido entra no lugar da missão, mas as revisões vencidas continuam (até a capacidade do dia);
+    // no corte, as mais atrasadas ficam e as que vencem hoje (ou depois) saem primeiro
+    const px = p => (st.topicos[p.cap] || {}).proxima || '';
+    const todas = revsDe(opts.topico).map((p, i) => ({ p, i })).sort((a, b) => (px(a.p) < px(b.p) ? -1 : px(a.p) > px(b.p) ? 1 : a.i - b.i)).map(x => x.p);
+    const lim = capacidade(st), cabem = todas.slice(0, lim), fora = todas.slice(lim);
+    const fraseP0 = `Você escolheu estudar ${nome(opts.topico)} hoje.${cabem.length ? ` ${cabem.length === 1 ? 'A revisão vencida continua' : `As ${cabem.length} revisões vencidas continuam`} na missão.` : ''}${fora.length ? ` ${fora.length === 1 ? 'Mais 1 fica' : `Mais ${fora.length} ficam`} para o próximo dia de estudo: junto com um tópico, entram até ${lim} revisões por dia.` : ''}`;
+    return topico(opts.topico, 'P0', fraseP0, { revisoes: cabem, fora });
   }
   const semNovo = !base.reta && (base.regra === 'R8' || base.regra === 'R9');
-  const comecado = semNovo ? comecados[0] : null;
-  if (r('P2', !!comecado, comecado ? `${nome(comecado)} começado e ainda não vencido` : comecados.length ? 'O caderno tem capítulo em curso ou está na reta final' : 'Nenhum tópico começado e não vencido')) {
-    return topico(comecado, 'P2', `Você começou ${nome(comecado)} e ainda não acertou duas seguidas. Hoje ele continua.`);
+  let comecado = semNovo ? comecados[0] : null, motivoP2 = null;
+  if (comecado) {
+    // a revisão vencida tem prioridade: o tópico só continua hoje se couber junto com as revisões
+    const n = revsBase.length + vencP.filter(x => x !== comecado).length;
+    const tTop = estimarMinutosTopico(passosTopico(st, prat, comecado, d, new Set(reservados)).passos, prat, st);
+    if (n && tTop + n * MIN.revisao > minutos) { motivoP2 = `${nome(comecado)} começado, mas as revisões vencidas não cabem junto nos seus ${minutos} min: elas vêm primeiro`; comecado = null; }
+  }
+  if (r('P2', !!comecado, comecado ? `${nome(comecado)} começado e ainda não vencido` : motivoP2 || (comecados.length ? 'O caderno tem capítulo em curso ou está na reta final' : 'Nenhum tópico começado e não vencido'))) {
+    return topico(comecado, 'P2', `Você começou ${nome(comecado)} e ainda não acertou duas seguidas. Hoje ele continua.`, { revisoes: revsDe(comecado) });
   }
   const areas = ((st.perfil || {}).areas || ['MT']);
   const livre = base.regra === 'R9' && base.tipo === 'questaoDoDia' && !vencP.length && !base.reta
     ? prat.ids().filter(id => areas.includes(prat.get(id).area) && estadoTopico(st, prat, id, d) === 'novo')[0] : null;
   if (r('P3', !!livre, livre ? `Nada novo no caderno; próximo tópico das suas áreas: ${nome(livre)}` : 'O caderno ainda tem o que fazer')) {
-    return topico(livre, 'P3', `Nada vence hoje e o caderno de Funções afins está em dia. Hoje: ${nome(livre)}, um tópico novo das matérias que você escolheu.`);
+    return topico(livre, 'P3', `Nada vence hoje e o caderno de Funções afins está em dia. Hoje: ${nome(livre)}, um tópico novo das matérias que você escolheu.`, { revisoes: revsDe(livre) });
   }
   if (r('P1', vencP.length > 0, vencP.length ? `${vencP.length === 1 ? 'Revisão vencida' : 'Revisões vencidas'} de tópico: ${vencP.map(nome).join(', ')}` : 'Nenhuma revisão de tópico vencida')) {
     const lim = Math.max(1, Math.min(vencP.length, capacidade(st)));
@@ -271,7 +315,7 @@ export function montarMissaoGeral(st, pack, M, prat, d, opts = {}) {
     const out = Object.assign({}, base, { passos });
     if (base.tipo === 'questaoDoDia' && !base.passos.some(p => p.t === 'dia')) out.tipo = 'revisoes';
     out.minutos = (base.minutos || 0) + revs.length * MIN.revisao;
-    out.frase = `${base.frase} ${revs.length === 1 ? `E a revisão de ${nome(revs[0].cap)}.` : `E as revisões de ${revs.map(p => nome(p.cap)).join(' e ')}.`}`;
+    // a frase da árvore já conta estas revisões (montarMissao recebeu revisoesExtra): nada a acrescentar
     return out;
   }
   return base;

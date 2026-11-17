@@ -1,14 +1,16 @@
 /* =========================================================
-   PRUMO · Prova do caderno (c.3i)                       [A COMPLETAR]
-   Versão simples, funcional, deixada pela equipe das telas do núcleo para o
-   agente da Prova completar (troféu em contorno e em latão com a animação
-   de 600 ms, selo, revisão visual). Reaproveita os componentes da missão.
+   PRUMO · Prova do caderno (c.3i)
+   Reaproveita os componentes da missão. A Prova vencida fica em carimbo (a
+   única cor de conquista; nada de latão fora do símbolo): o troféu anunciado
+   na abertura desce como o visto, com a taça, o nome do caderno e o dia, e
+   toca o som 'trofeu' na chegada (casca.js); o selo da matéria vem junto
+   quando é o primeiro troféu dela. O troféu fica no Caderno e no Perfil.
    Estados: prova (abertura) · provaPergunta · provaFeedback · provaTrecho ·
    provaResultado. Ver js/ui/LEIA.md.
    ========================================================= */
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, botaoContinuar, animarContinuar, prepararFiguras, questaoCab } from './componentes.js';
+import { enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, botaoContinuar, animarContinuar, prepararFiguras, ampliarFigura, questaoCab, trofeu } from './componentes.js';
 
 function topoProva(t) {
   return h`<header class="topo">
@@ -51,7 +53,7 @@ export function telaProva(ctx, t) {
         <form data-enviar="responder" data-chave="${k}" novalidate>${alternativasPergunta(vm.item.alternativas, marcada)}</form>
         ${rodape(vm.item.rodape, vm.item.licencaUrl)}</section></main>`,
       barra: h`<button type="button" class="botao botao-largo" data-acao="responder" data-chave="${k}" aria-disabled="${marcada ? 'false' : 'true'}">${vm.acao.rotulo}</button>`,
-      depois(raiz) { prepararFiguras(raiz.querySelector('#principal') || raiz, { aoAmpliar: el => ctx.abrirFolha('zoom', { html: el.outerHTML, zoom: 1 }, el) }); },
+      depois(raiz) { prepararFiguras(raiz.querySelector('#principal') || raiz, { aoAmpliar: el => ampliarFigura(ctx, el) }); },
     };
   }
   if (nome === 'provaFeedback' || nome === 'provaTrecho') {
@@ -72,13 +74,16 @@ export function telaProva(ctx, t) {
       depois(raiz) { const c = raiz.querySelector('#trecho-corpo'), a = document.getElementById(vm.ancora); if (c && a) c.scrollTop = a.offsetTop - 24; },
     };
   }
-  // provaResultado
+  // provaResultado: vencida, o troféu anunciado na abertura (carimbo, com o som 'trofeu' tocado pela casca na
+  // chegada) e o selo da matéria quando ele vem junto; não vencida, os capítulos que pesaram e a volta da Prova
+  const nova = ctx.ui.chave !== 'provaResultado';   // o carimbo desce só na primeira vez que a tela aparece
   return {
     chave: 'provaResultado', titulo: 'Prova do caderno',
     html: h`<main class="colofao">
       <h1 class="manchete colofao-titulo ${vm.venceu ? 'prova-vencida' : ''}" tabindex="-1" data-foco-inicial>${vm.titulo || 'Prova do caderno'}</h1>
-
       <p>${vm.texto}</p>
+      ${vm.trofeu ? trofeu(vm.trofeu, { novo: nova && vm.trofeu.novo }) : ''}
+      ${vm.trofeu ? h`<p>${vm.selo ? h`<strong>Selo de ${vm.selo.nome}:</strong> primeiro troféu da matéria. ` : ''}O troféu fica guardado no Caderno e no Perfil.</p>` : ''}
       ${vm.linhaRevisar ? h`<p>${vm.linhaRevisar}</p>` : ''}
       ${vm.volta ? h`<p class="texto-2">${vm.volta}</p>` : ''}
       <div class="fechar"><button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>

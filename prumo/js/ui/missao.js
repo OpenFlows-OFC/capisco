@@ -10,7 +10,7 @@ import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
 import {
   topo, enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, nivel,
-  botaoContinuar, animarContinuar, prepararFiguras, questaoCab, teoria, trilha,
+  botaoContinuar, animarContinuar, prepararFiguras, ampliarFigura, questaoCab, teoria, acompanharSumario, idDaAncora,
 } from './componentes.js';
 
 const CADERNO = new Set(['enem', 'equipe']);   // aí o cabeçalho "QUESTÃO 162" já é o título da tela
@@ -18,14 +18,31 @@ const CADERNO = new Set(['enem', 'equipe']);   // aí o cabeçalho "QUESTÃO 162
 const chaveSel = vm => `${vm.item.id}@${vm.topo.passo.n}`;
 const primeiraVez = (ctx, chave) => ctx.ui.chave !== chave;
 
+/**
+ * Trilha do tópico de prática (Aquecer → Apostila → Questões → Visto), em todo estado da missão do tópico.
+ * A fase e o "estudo por conta própria" vêm do núcleo (vm.fase, vm.livre); enquanto um estado não os traz,
+ * saem da própria missão (tipo 'topico' e a última resposta), sem calcular regra nenhuma.
+ */
+export function trilhaDe(ctx, vm, nome) {
+  const m = ctx.nucleo.st && ctx.nucleo.st.missao;
+  const livre = vm && typeof vm.livre === 'boolean' ? vm.livre : !!(m && m.livre);
+  let fase;
+  if (vm && Object.prototype.hasOwnProperty.call(vm, 'fase')) fase = vm.fase;
+  else if (!m || m.tipo !== 'topico') fase = null;
+  else if (nome === 'encerramento') fase = 'fim';
+  else if (nome === 'fimDaRodada') fase = 'questoes';
+  else {
+    const u = m.ultima;
+    // a resposta do aquecimento sai depois da apostila: a etapa já é Questões, como no núcleo (_feedbackPratica)
+    fase = u && u.fonte === 'pratica' ? (!u.revela && u.t === 'pre' ? 'aquecer' : 'questoes') : null;
+  }
+  return fase ? { fase, livre } : null;
+}
+
 function figuras(ctx, raiz, item) {
   prepararFiguras(raiz.querySelector('#principal') || raiz, {
     textoFalha: (item && item.imagemFalhou) || undefined,
-    aoAmpliar: el => {
-      const c = el.cloneNode(true);
-      c.removeAttribute('role'); c.removeAttribute('tabindex'); c.removeAttribute('aria-label'); c.classList.remove('ampliavel');
-      ctx.abrirFolha('zoom', { html: c.outerHTML, zoom: 1 }, el);
-    },
+    aoAmpliar: el => ampliarFigura(ctx, el),
   });
 }
 
@@ -50,8 +67,7 @@ function pergunta(ctx, vm) {
     chave: `pergunta:${k}`,
     titulo: vm.rotulo,
     html: h`<main class="missao">
-      ${topo(vm.topo, { rotuloDaTela: vm.rotulo })}
-      ${trilha(vm.fase)}
+      ${topo(vm.topo, { rotuloDaTela: vm.rotulo, trilha: trilhaDe(ctx, vm, 'pergunta') })}
       <section class="pergunta">
         ${cabecaPergunta(vm)}
         ${vm.avisoInserida ? h`<p class="pr-recado aviso-inserida">${vm.avisoInserida}</p>` : ''}
@@ -83,16 +99,15 @@ function notaForm(n) {
 function leituraTeoria(ctx, vm) {
   return {
     chave: `teoria:${vm.topo.passo.n}:${vm.id}`,
-    titulo: `Teoria: ${vm.titulo}`,
+    titulo: `Apostila: ${vm.titulo}`,
     html: h`<main class="missao missao-leitura">
-      ${topo(vm.topo)}
-      ${trilha(vm.fase)}
+      ${topo(vm.topo, { trilha: trilhaDe(ctx, vm, 'leitura'), rotuloDaTela: vm.topo && vm.topo.etapa })}
       ${vm.faixa ? h`<p class="pr-recado" role="status">${vm.faixa}</p>` : ''}
       ${vm.jaSei ? h`<p class="ja-sei"><button type="button" class="link link-discreto" data-ev="${vm.jaSei.evento}">${vm.jaSei.rotulo}</button></p>` : ''}
       ${teoria(vm)}
       <div class="fim-leitura"><button type="button" class="botao botao-largo" data-ev="${vm.botao.evento}">${vm.botao.rotulo}</button></div>
     </main>`,
-    depois(raiz) { figuras(ctx, raiz); },
+    depois(raiz) { figuras(ctx, raiz); return acompanharSumario(raiz); },
   };
 }
 
@@ -153,7 +168,7 @@ function feedback(ctx, vm) {
     chave,
     titulo: 'Resultado',
     html: h`<main class="missao">
-      ${topo(vm.topo, { medidor: vm.medidor, rotuloDaTela: vm.rotulo })}
+      ${topo(vm.topo, { medidor: vm.medidor, rotuloDaTela: vm.rotulo, trilha: trilhaDe(ctx, vm, 'feedback') })}
       ${corpoFeedback(ctx, vm, { animar: nova })}
     </main>`,
     barra: botaoContinuar(vm.continuar),
@@ -191,29 +206,39 @@ function rolarAteAncora(raiz, ancora) {
   // o parágrafo fica a um quarto da folha: dá para ver o fim do anterior
   if (corpo && a) corpo.scrollTop = Math.max(0, a.getBoundingClientRect().top - corpo.getBoundingClientRect().top + corpo.scrollTop - Math.min(120, corpo.clientHeight * 0.18));
 }
+/** A seção da apostila que a questão cobrou fica no alto da folha (com uma folga de 16 px). */
+function rolarAteSecao(raiz, id) {
+  const corpo = raiz.querySelector('#trecho-corpo'), a = id && document.getElementById(id);
+  if (corpo && a) corpo.scrollTop = Math.max(0, a.getBoundingClientRect().top - corpo.getBoundingClientRect().top + corpo.scrollTop - 16);
+}
 function trecho(ctx, vm) {
   const fb = vm.feedback;
+  const tr = trilhaDe(ctx, fb, 'trecho');
   if (vm.teoria) {
+    // a âncora (a seção que a questão cobrou) vem do núcleo; sem ela, a folha abre no sumário, que leva a cada seção
+    const ancora = idDaAncora(vm.ancora != null ? vm.ancora : vm.secao);
     return {
-      chave: `trechoTeoria:${vm.id}`,
+      chave: `trechoTeoria:${vm.id}:${ancora || ''}`,
       titulo: vm.titulo,
-      html: h`<div inert aria-hidden="true"><main class="missao">${topo(fb.topo, { medidor: fb.medidor })}${corpoFeedback(ctx, fb, { foco: false })}</main></div>
+      html: h`<div inert aria-hidden="true"><main class="missao">${topo(fb.topo, { medidor: fb.medidor, rotuloDaTela: fb.rotulo, trilha: tr })}${corpoFeedback(ctx, fb, { foco: false })}</main></div>
         <div class="folha-fundo"><div class="folha folha-alta" role="dialog" aria-modal="true" aria-labelledby="trecho-titulo">
           <div class="folha-cabeca"><h1 class="folha-titulo" id="trecho-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1></div>
-          <div class="folha-corpo" id="trecho-corpo">${teoria(vm, { tituloComoH1: false })}</div>
+          <div class="folha-corpo" id="trecho-corpo">${teoria(vm, { tituloComoH1: false, naFolha: true, ancora, grifar: !fb.certa })}</div>
           <div class="folha-pe"><button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>
         </div></div>`,
       depois(raiz) {
         document.documentElement.style.overflow = 'hidden';
         figuras(ctx, raiz);
-        return () => { document.documentElement.style.overflow = ''; };
+        if (ancora) rolarAteSecao(raiz, ancora);
+        const parar = acompanharSumario(raiz);
+        return () => { parar(); document.documentElement.style.overflow = ''; };
       },
     };
   }
   return {
     chave: `trecho:${vm.ancora}`,
     titulo: `Trecho, ${vm.titulo || vm.rotulo}`,
-    html: h`<div inert aria-hidden="true"><main class="missao">${topo(fb.topo, { medidor: fb.medidor })}${corpoFeedback(ctx, fb, { foco: false })}</main></div>
+    html: h`<div inert aria-hidden="true"><main class="missao">${topo(fb.topo, { medidor: fb.medidor, rotuloDaTela: fb.rotulo, trilha: tr })}${corpoFeedback(ctx, fb, { foco: false })}</main></div>
       ${folhaTrecho(vm, { titulo: vm.titulo || vm.rotulo, grifar: !fb.certa })}`,
     depois(raiz) {
       document.documentElement.style.overflow = 'hidden';
@@ -233,7 +258,7 @@ function fimDaRodada(ctx, vm) {
     chave,
     titulo: 'Fim da rodada',
     html: h`<main class="missao">
-      ${topo(vm.topo, { medidor: null, semRegra: true })}
+      ${topo(vm.topo, { medidor: null, semRegra: true, trilha: trilhaDe(ctx, vm, 'fimDaRodada') })}
       <section class="fim-rodada">
         <h1 class="feedback-titulo" tabindex="-1" data-foco-inicial>${vm.texto}</h1>
         ${mostrarNivel ? nivel({ cheios: vm.nivel.para, de: vm.nivel.de, animar: nova && vm.nivel.animar, nome: vm.nivel.nome }) : ''}
@@ -387,38 +412,55 @@ registrar({
     /** Folha "Encerrar" (b.2): duas saídas, com a diferença escrita. */
     encerrar(ctx, dados, t) {
       const vm = t.vm || {}, tp = vm.topo || (vm.feedback && vm.feedback.topo);
-      const passo = tp && tp.passo ? `no passo ${tp.passo.n} de ${tp.passo.total}` : '';
+      const passo = tp && tp.passo ? ` no passo ${tp.passo.n} de ${tp.passo.total}` : '';
+      // estudo por conta própria (depois do Pronto por hoje): a missão do dia já está feita; nada de "próximo dia"
+      const m = ctx.nucleo.st && ctx.nucleo.st.missao;
+      const livre = typeof vm.livre === 'boolean' ? vm.livre : !!(m && m.livre);
+      const txt = livre ? {
+        pausa: 'O estudo fica aberto até a meia-noite.',
+        sair: 'Encerrar este estudo',
+        encerra: `Encerra este estudo${passo}. O que você fez fica registrado; a rodada aberta não muda nenhum nível. A missão de hoje já está feita.`,
+        voltar: 'Voltar ao estudo',
+      } : {
+        pausa: 'A missão fica aberta até a meia-noite. Em Hoje, ela aparece como “Continuar”.',
+        sair: 'Encerrar por hoje',
+        encerra: `Encerra a missão de hoje${passo}. O que você fez fica registrado; a rodada aberta não muda nenhum nível e volta no próximo dia de estudo.`,
+        voltar: 'Voltar à missão',
+      };
       return {
         rotulo: 'Encerrar',
         corpo: h`<p class="folha-frase">Parar agora?</p>
           <div class="pilha-8">
             <button type="button" class="botao botao-largo" data-ev="PAUSAR">Parar e continuar mais tarde</button>
-            <p class="pequeno texto-2" style="margin:0 0 16px">A missão fica aberta até a meia-noite. Em Hoje, ela aparece como “Continuar”.</p>
-            <button type="button" class="botao-sec botao-largo" data-ev="CONFIRMAR_ENCERRAR">Encerrar por hoje</button>
-            <p class="pequeno texto-2" style="margin:0">Encerra a missão de hoje ${passo}. O que você fez fica registrado; a rodada aberta não muda nenhum nível e volta no próximo dia de estudo.</p>
+            <p class="pequeno texto-2" style="margin:0 0 16px">${txt.pausa}</p>
+            <button type="button" class="botao-sec botao-largo" data-ev="CONFIRMAR_ENCERRAR">${txt.sair}</button>
+            <p class="pequeno texto-2" style="margin:0">${txt.encerra}</p>
           </div>`,
-        pe: h`<button type="button" class="link link-centro" data-acao="fecharFolha">Voltar à missão</button>`,
+        pe: h`<button type="button" class="link link-centro" data-acao="fecharFolha">${txt.voltar}</button>`,
       };
     },
-    /** "ver a regra" da rodada (o topo mostra a regra uma vez, no início). */
+    /** "ver a regra" da rodada (o topo mostra a regra uma vez, no início). O que cada casa conta vem do medidor do núcleo. */
     regra(ctx, dados, t) {
       const tp = t.vm && (t.vm.topo || (t.vm.feedback && t.vm.feedback.topo));
       if (!tp || !tp.regra) return null;
+      const d = tp.medidor && tp.medidor.descricoes;
       return {
         rotulo: 'Regra da rodada',
         corpo: h`<p class="folha-frase">${tp.regra.texto}</p>
-          ${tp.medidor ? h`<p class="pequeno texto-2">O medidor do topo tem duas casas: a 1ª é um acerto seguido; a 2ª, um acerto numa questão de aplicar. As duas cheias fecham a rodada.</p>` : ''}`,
+          ${d && d.length >= 2 ? h`<p class="pequeno texto-2">O medidor do topo tem duas casas (1ª: ${d[0]}; 2ª: ${d[1]}). As duas cheias fecham a rodada.</p>`
+            : tp.medidor ? h`<p class="pequeno texto-2">O medidor do topo tem duas casas: a 1ª é um acerto seguido; a 2ª, um acerto numa questão de aplicar. As duas cheias fecham a rodada.</p>` : ''}`,
         pe: h`<button type="button" class="botao-sec botao-largo" data-acao="fecharFolha">Fechar</button>`,
       };
     },
-    /** Figura em tela cheia, com zoom. */
+    /** Figura em tela cheia (no celular, a tela inteira), com zoom. Um só "Fechar": o do pé, ao lado do − e do +. */
     zoom(ctx, dados) {
       if (!dados || !dados.html) return null;
       const z = dados.zoom || 1;
       return {
         rotulo: 'Figura ampliada',
         alta: true,
-        corpo: h`<div class="zoom-corpo"><div style="width:${Math.round(z * 100)}%;min-width:100%;padding:8px">${cru(dados.html)}</div></div>`,
+        fechar: false,
+        corpo: h`<div class="zoom-corpo"><div class="zoom-quadro" style="width:${Math.round(z * 100)}%;min-width:100%">${cru(dados.html)}</div></div>`,
         pe: h`<div class="zoom-controles">
           <button type="button" class="botao-sec" data-acao="zoomMenos" aria-label="Reduzir" ${z <= 1 ? cru('disabled') : ''}>−</button>
           <button type="button" class="botao-sec" data-acao="zoomMais" aria-label="Ampliar" ${z >= 4 ? cru('disabled') : ''}>+</button>
@@ -427,6 +469,9 @@ registrar({
         depois(raiz) {
           raiz.querySelectorAll('.zoom-corpo img, .zoom-corpo svg').forEach(el => { el.style.width = '100%'; el.style.maxWidth = 'none'; el.style.height = 'auto'; });
           raiz.querySelectorAll('.zoom-corpo .ampliavel-dica').forEach(el => el.remove());
+          // a figura maior que a tela abre pelo meio (como quem aproxima os dedos no centro)
+          const zc = raiz.querySelector('.zoom-corpo');
+          if (zc && zc.scrollWidth > zc.clientWidth) zc.scrollLeft = Math.round((zc.scrollWidth - zc.clientWidth) / 2);
         },
       };
     },

@@ -27,7 +27,10 @@ for (const pk of await packs()) {
     assert.ok(m.trilha.slice(0, -1).every(x => !x.ok) && m.trilha[m.trilha.length - 1].ok);
     assert.equal(m.frase, 'Você ainda não abriu o Cap. 1, e hoje não tem revisão vencida.');
     const v = verARegra(base(), pack, M, m, D);
-    assert.match(v.texto, /^R0 não: .* · R8 sim: Cap\. 1 é o próximo liberado$/);
+    // "ver a regra" sem códigos internos: numeradas na ordem em que valem, a que decidiu marcada "sim"
+    assert.match(v.texto, /^1\. não: .* · 9\. sim: Cap\. 1 é o próximo liberado$/);
+    assert.ok(!/R\d|P\d|aprendizado|intelig/i.test(JSON.stringify(v.linhas) + v.oQueE), 'nem código interno nem menção a IA');
+    assert.deepEqual(v.regras.filter(r => r.decidiu).map(r => r.n), [9]);
     assert.match(v.questoes, /^Questões do Enem: 2023 Q162/);
     assert.deepEqual(mm(base()), m, 'determinístico: mesmo estado e mesma data, mesma missão');
   });
@@ -51,10 +54,15 @@ for (const pk of await packs()) {
       if (pg.nucleo !== b) assert.equal(anterior.bloco, b);
     }
   });
-  test(`[${P}] f.1 · perfil de 15 min: capítulo novo sem revisão; 25 min: a revisão atrasada vem primeiro`, () => {
+  test(`[${P}] f.1 · perfil de 15 min: a revisão vencida vem antes do capítulo novo que não cabe junto; 25 min: a revisão atrasada vem primeiro`, () => {
     const st = { topicos: { 'mat-fa.c1': aberto(1, '2026-11-16') } };
     const m15 = mm(base(st, { minutos: 15 }));
-    assert.equal(m15.regra, 'R8'); assert.equal(m15.passos.filter(p => p.t === 'revisao').length, 0);
+    assert.equal(m15.regra, 'R8'); assert.equal(m15.tipo, 'revisoes');
+    assert.equal(m15.passos.filter(p => p.t === 'revisao').length, 1, 'a revisão prometida não some');
+    assert.ok(!m15.passos.some(p => p.t === 'leitura'), 'o capítulo novo fica para o próximo dia');
+    assert.equal(m15.capAdiado, 'mat-fa.c2');
+    assert.match(m15.frase, /^Hoje vence 1 revisão, e o Cap\. 2 não cabe junto nos seus 15 min\. A revisão vem primeiro; o Cap\. 2 fica para o próximo dia de estudo\.$/);
+    assert.ok(m15.minutos <= 15);
     const m25 = mm(base(st));
     assert.equal(m25.passos[0].t, 'revisao'); assert.equal(m25.passos[0].atrasada, true);
   });

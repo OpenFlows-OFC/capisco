@@ -11,7 +11,8 @@ const U = require('./comum.cjs');
     await pg.goto(U.BASE); await U.pronto(pg);
     await pg.evaluate(() => { window.__prumo.nucleo.concluirPrimeiroUso({ provaTipo: 'naosei', prova: null, dias: [0, 1, 2, 3, 4, 5, 6].slice(0, 5), minutos: 15 }); window.__prumo.app.render(); });
     await pg.click('[data-ev="HOJE_NAO"]');
-    confere(await tem('Hoje não. As revisões de hoje passam para o próximo dia de estudo.'), 'Hoje não: texto');
+    // texto do núcleo: "Hoje não. A missão fica para o próximo dia de estudo[, e as N revisões de hoje entram nele sem contar como atraso]."
+    confere(/Hoje não. .*próximo dia de estudo/.test(await U.texto(pg)), 'Hoje não: texto');
     confere(await tem('Começar mesmo assim'), 'Hoje não: "Começar mesmo assim"');
     confere((await pg.$('.rosto.esmaecido')) !== null, 'Hoje não: bloco esmaecido');
     await cap(pg, 'hoje-nao', true);
@@ -21,7 +22,7 @@ const U = require('./comum.cjs');
     await pg.click('#folha-raiz [data-ev="CONFIRMAR_ENCERRAR"]');
     await pg.waitForSelector('.colofao');
     confere(await tem('Você encerrou no passo 1 de'), 'Pronto parcial: passo');
-    confere(await tem('O dia não conta como estudado.'), 'Pronto parcial: não contou');
+    confere(await tem('O dia não conta como estudado'), 'Pronto parcial: não contou');   // "…: ele conta quando você responde…"
     await cap(pg, 'pronto-parcial', true);
     await pg.click('[data-ev="FECHAR"]');
     await pg.waitForSelector('.estado-texto');

@@ -55,6 +55,8 @@ function lede(vm) {
 function rosto(vm) {
   const b = vm.bloco;
   const composicao = vm.estado === 'questaoDoDia' && vm.texto ? vm.texto : b.composicao;
+  // um só recado sobre atraso: se o "Hoje vence" do topo já conta as atrasadas, o bloco não repete
+  const atrasada = b.atrasada && !(vm.venceHoje && vm.venceHoje.atrasadas) ? b.atrasada : null;
   return h`<section class="rosto ${b.esmaecido ? 'esmaecido' : ''}" aria-labelledby="manchete">
     ${lede(vm)}
     ${vm.porqueEstudo ? h`<p class="texto-2">${vm.porqueEstudo}</p>` : ''}
@@ -67,7 +69,7 @@ function rosto(vm) {
     </div>
     <div class="bloco-titulo">
       ${cabecalhoProva(b.cabecalho)}
-      ${b.atrasada ? h`<p class="atrasada">${b.atrasada}</p>` : ''}
+      ${atrasada ? h`<p class="atrasada">${atrasada}</p>` : ''}
       ${b.regra ? h`<p class="ganho">${b.regra}</p>` : ''}
     </div>
     <div class="acoes-rosto">
@@ -111,8 +113,15 @@ function recomeco(r) {
     <p class="texto-2">${r.visto}</p>
   </section>`;
 }
+/** "Hoje vence": o marca-texto só no que vence hoje. O atraso vai em texto normal, sem destaque: é um
+ *  aviso de ordem, não uma cobrança (sem culpa, como o quadro "Semana nova" logo acima). */
 function venceHoje(v) {
-  return v ? h`<p class="pr-recado vence-hoje"><strong class="pr-recado-rotulo"><span class="grifo">${v.vence}</span></strong> ${v.porque}</p>` : '';
+  if (!v) return '';
+  if (!v.hoje) return h`<p class="pr-recado vence-hoje">${v.vence} ${v.porque}</p>`;
+  // "Hoje vencem 2 revisões… Mais 3 revisões atrasadas…": o grifo fica na 1ª frase; a do atraso segue sem grifo
+  const i = v.atrasadas ? v.vence.indexOf(' Mais ') : -1;
+  const grifada = i > 0 ? v.vence.slice(0, i) : v.vence, resto = i > 0 ? v.vence.slice(i) : '';
+  return h`<p class="pr-recado vence-hoje"><strong class="pr-recado-rotulo"><span class="grifo">${grifada}</span></strong>${resto} ${v.porque}</p>`;
 }
 
 /** Tela Hoje (aba). t = nucleo.tela() nos estados 'hoje' e 'feito'. */

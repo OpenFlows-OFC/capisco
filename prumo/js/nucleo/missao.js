@@ -20,7 +20,15 @@ export const IGNORAR = Symbol('ignorar');
 const LETRAS = ['A', 'B', 'C', 'D', 'E'];
 export const DENTRO = new Set(['pergunta', 'leitura', 'feedback', 'trecho', 'fimDaRodada', 'cards', 'trechoCard', 'fimDaMao']);
 export const DENTRO_PROVA = new Set(['provaPergunta', 'provaFeedback', 'provaTrecho']);
-const novoResumo = () => ({ rodadas: [], revisoes: [], dia: { n: 0, certas: 0 }, antecipada: { n: 0, certas: 0 }, cards: null, pres: 0, tentativas: 0, certas: 0, cardsRecebidos: [] });
+// marcos: os marcos ganhos NESTA missão (o Pronto lista só esses); apostila: 'lida' | 'pulada' | null (tópico de prática)
+const novoResumo = () => ({ rodadas: [], revisoes: [], dia: { n: 0, certas: 0 }, antecipada: { n: 0, certas: 0 }, cards: null, pres: 0, tentativas: 0, certas: 0, cardsRecebidos: [], marcos: [], apostila: null });
+/** Dias em que o aluno marcou "Hoje não" (as revisões tratam esses dias como folga: não viram atraso). */
+function marcarHojeNao(st, d, sim) {
+  st.hojeNao = st.hojeNao || {};
+  if (sim) st.hojeNao[d] = true; else delete st.hojeNao[d];
+  const ks = Object.keys(st.hojeNao).sort();
+  for (const k of ks.slice(0, Math.max(0, ks.length - 120))) delete st.hojeNao[k];
+}
 
 export class Missao {
   /** ctx: { st (objeto de estado, sempre o mesmo), pack, M (motor), persistir(), salvarNota(dados) } */
@@ -82,7 +90,10 @@ export class Missao {
     if (!st.perfil) return;
     fecharSemanas(st, d);
     const caps = this.M.topicosAtivos(st), cx = id => (st.topicos[id] || {}).caixa || 0;
-    const marca = (k, cond) => { if (cond && !st.marcos[k]) st.marcos[k] = d; };
+    // o marco ganho agora fica também no resumo da missão de hoje: o Pronto lista só os ganhos nela
+    // (um estudo por conta própria depois do Pronto não repete o marco ganho mais cedo)
+    const res = this.m && this.m.dia === d && this.m.resumo ? this.m.resumo : null;
+    const marca = (k, cond) => { if (cond && !st.marcos[k]) { st.marcos[k] = d; if (res) (res.marcos = res.marcos || []).push(k); } };
     marca('m.primeiroCap', caps.some(id => cx(id) >= 1));
     marca('m.semanaMeta', semanasComMeta(st) >= 1);
     marca('m.todosFirmando', caps.length > 0 && caps.every(id => cx(id) >= 2));
@@ -96,8 +107,9 @@ export class Missao {
     return {
       dia: d, regra: mm.regra, tipo: mm.tipo, trilha: mm.trilha, frase: mm.frase, passos: mm.passos, cap: mm.cap || null,
       minutos: mm.minutos, venc: mm.venc, boasVindas: !!mm.boasVindas, retorno: !!mm.retorno, reta: mm.reta || null, provaPassou: !!mm.provaPassou,
-      capTravado: mm.capTravado || null, revisoesForaDoOrcamento: mm.revisoesForaDoOrcamento || 0, estudarMesmoAssim: !!extra.estudarMesmoAssim,
-      i: 0, estado: 'hoje', iniciada: false, hojeNao: false, retomar: null,
+      capTravado: mm.capTravado || null, revisoesForaDoOrcamento: mm.revisoesForaDoOrcamento || 0, foraPor: mm.foraPor || null, revisoesFora: mm.revisoesFora || [],
+      capAdiado: mm.capAdiado || null, estudarMesmoAssim: !!extra.estudarMesmoAssim,
+      i: 0, estado: 'hoje', iniciada: false, hojeNao: !!extra.hojeNao, retomar: null,
       rodada: null, ultima: null, ultimaPre: null, feedbackEm: null, resolucaoAberta: false, fimRodada: null, mao: null,
       fechada: false, parcial: false, encerradoNoPasso: null, rev: 0, resumo: novoResumo(),
       faixa: extra.faixa || null, recado: extra.recado || null, prova: null, provaFeitaHoje: !!extra.provaFeitaHoje,
@@ -108,7 +120,7 @@ export class Missao {
   remontarSeNaoIniciada() {
     const m = this.m;
     if (!this.st.perfil || !m || m.iniciada || m.fechada) return false;
-    return this.transicao(() => { this.st.missao = this.novaMissao(R.hoje(), { faixa: m.faixa, recado: m.recado, estudarMesmoAssim: m.estudarMesmoAssim, provaFeitaHoje: m.provaFeitaHoje }); return 'hoje'; });
+    return this.transicao(() => { this.st.missao = this.novaMissao(R.hoje(), { faixa: m.faixa, recado: m.recado, estudarMesmoAssim: m.estudarMesmoAssim, provaFeitaHoje: m.provaFeitaHoje, hojeNao: m.hojeNao }); return 'hoje'; });
   }
   virarDia() {
     const d = R.hoje(), st = this.st, m = this.m;
@@ -119,10 +131,12 @@ export class Missao {
         this.descartarRodadaAberta();
         m.fechada = true; m.parcial = true; m.encerradoNoPasso = passo;
         st.historico.push({ dia: m.dia, regra: m.regra, tipo: m.tipo, passos: total, feitos: m.i, parcial: true, fechada: true, viradaDeData: true });
+        // o visto do dia segue a mesma regra de "Encerrar por hoje": o dia contou como estudado, a missão fechou
+        if (st.dias && st.dias[m.dia]) { st.carimbos = st.carimbos || {}; st.carimbos[m.dia] = true; }
         const quando = R.diff(m.dia, d) === 1 ? 'Ontem' : `Em ${R.fmtCurta(m.dia)}`;
-        faixa = `${quando} ficou registrado até o passo ${passo}.`;
+        faixa = `${quando} você parou no passo ${passo} de ${total}. O que fez ficou registrado; hoje a missão é nova.`;
         // o mesmo aviso no formato do Recado do design system: rótulo em negrito + a frase
-        recado = { rotulo: null, texto: `${quando} ficou registrado até o passo ${passo}.` };
+        recado = { rotulo: null, texto: faixa };
       }
     }
     if (st.pausa && st.pausa.ate && st.pausa.ate < d) encerrarPausa(st, d);
@@ -306,11 +320,12 @@ export class Missao {
     this.m.resumo.pres++;
     this.m.ultimaPre = { i: this.m.i, id: p.id, alvo: 'teoria', cap: p.cap, pratica: true };
   }
-  /** Fim da teoria: se a pergunta de antes foi respondida nesta missão, mostra a resposta (agora, depois de ler). */
+  /** Fim da teoria: se o aquecimento do tópico ainda não teve a resposta mostrada (respondido nesta missão ou numa
+   *  anterior que foi encerrada antes do fim da apostila), mostra a resposta agora, depois de ler. */
   fimDaTeoria() {
-    const m = this.m, p = this.passo(), st = this.st, up = m.ultimaPre;
+    const m = this.m, p = this.passo(), st = this.st;
     const pr = ((st.praticas || {})[p.cap] || {}).pre;
-    if (up && up.pratica && up.cap === p.cap && pr && !pr.revelado) {
+    if (pr && pr.alt && !pr.revelado) {
       const item = this.itemDe(`${p.cap}:pre`), d = R.hoje();
       pr.revelado = d;
       m.ultima = { passo: m.i, item: item.id, alt: pr.alt, res: pr.alt === item.gabarito ? 'ok' : 'erro', fonte: 'pratica', revela: true, cap: p.cap, pausaMs: this.M.pausa(item) };
@@ -329,7 +344,13 @@ export class Missao {
     if (!st.praticas[p.cap]) st.praticas[p.cap] = { desde: d, pre: null };
     m.resumo.tentativas++; if (aval.res === 'ok') m.resumo.certas++;
     const tipo = p.t === 'revisao' ? 'revisao' : p.antecipada ? 'antecipada' : 'enem';
-    const u = { passo: m.i, item: item.id, alt, res: aval.res, t: p.t, papel: 'aplicar', origem: 'enem', tipo, cap: p.cap, fonte: 'pratica', revisao: null, fimRodada: false, paragrafo: null, pausaMs: this.M.pausa(item) };
+    const u = { passo: m.i, item: item.id, alt, res: aval.res, t: p.t, papel: 'aplicar', origem: 'enem', tipo, cap: p.cap, fonte: 'pratica', revisao: null, fimRodada: false, paragrafo: null, pausaMs: this.M.pausa(item), cartao: null };
+    // caderno de erros: a questão errada vai para lá (com o que faltou); acertar a mesma questão depois resolve o cartão
+    if (aval.res === 'erro') u.cartao = this.criarCartao(item, alt, tipo, p.cap);
+    else {
+      const c = (st.erros || []).find(e => e.item === item.id && e.estado === 'aberto');
+      if (c) { c.voltas.push({ dia: d, item: item.id, res: 'ok', marcou: alt, origem: tipo }); c.estado = 'resolvido'; c.resolvidoEm = d; }
+    }
     if (p.t === 'revisao') {
       MP.registrar(st, MP.novaRodada(st, p.cap, 'revisao'), itemM, aval, { dia: d, agora, alt, tipo });
       const fr = MP.fecharRevisao(st, p.cap, aval.res, d);
@@ -401,6 +422,7 @@ Missao.T = {
       const m = this.m;
       if (m.fechada || !m.passos.length) return IGNORAR;
       if (m.iniciada) { const r = m.retomar || this.estadoDoPasso(); m.retomar = null; return r; }
+      if (m.hojeNao) marcarHojeNao(this.st, m.dia, false);   // "Começar mesmo assim": o dia volta a ser de estudo
       m.iniciada = true; m.hojeNao = false;
       return this.estadoDoPasso();
     },
@@ -423,7 +445,17 @@ Missao.T = {
         nl.iniciada = true;
         return this.estadoDoPasso();
       }
+      // o caderno (Funções afins) por conta própria: revisão antecipada do capítulo mais fraco (não muda o nível)
+      if (m.fechada && id === this.pack.id) {
+        const doDia = m.livre && m.missaoDoDia ? m.missaoDoDia : JSON.parse(JSON.stringify(Object.assign({}, m, { estado: 'feito' })));
+        const nl = this.novaMissao(d, { soCaderno: true, livre: true, missaoDoDia: doDia, provaFeitaHoje: m.provaFeitaHoje });
+        if (!nl.passos.length) return IGNORAR;
+        this.st.missao = nl;
+        nl.iniciada = true;
+        return this.estadoDoPasso();
+      }
       if (m.fechada || m.iniciada || m.tipo === 'pausa' || (m.prova && !m.prova.encerrada)) return IGNORAR;
+      marcarHojeNao(this.st, d, false);   // estudar desfaz o "Hoje não" do dia
       const folga = m.tipo === 'folga' || m.estudarMesmoAssim;
       const extra = { faixa: m.faixa, recado: m.recado, provaFeitaHoje: m.provaFeitaHoje, estudarMesmoAssim: folga };
       if (id === this.pack.id) {
@@ -439,7 +471,8 @@ Missao.T = {
       nm.iniciada = true; nm.hojeNao = false;
       return this.estadoDoPasso();
     },
-    HOJE_NAO() { const m = this.m; if (m.iniciada || m.fechada || !m.passos.length) return IGNORAR; m.hojeNao = true; return 'hoje'; },
+    /** "Hoje não": o dia passa a contar como folga para as revisões (a de hoje entra no próximo dia de estudo sem virar atraso). */
+    HOJE_NAO() { const m = this.m; if (m.iniciada || m.fechada || !m.passos.length) return IGNORAR; m.hojeNao = true; marcarHojeNao(this.st, m.dia, true); return 'hoje'; },
     ESTUDAR_MESMO_ASSIM() {
       const m = this.m;
       if (m.tipo !== 'folga' || m.iniciada) return IGNORAR;
@@ -477,8 +510,12 @@ Missao.T = {
     },
   },
   leitura: {
-    TERMINEI_TRECHO() { return this.passo().t === 'teoria' ? this.fimDaTeoria() : this.avancar(); },
-    JA_SEI() { return this.passo().t === 'teoria' ? this.fimDaTeoria() : this.irParaProximaPergunta(); },     // para todos; não lê a pré-pergunta
+    TERMINEI_TRECHO() { if (this.passo().t !== 'teoria') return this.avancar(); this.m.resumo.apostila = 'lida'; return this.fimDaTeoria(); },
+    JA_SEI() {     // para todos; não lê a pré-pergunta
+      if (this.passo().t !== 'teoria') return this.irParaProximaPergunta();
+      if (this.m.resumo.apostila !== 'lida') this.m.resumo.apostila = 'pulada';
+      return this.fimDaTeoria();
+    },
     SALVAR_NOTA(e) { if (this.passo().t === 'teoria') return IGNORAR; this.ctx.salvarNota(Object.assign({ pagina: this.passo().pagina }, e)); return 'leitura'; },
   },
   feedback: {

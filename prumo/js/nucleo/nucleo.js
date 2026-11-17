@@ -6,33 +6,33 @@
    ========================================================= */
 import * as R from './relogio.js';
 import * as E from './estado.js';
-import { criarMotor, P, NIVEL, MATERIAS, rotuloNivel, noNivel } from './motor.js';
+import { criarMotor, P, NIVEL, MATERIAS, rotuloNivel, noNivel, dataEfetiva, revisaoAtrasada, voltaPorErro, passouPorHojeNao } from './motor.js';
 import { Pack } from './pack.js';
 import { Missao, DENTRO, DENTRO_PROVA } from './missao.js';
-import { montarMissao, regraDaFila, verARegra, paginasComErro, proximaVariante } from './recomendador.js';
+import { montarMissao, regraDaFila, verARegra, paginasComErro, proximaVariante, quandoRevisao } from './recomendador.js';
 import * as Plano from './plano.js';
 import * as Cards from './cards.js';
 import * as Prova from './prova.js';
 import { gerarExemplo } from './exemplo.js';
-import { Praticas, limparSvg, AREAS, CONHECIDOS, estadoTopico, montarMissaoGeral, ineditas, regraTopico } from './pratica.js';
+import { Praticas, limparSvg, AREAS, CONHECIDOS, estadoTopico, montarMissaoGeral, ineditas, regraTopico, passosTopico, estimarMinutosTopico, minutosDaTeoriaNaMissao, QUESTOES_POR_MINUTOS } from './pratica.js';
 
 export { R as relogio };   // a tela pode ler relogio.agora() e os formatadores de data
 
 export const MARCOS = [
   { id: 'm.primeiroCap', nome: 'Primeiro capítulo aberto', condicao: 'Acertar duas seguidas num capítulo novo, que entra no nível 1 de 5.' },
-  { id: 'm.semanaMeta', nome: 'Primeira semana com a meta', condicao: 'Cumprir a meta numa semana. Aparece depois que a semana termina.' },
+  { id: 'm.semanaMeta', nome: 'Primeira semana com a meta', condicao: 'Cumprir a meta numa semana. O marco entra quando a semana termina.' },
   { id: 'm.todosFirmando', nome: 'Todos os capítulos no nível 2 de 5', condicao: 'Todos os capítulos chegam ao nível 2 de 5. Isso libera a Prova do caderno.' },
   { id: 'm.primeiroFirme', nome: 'Primeiro capítulo no nível 3 de 5', condicao: 'Um capítulo chega ao nível 3 de 5.' },
   { id: 'm.prova', nome: 'Prova do caderno vencida', condicao: 'Acertar 4 seguidas na Prova do caderno, uma de cada capítulo.' },
 ];
 export const NAO_TEM = [
   { item: 'Ligas e ranking', motivo: 'Você só se compara com você mesmo. Ranking faz a gente estudar para ganhar dos outros, não para aprender.' },
-  { item: 'XP e pontos', motivo: 'O seu progresso é o nível de cada capítulo, não um número que só serve para crescer.' },
+  { item: 'XP e pontos', motivo: 'XP cresce com qualquer clique e não diz o que você sabe. Aqui o progresso é o nível de cada capítulo, e os risquinhos só registram os dias em que você estudou.' },
   { item: 'Baús e sorteio', motivo: 'Tudo o que você ganha é avisado antes. Nada é sorteado, para o app não prender você pela surpresa.' },
   { item: 'Energia e vidas', motivo: 'Errar não custa nada além do que a regra escrita diz.' },
   { item: 'Moeda', motivo: 'Não há moeda para juntar: o que vale é saber a matéria.' },
   { item: 'Apostas', motivo: 'Nada no Prumo depende de sorte.' },
-  { item: 'Coleta de dados', motivo: 'Nenhum dado seu sai do celular. A cópia e a planilha só saem quando você pede.' },
+  { item: 'Coleta de dados', motivo: 'Nenhum dado seu sai deste aparelho. A cópia e a planilha só saem quando você pede.' },
   { item: 'Notificações para você voltar', motivo: 'O Prumo não manda notificação; o lembrete é um alarme que você mesmo cria.' },
 ];
 const TIPOS_PROVA = [
@@ -47,6 +47,27 @@ const cap1 = s => s.charAt(0).toUpperCase() + s.slice(1);
 const dataRevisao = (x, d) => (R.diff(d, x) === 1 ? `amanhã, ${R.fmtCurta(x)}` : R.diff(d, x) === 0 ? 'hoje' : `${R.SEMANA_LONGA[R.diaDaSemana(x)]}, ${R.fmtDiaMes(x)}`);
 const nDe = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 const listaCaps = ns => (ns.length === 1 ? `Cap. ${ns[0]}` : `Caps. ${ns.slice(0, -1).join(', ')} e ${ns[ns.length - 1]}`);
+const juntarE = l => (l.length > 1 ? `${l.slice(0, -1).join(', ')} e ${l[l.length - 1]}` : l[0] || '');
+/** "na quarta" · "no sábado" */
+const naDia = x => { const w = R.SEMANA_LONGA[R.diaDaSemana(x)]; return `${['sábado', 'domingo'].includes(w) ? 'no' : 'na'} ${w}`; };
+/** Quando a revisão errada volta: "amanhã, qua 18/11" · "na segunda, 23/11" (o dia de estudo em que ela entra). */
+const voltaEm = (x, d) => (R.diff(d, x) === 1 ? `amanhã, ${R.fmtCurta(x)}` : `${naDia(x)}, ${R.fmtDiaMes(x)}`);
+/** "Ficou registrada 1 tentativa" · "Ficaram registradas 3 tentativas" */
+const registradas = n => (n === 1 ? 'Ficou registrada 1 tentativa' : `Ficaram registradas ${n} tentativas`);
+
+/** A regra do nível, numa frase só (Caderno, página do tópico e mapa), fiel ao motor: rodada com 2 certas
+ *  seguidas abre o nível 1; revisão certa sobe um; revisão errada desce UM (nunca abaixo de 1). */
+export function regraNivel(oQue = 'o tópico', teto = 5) {
+  const ate = teto < 5 ? `até o 5 de 5 (na demonstração, até o ${teto} de 5)` : 'até o 5 de 5';
+  return `Acerte 2 seguidas na rodada e ${oQue} entra no nível 1 de 5. Depois, cada revisão certa na primeira resposta sobe um nível, ${ate}; errar uma revisão desce um nível, nunca abaixo do 1. Errar nas questões da rodada só recomeça a contagem das 2 seguidas. Nada do que você fez se apaga.`;
+}
+/** "Como funciona um tópico" (página do tópico): as 4 etapas da trilha, com a regra do nível certa. */
+export const COMO_FUNCIONA = [
+  { titulo: 'Aquecer', texto: 'Uma questão antes de ler. Chute se não souber: a ideia é ler a apostila já com a dúvida na cabeça. A resposta aparece depois da leitura.' },
+  { titulo: 'Apostila', texto: 'A teoria do tópico, com exemplos resolvidos, figuras e tabelas. Se você já domina, pode pular.' },
+  { titulo: 'Questões do Enem', texto: 'Questões de provas reais. Acerte 2 seguidas e o tópico entra no nível 1 de 5. Errou? A contagem recomeça e a explicação mostra o que faltou. Se não der mais para acertar 2 seguidas com as que restam, o tópico continua na próxima vez.' },
+  { titulo: 'Visto do dia', texto: 'Terminou, ganhou o visto e o dia conta. Depois, o Prumo marca as revisões até a prova: cada revisão certa sobe um nível, e errar uma revisão desce um.' },
+];
 
 export function textoAlarme(dias, horario) {
   const ds = Plano.textoDiasLongo(dias || []);
@@ -132,7 +153,7 @@ export class Nucleo {
       areasPadrao: ['MT'],
       onboarding: [
         { titulo: 'Uma missão de estudo por dia, com fim marcado', texto: 'Você abre o Prumo, faz a missão do dia e termina no "Pronto por hoje". Sem rolar sem fim.' },
-        { titulo: 'Errou? O app mostra o que faltou', texto: 'Cada erro vem com o que faltou e o trecho da teoria para rever.' },
+        { titulo: 'Errou? O app mostra o que faltou', texto: 'Cada erro vem com o que faltou e o trecho do caderno ou da apostila para rever.' },
         { titulo: 'Seus dias estudados só crescem', texto: 'Cada dia estudado vira um risquinho. Faltar um dia não apaga nada: nada zera.' },
       ],
       fecho: 'Seus dados ficam só neste aparelho. Instale o Prumo na tela inicial (iPhone e Android) e salve uma cópia de vez em quando.',
@@ -159,12 +180,32 @@ export class Nucleo {
   _curto(id) { const c = this.pack.capitulo(id); return c ? c.titulo : this.prat.curto(id); }
   /** "de Parte fixa e parte que varia" / "de Porcentagem e juros" (a revisão de …). */
   _de(id) { return `de ${this._curto(id)}`; }
-  /** "revisão do Cap. 1" · "revisões dos Caps. 1 e 2" · "revisões do Cap. 1 e do tópico Estatística" */
-  _revisoes(caps) {
+  /** Data em que a revisão marcada para x entra de fato (o primeiro dia de estudo igual ou depois de x). */
+  _ef(x) { return dataEfetiva(this.st, x); }
+  /** Teto de nível: 5; só o estado de exemplo usa o teto da demonstração (pack.nivelMaximoDemo). */
+  _teto() { return Math.min(5, this.st.config.nivelMaximo || 5); }
+  /** " (na demonstração, o nível vai até 3 de 5)" quando o teto da demonstração segura o nível k. */
+  _notaTeto(k) { const t = this._teto(); return t < 5 && k >= t ? ` (na demonstração, o nível vai até ${t} de 5)` : ''; }
+  /** No topo: ", o mais alto" no 5 de 5; a nota da demonstração no teto dela. */
+  _notaTopo(k) { return k >= 5 ? ', o mais alto' : this._notaTeto(k); }
+  /** Partes de uma lista longa, sem títulos com vírgula: ["Funções afins (Caps. 1, 2 e 4)", "Porcentagem e juros"]. */
+  _partesCaps(caps, { comCaps = true } = {}) {
+    const nums = caps.map(c => this.pack.capitulo(c)).filter(Boolean).map(c => c.n).sort((a, b) => a - b), tops = caps.filter(c => !this.pack.capitulo(c));
+    return [nums.length ? (comCaps ? `${this.pack.titulo} (${listaCaps(nums)})` : this.pack.titulo) : null,
+      tops.length === 1 ? this.prat.curto(tops[0]) : tops.length > 1 ? `${tops.length} tópicos de prática` : null].filter(Boolean);
+  }
+  /** "do capítulo X" · "do capítulo X e do tópico Y" · acima de 2: "de Funções afins (Caps. 1, 2 e 4) e de Porcentagem e juros". */
+  _doLista(caps) {
+    caps = [...new Set(caps)];
+    if (caps.length > 2) return juntarE(this._partesCaps(caps).map(x => `de ${x}`));
+    return juntarE(caps.map(c => `do ${this._nomeCap(c)}`));
+  }
+  /** "revisão do capítulo X" · "revisões do capítulo X e do tópico Y" · acima de 2: "5 revisões de Funções afins (Caps. 1 a 4)…". */
+  _revisoes(caps, { curto = false } = {}) {
     caps = [...new Set(caps)];
     if (caps.length === 1) return `revisão do ${this._nomeCap(caps[0])}`;
-    const ns = caps.map(c => `do ${this._nomeCap(c)}`);
-    return `revisões ${ns.slice(0, -1).join(', ')} e ${ns[ns.length - 1]}`;
+    if (caps.length > 2) return `${caps.length} revisões ${juntarE(this._partesCaps(caps, { comCaps: !curto }).map(x => `de ${x}`))}`;
+    return `revisões ${this._doLista(caps)}`;
   }
   _paginasDe(passos) {
     const ns = [...new Set(passos.filter(p => p.pagina && (p.t === 'leitura' || p.t === 'pre' || p.t === 'checagem')).map(p => this.pack.pagina(p.pagina).n))].sort((a, b) => a - b);
@@ -186,9 +227,9 @@ export class Nucleo {
         i = j; continue;
       }
       const pg = p.pagina ? `p. ${pk.pagina(p.pagina).n}` : '';
-      if (p.t === 'teoria') { out.push({ n: `${n}`, texto: `Teoria de ${this.prat.titulo(p.cap)}`, pagina: '' }); continue; }
+      if (p.t === 'teoria') { out.push({ n: `${n}`, texto: `Apostila: ${this.prat.titulo(p.cap)}`, pagina: '' }); continue; }
       let texto;
-      if (p.t === 'pre') texto = p.alvo === 'bloco' ? `Pergunta antes do § ${pk.localDoBloco(p.bloco).n}` : 'Pergunta antes de ler';
+      if (p.t === 'pre') texto = p.fonte === 'pratica' ? 'Aquecimento: uma questão antes da apostila' : p.alvo === 'bloco' ? `Pergunta antes do § ${pk.localDoBloco(p.bloco).n}` : 'Pergunta antes de ler';
       else if (p.t === 'leitura') texto = `Leitura ${pk.faixaDeBlocos(p.blocos)}`;
       else if (p.t === 'checagem') texto = 'Confira';
       else if (p.t === 'questao') texto = 'Questão da equipe';
@@ -201,9 +242,14 @@ export class Nucleo {
   }
   _composicao(m) {
     const ps = m.passos, partes = [];
-    if (ps.some(p => p.t === 'teoria')) partes.push('a teoria');
+    if (ps.some(p => p.t === 'pre' && p.fonte === 'pratica')) partes.push('um aquecimento');
+    if (ps.some(p => p.t === 'teoria')) partes.push('a apostila');
     const pgs = new Set(ps.filter(p => p.t === 'leitura').map(p => p.pagina)).size;
     if (pgs) partes.push(nDe(pgs, 'página', 'páginas'));
+    // as perguntas do caderno (antes de ler e "Confira") entram na conta, como na régua ("faltam até N questões");
+    // a questão da equipe que entra depois de um erro fica fora: ela é condicional
+    const curtas = ps.filter(p => (p.t === 'pre' && p.fonte !== 'pratica') || p.t === 'checagem').length;
+    if (curtas) partes.push(`${nDe(curtas, 'pergunta curta', 'perguntas curtas')}${pgs ? ` sobre ${pgs === 1 ? 'ela' : 'elas'}` : ''}`);
     const ap = ps.filter(p => p.t === 'questao' && p.papel === 'aplicar' && !p.antecipada);
     if (ap.length) partes.push(`até ${ap.length} ${ap.every(p => p.origem === 'enem') ? (ap.length === 1 ? 'questão do Enem' : 'questões do Enem') : (ap.length === 1 ? 'questão de aplicar' : 'questões de aplicar')}`);
     const ant = ps.filter(p => p.antecipada).length;
@@ -235,13 +281,17 @@ export class Nucleo {
   /** Texto da regra em Hoje: o ganho anunciado antes, com o nome do nível explicado na primeira vez, e o visto. */
   _regraHoje(m, d) {
     const ganho = this._ganho(m);
-    if (m.livre) return `${ganho ? ganho + ' ' : ''}Estudo por conta própria: conta como dia estudado, sem um segundo visto.`;
+    if (m.livre) {
+      // o dia já contou (a missão do dia foi feita): não prometer de novo "conta como dia estudado"
+      const sv = this.st.carimbos && this.st.carimbos[d] ? 'sem um segundo visto' : 'sem visto';
+      return `${ganho ? ganho + ' ' : ''}Estudo por conta própria${this.st.dias[d] ? `, ${sv}` : `: conta como dia estudado, ${sv}`}.`;
+    }
     if (!ganho) return 'No fim, o visto do dia.';
     const mk = /nível (\d) de 5/.exec(ganho);
     let explica = '';
     if (mk) {
       const k = Number(mk[1]), iv = Plano.intervalos(this.st, d);
-      const quando = iv && iv[k] ? R.fmtDiaMes(R.addDias(d, iv[k])) : null;
+      const quando = iv && iv[k] ? R.fmtDiaMes(this._ef(R.addDias(d, iv[k]))) : null;
       if (quando) explica = k === 1 ? ` A primeira revisão fica para ${quando}.` : ` A próxima revisão fica para ${quando}.`;
     }
     return `${ganho}${explica} No fim, o visto do dia.`;
@@ -252,7 +302,7 @@ export class Nucleo {
     if (m.tipo === 'antecipada') return `Revisão antecipada do ${this._nomeCap(m.cap)}`;
     if (m.tipo === 'questaoDoDia') return 'Questão do dia';
     const revs = m.passos.filter(p => p.t === 'revisao');
-    if (revs.length) return cap1(this._revisoes(revs.map(p => p.cap)));
+    if (revs.length) return cap1(this._revisoes(revs.map(p => p.cap), { curto: true }));
     if (m.tipo === 'prereq') return `Revisão antecipada do ${this._nomeCap(m.cap)}`;
     return 'Missão de hoje';
   }
@@ -263,57 +313,93 @@ export class Nucleo {
       if (m.passos.some(p => p.t === 'questao' && p.cap === m.cap && !p.antecipada)) return regraTopico(nome).ganho;
       if (m.passos.some(p => p.antecipada && p.cap === m.cap)) return `Revisão antecipada de ${nome}: o nível só sobe na revisão do dia marcado.`;
       const rv = m.passos.find(p => p.t === 'revisao' && p.cap === m.cap);
-      if (rv) {
-        const t = st.topicos[m.cap] || {}, max = st.config.nivelMaximo || 5, para = Math.min(max, (t.caixa || 0) + 1);
-        return para > (t.caixa || 0) ? `Acerte a revisão na primeira resposta: ${nome} sobe para o ${rotuloNivel(para)}.` : `Acerte a revisão na primeira resposta: ${nome} continua ${noNivel(t.caixa)}, com a próxima revisão mais longe.`;
-      }
-      return 'Hoje é a leitura da teoria. As questões deste tópico voltam quando fizer 7 dias que você as viu.';
+      if (rv) return this._ganhoRevisao(m.cap, nome);
+      return 'Hoje é a leitura da apostila. As questões deste tópico voltam quando fizer 7 dias que você as viu.';
     }
     if (m.tipo === 'novo' || m.tipo === 'pratica') {
       const rods = m.passos.filter(p => p.r === `r:${m.cap}`);
       return regraDaFila(rods, m.cap, `o ${this._nomeCap(m.cap)}`).ganho;
     }
     if (m.tipo === 'antecipada' || (m.tipo === 'prereq' && m.passos.some(p => p.antecipada))) return 'Revisão antecipada: o nível só sobe na revisão do dia certo. Se a sequência não fechar, a revisão passa para amanhã.';
-    if (m.tipo === 'questaoDoDia') return 'A Questão do dia não muda nível nem agenda: é dia de manter.';
     const revs = m.passos.filter(p => p.t === 'revisao');
-    if (revs.length === 1) {
-      const t = st.topicos[revs[0].cap] || {}, max = st.config.nivelMaximo || 5;
-      const para = Math.min(max, (t.caixa || 0) + 1);
-      return para > (t.caixa || 0) ? `Acerte a revisão na primeira resposta: o ${this._nomeCap(revs[0].cap)} sobe para o ${rotuloNivel(para)}.` : `Acerte a revisão na primeira resposta: o ${this._nomeCap(revs[0].cap)} continua ${noNivel(t.caixa)}, com a próxima revisão mais longe.`;
+    if (m.tipo === 'questaoDoDia') {
+      // com revisão de tópico somada (P1), a revisão muda o nível: anunciar as duas coisas, sem contradição
+      const rg = this._ganhoRevisoes(revs);
+      return rg ? `A Questão do dia não muda nível nem agenda; a revisão muda. ${rg}` : 'A Questão do dia não muda nível nem agenda: é dia de manter.';
     }
-    if (revs.length > 1) return 'Cada revisão certa na primeira resposta sobe o capítulo um nível.';
+    return this._ganhoRevisoes(revs);
+  }
+  /** Ganho anunciado das revisões da missão ('' sem revisão). */
+  _ganhoRevisoes(revs) {
+    const st = this.st;
+    if (revs.length === 1) return this._ganhoRevisao(revs[0].cap, `o ${this._nomeCap(revs[0].cap)}`);
+    if (revs.length > 1) {
+      const max = this._teto(), cx = revs.map(p => (st.topicos[p.cap] || {}).caixa || 0), sobem = cx.filter(k => k < max).length;
+      if (!sobem) return max < 5 ? `Cada revisão certa na primeira resposta mantém o nível: na demonstração, o nível vai até ${max} de 5.` : 'Cada revisão certa na primeira resposta mantém o nível 5 de 5, o mais alto.';
+      return sobem < cx.length ? `Cada revisão certa na primeira resposta sobe um nível, até o ${max} de 5${max < 5 ? ' (o teto da demonstração)' : ''}.` : 'Cada revisão certa na primeira resposta sobe um nível.';
+    }
     return '';
+  }
+  /** Ganho anunciado de uma revisão: sobe um nível; no teto, continua (sem prometer intervalo maior). */
+  _ganhoRevisao(cap, nome) {
+    const t = this.st.topicos[cap] || {}, de = t.caixa || 0, para = Math.min(this._teto(), de + 1);
+    return para > de ? `Acerte a revisão na primeira resposta: ${nome} sobe para o ${rotuloNivel(para)}.` : `Acerte a revisão na primeira resposta: ${nome} continua ${noNivel(de)}${this._notaTopo(de)}.`;
+  }
+  /** O que uma missão montada tem, para a "Próxima missão" e a agenda: a parte principal (capítulo novo,
+   *  continuação, revisão antecipada, Questão do dia, tópico) e os capítulos/tópicos com revisão. */
+  _partesMissao(mm) {
+    const revs = [...new Set(mm.passos.filter(p => p.t === 'revisao').map(p => p.cap))];
+    let principal = null;
+    if (mm.tipo === 'novo') principal = `${this._nomeCap(mm.cap)} (novo)`;
+    else if (mm.tipo === 'pratica') principal = `${this._nomeCap(mm.cap)}, continuação`;
+    else if (mm.tipo === 'antecipada' || (mm.tipo === 'prereq' && mm.passos.some(p => p.antecipada))) principal = `revisão antecipada do ${this._nomeCap(mm.cap)}`;
+    else if (mm.tipo === 'questaoDoDia' && mm.passos.some(p => p.t === 'dia')) principal = 'Questão do dia';
+    else if (mm.tipo === 'topico') principal = this.prat.titulo(mm.cap);
+    return { principal, revs };
   }
   _proximoDia(d) {
     const st = this.st, prox = Plano.proximoDiaDeEstudo(st, d);
     if (!prox) return null;
     const mm = montarMissaoGeral(st, this.pack, this.M, this.prat, prox);
     const revs = mm.passos.filter(p => p.t === 'revisao');
-    let o;
-    if (mm.tipo === 'novo') o = `${this._nomeCap(mm.cap)} (novo)${revs.length ? ' e ' + this._revisoes(revs.map(p => p.cap)) : ''}`;
-    else if (mm.tipo === 'pratica') o = `${this._nomeCap(mm.cap)}, continuação`;
-    else if (mm.tipo === 'antecipada') o = `revisão antecipada do ${this._nomeCap(mm.cap)}`;
-    else if (mm.tipo === 'questaoDoDia') o = 'Questão do dia';
-    else if (mm.tipo === 'topico') o = `${this.prat.titulo(mm.cap)}${revs.length ? ' e ' + this._revisoes(revs.map(p => p.cap)) : ''}`;
-    else if (revs.length) o = this._revisoes(revs.map(p => p.cap));
-    else o = 'missão do dia';
-    const quando = R.diff(d, prox) === 1 ? 'Amanhã' : `Na ${R.SEMANA_LONGA[R.diaDaSemana(prox)]}`.replace('Na sábado', 'No sábado').replace('Na domingo', 'No domingo');
+    // a revisão de tópico que o P1 soma entra no texto em todo tipo de missão (antes, só em 'novo' e 'topico')
+    const pt = this._partesMissao(mm);
+    const o = [pt.principal, pt.revs.length ? this._revisoes(pt.revs) : null].filter(Boolean).join(' e ') || 'missão do dia';
+    const quando = R.diff(d, prox) === 1 ? 'Amanhã' : cap1(naDia(prox));
     const ad = revs.find(p => p.antesDepois);
-    const gancho = ad ? `${quando} você vê se acertou a pergunta de entrada da p. ${this.pack.pagina(ad.antesDepois.split('#')[0] && this.pack.modelo(ad.antesDepois.split('#')[0]).pagina).n}.` : null;
+    const nPag = ad ? this.pack.pagina(this.pack.modelo(ad.antesDepois.split('#')[0]).pagina).n : null;
+    const gancho = ad ? `${quando} você vê se acertou a pergunta antes da p. ${nPag}.` : null;
+    // o "Por quê?" fala do dia anunciado (nunca a frase escrita para o próprio dia, com "Hoje")
     let porque = null;
     if (revs.length) {
-      const t = st.topicos[revs[0].cap], iv = Plano.intervalos(st, d);
-      if (t && t.caixa) {
+      const t = st.topicos[revs[0].cap], iv = Plano.intervalos(st, d), erro = voltaPorErro(t);
+      if (mm.capAdiado) {
+        const n = revs.length, c = this.pack.capitulo(mm.capAdiado), min = (st.perfil || {}).minutos || 25;
+        porque = `${quando} ${n === 1 ? 'vence 1 revisão' : `vencem ${n} revisões`}, e o Cap. ${c ? c.n : ''} não cabe junto nos seus ${min} min: ${n === 1 ? 'a revisão vem' : 'as revisões vêm'} primeiro, e o capítulo fica para o dia de estudo seguinte.`;
+      } else if (erro) {
+        porque = erro === 'extra' ? `A revisão antecipada ${this._de(revs[0].cap)} não fechou, e a revisão passa para o próximo dia de estudo: ${naDia(prox)}.` : `Você errou a revisão ${this._de(revs[0].cap)}, e revisão errada volta no próximo dia de estudo: ${naDia(prox)}.`;
+      } else if (t && t.caixa) {
         porque = `No ${rotuloNivel(t.caixa)}, a revisão vence em ${nDe(iv[t.caixa], 'dia', 'dias')}`;
-        porque += t.proxima < prox ? `; ${R.SEMANA_LONGA[R.diaDaSemana(t.proxima)]} é folga, então ela entra na ${R.SEMANA_LONGA[R.diaDaSemana(prox)]}.` : '.';
+        if (t.proxima >= prox) porque += '.';
+        else if (passouPorHojeNao(st, t.proxima, prox) && this._ef(t.proxima) >= prox) porque += `; você marcou “Hoje não”, então ela entra ${naDia(prox)}.`;
+        else if (!Plano.ehDiaDeEstudo(st, t.proxima) || Plano.emPausa(st, t.proxima)) porque += `; ${R.SEMANA_LONGA[R.diaDaSemana(t.proxima)]} é folga, então ela entra ${naDia(prox)}.`;
+        else porque += `; ela venceu ${t.proxima === d ? 'hoje' : `em ${R.fmtCurta(t.proxima)}`} e ainda não foi feita, então vem primeiro ${naDia(prox)}.`;
       }
-    } else if (mm.tipo === 'novo') porque = `É o próximo capítulo liberado pela ordem do caderno (regra ${mm.regra}).`;
+    } else if (mm.tipo === 'novo') porque = 'É o próximo capítulo liberado pela ordem do caderno.';
     else if (mm.tipo === 'questaoDoDia') porque = 'Nada vence nesse dia: a missão é a Questão do dia.';
-    else if (mm.tipo === 'topico') porque = mm.frase;
+    else if (mm.tipo === 'topico' && mm.regra === 'P3') porque = `${quando} nada vence e o caderno de ${this.pack.titulo} está em dia: entra ${this.prat.titulo(mm.cap)}, um tópico novo das matérias que você escolheu.`;
+    else if (mm.tipo === 'topico' && mm.regra === 'P2') porque = `Você começou ${this.prat.titulo(mm.cap)} e ainda não acertou duas seguidas: ele continua ${naDia(prox)}.`;
     const pq = mm.passos.find(p => p.id && ['pre', 'checagem', 'questao', 'revisao', 'dia'].includes(p.t));
-    let primeira = null;
-    try { const it = pq ? this.missao.itemDe(pq.id) : null; if (it) primeira = it.origem === 'enem' ? (it.contexto || it.enunciado) : it.enunciado; } catch (e) { primeira = null; }
-    return { dia: prox, data: R.fmtDiaSemana(prox), texto: `${R.fmtDiaSemana(prox)}: ${o}.`, gancho, porque, regra: mm.regra, primeira };
+    let primeira = null, fonte = null, rodape = null, licencaUrl = null;
+    try {
+      const it = pq ? this.missao.itemDe(pq.id) : null;
+      if (it) {
+        primeira = it.origem === 'enem' ? (it.contexto || it.enunciado) : it.enunciado;
+        // questão do Enem: o crédito vai junto (INEP, CC BY-ND), como em toda tela que mostra a questão
+        if (it.origem === 'enem') { fonte = `Questão ${it.numero} do ${it.prova}. INEP, CC BY-ND 3.0`; rodape = it.rodape || null; licencaUrl = it.licencaUrl || null; }
+      }
+    } catch (e) { primeira = null; }
+    return { dia: prox, data: R.fmtDiaSemana(prox), quando, texto: `${R.fmtDiaSemana(prox)}: ${o}.`, gancho, ganchoPagina: nPag, porque, regra: mm.regra, primeira, fonte, rodape, licencaUrl };
   }
   hoje() {
     const st = this.st, m = st.missao, d = R.hoje();
@@ -332,35 +418,43 @@ export class Nucleo {
       vm.estado = m.parcial ? 'encerradoAntes' : 'feito';
       vm.texto = m.parcial ? `Hoje você encerrou no passo ${m.encerradoNoPasso} de ${m.passos.length}. O resto vai para o próximo dia de estudo.` : 'Hoje está feito.';
       const prox = this._proximoDia(d);
-      vm.feito = prox ? { previa: prox.gancho ? `${prox.data}: ${prox.gancho.replace(/^(Amanhã|Na \S+|No \S+) /, '')}` : prox.texto, proxima: prox } : null;
+      // "Próxima missão:" é sempre a missão; o aviso da pergunta de antes vem como segunda frase dela.
+      // proxima.texto acompanha a prévia: a tela só repete a linha cinza quando as duas diferem
+      const previa = prox ? `${prox.texto}${prox.gancho ? ` Nela você vê se acertou a pergunta antes da p. ${prox.ganchoPagina}.` : ''}` : null;
+      vm.feito = prox ? { previa, gancho: prox.gancho, proxima: Object.assign({}, prox, { texto: previa, textoMissao: prox.texto }) } : null;
       vm.links = [{ rotulo: 'Continuar estudando', aba: 'estudar' }, { rotulo: 'Abrir o caderno', aba: 'caderno' }];
     } else if (m.iniciada) {
       vm.estado = 'emCurso';
-      vm.acao = { evento: 'CONTINUAR', rotulo: `Continuar do passo ${m.i + 1} de ${m.passos.length}`, nota: 'A missão fica aberta até a meia-noite.' };
+      vm.acao = { evento: 'CONTINUAR', rotulo: `Continuar do passo ${m.i + 1} de ${m.passos.length}`, nota: m.livre ? 'O estudo por conta própria fica aberto até a meia-noite. Ele não dá um segundo visto.' : 'A missão fica aberta até a meia-noite.' };
     } else if (m.tipo === 'folga') {
       vm.estado = 'folga'; vm.texto = 'Hoje é folga. Nada vence por isso.'; vm.links = [{ rotulo: 'Continuar estudando', aba: 'estudar' }];
       vm.acao = { evento: 'ESTUDAR_MESMO_ASSIM', rotulo: 'Estudar mesmo assim', nota: 'Conta como dia estudado; não conta para a meta da semana.' };
     } else if (m.hojeNao) {
-      vm.estado = 'hojeNao'; vm.texto = 'Hoje não. As revisões de hoje passam para o próximo dia de estudo.';
+      // o dia do "Hoje não" conta como folga para as revisões (motor.dataEfetiva): a de hoje entra no próximo dia de estudo sem atraso
+      const nHoje = m.passos.filter(p => p.t === 'revisao' && !p.atrasada).length;
+      vm.estado = 'hojeNao';
+      vm.texto = `Hoje não. A missão fica para o próximo dia de estudo${nHoje ? `, e ${nHoje === 1 ? 'a revisão de hoje entra' : `as ${nHoje} revisões de hoje entram`} nele sem contar como atraso` : ''}.`;
       vm.acao = { evento: 'COMECAR', rotulo: 'Começar mesmo assim' };
     } else {
       vm.estado = m.provaPassou ? 'provaPassou' : m.reta ? 'reta' : m.retorno ? 'retorno' : m.tipo === 'questaoDoDia' ? (firme && this.M.topicosAtivos(st).length ? 'firme' : 'questaoDoDia') : (!Object.keys(st.dias).length && !st.historico.length ? 'primeiroDia' : 'missao');
       vm.acao = temPassos ? { evento: 'COMECAR', rotulo: 'Começar' } : null;
       if (vm.estado === 'provaPassou') vm.texto = `A prova de ${R.fmtDiaMes(st.perfil.prova)} passou. Quer marcar a próxima? Sem data, o Prumo usa 90 dias.`;
       else if (vm.estado === 'reta') vm.texto = m.frase;
-      else if (vm.estado === 'retorno') vm.texto = `${m.boasVindas ? 'Bem-vindo de volta. ' : ''}${nDe(m.venc.length, 'revisão passou', 'revisões passaram')} para hoje; a missão de hoje tem só revisões.`;
+      else if (vm.estado === 'retorno') vm.texto = `${m.boasVindas ? 'Bem-vindo de volta. ' : ''}Hoje a missão tem só revisões.`;
       else if (vm.estado === 'firme') vm.texto = `${this.pack.titulo}: todos os capítulos estão no nível 3 de 5 ou acima. As revisões continuam quando vencerem.`;
-      else if (vm.estado === 'questaoDoDia') vm.texto = `${cap1(nDe(m.passos.filter(p => p.t === 'dia').length, 'questão', 'questões'))} dos capítulos que você já abriu.`;
+      else if (vm.estado === 'questaoDoDia') { const nr = m.passos.filter(p => p.t === 'revisao').length; vm.texto = `${cap1(nDe(m.passos.filter(p => p.t === 'dia').length, 'questão', 'questões'))} dos capítulos que você já abriu${nr ? ` e ${nDe(nr, 'revisão', 'revisões')}` : ''}.`; }
       else if (m.boasVindas) vm.texto = 'Bem-vindo de volta.';
       if (vm.estado === 'provaPassou') vm.links.push({ rotulo: 'Marcar data', aba: 'plano' });
     }
     if (temPassos && !m.fechada && m.tipo !== 'pausa' && m.tipo !== 'folga') {
       const atrasadas = m.passos.filter(p => p.t === 'revisao' && p.atrasada).length;
+      const avisos = this._avisosTempo(m);
       vm.bloco = {
         rotulo: vm.estado === 'primeiroDia' ? 'Missão 1' : null,
         titulo: this._titulo(m),
         linhaFina: `${[this._paginasDe(m.passos), `≈ ${m.minutos} min`].filter(Boolean).join(' · ')} · termina em "Pronto por hoje"`,
-        composicao: this._composicao(m),
+        composicao: [this._composicao(m), ...avisos].filter(Boolean).join(' '),
+        avisos,
         atrasada: atrasadas ? (atrasadas === 1 ? '1 revisão atrasada vem primeiro.' : `${atrasadas} revisões atrasadas vêm primeiro.`) : null,
         ganho: this._ganho(m),
         cabecalho: this._cabecalho(m),
@@ -375,24 +469,50 @@ export class Nucleo {
       vm.prova = { titulo: 'Prova do caderno liberada', texto: `São até ${P.chefe.teto} questões, cerca de ${P.chefe.teto * 3} minutos: mais longa que a sua missão normal.`, regra: Prova.regraProva(this.pack), acao: { evento: 'FAZER_PROVA', rotulo: 'ver a regra' } };
     }
     vm.saudacao = st.perfil.nome ? `Oi, ${st.perfil.nome.split(/\s+/)[0]}` : null;
-    vm.proximoRotulo = vm.estado === 'emCurso' ? 'Sua missão de hoje' : 'Seu próximo conteúdo';
+    vm.livre = !!m.livre;
+    vm.proximoRotulo = m.livre ? 'Estudo por conta própria' : vm.estado === 'emCurso' ? 'Sua missão de hoje' : 'Seu próximo conteúdo';
     if (m.boasVindas && st.perfil.porque && !m.fechada) vm.porqueEstudo = `Por que eu estudo: ${st.perfil.porque}`;   // d.3
     vm.porQue = this.porQue();
-    vm.venceHoje = !m.fechada && !m.livre ? this._venceHoje(m) : null;
+    vm.venceHoje = !m.fechada && !m.livre && !m.hojeNao ? this._venceHoje(m) : null;
     vm.recomeco = this._recomeco(m, d);
     if (vm.recomeco && vm.texto === 'Bem-vindo de volta.') vm.texto = null;
     vm.intencao = this._textoIntencao(d);
     vm.semana = this.semana(d);
     return vm;
   }
-  /** "Hoje vence": as revisões de hoje, pelo motor (a data da revisão chegou). */
+  /** Avisos de tempo da missão (vão também na composição): a apostila que passa dos minutos do plano,
+   *  o capítulo que ficou para depois das revisões e as revisões que não couberam. */
+  _avisosTempo(m) {
+    const st = this.st, min = (st.perfil || {}).minutos || 25, out = [];
+    if (m.tipo === 'topico' && m.minutos > min) {
+      const tp = m.passos.find(p => p.t === 'teoria'), mt = tp ? minutosDaTeoriaNaMissao(st, this.prat, tp.cap) : 0;
+      // o aquecimento e a leitura não fazem o dia contar: dizer quando ele conta, em vez de "o que fizer fica registrado"
+      out.push(`Hoje passa dos seus ${min} min${mt > 6 ? `: só a apostila leva cerca de ${mt}` : ''}. Se precisar, encerre no meio; o dia conta como estudado quando você responde uma questão ou revisão (o aquecimento não conta).`);
+    } else if (m.minutos >= min + 5) out.push(`Leva cerca de ${m.minutos} min, mais que os seus ${min}.`);
+    if (m.capAdiado) out.push(`O ${this._nomeCap(m.capAdiado)} fica para o próximo dia de estudo: hoje a revisão vem primeiro.`);
+    if (m.revisoesForaDoOrcamento) {
+      const n = m.revisoesForaDoOrcamento, mais = n === 1 ? 'Mais 1 revisão fica' : `Mais ${n} revisões ficam`;
+      // o corte do tópico escolhido é pela capacidade do dia (P0), não pelos minutos: cada um com o seu motivo
+      out.push(m.foraPor === 'capacidade'
+        ? `${mais} para o próximo dia de estudo: junto com um tópico, entram até ${Plano.capacidade(st)} revisões por dia.`
+        : `${mais} para o próximo dia de estudo: não ${n === 1 ? 'cabe' : 'cabem'} nos seus ${min} min.`);
+    }
+    return out;
+  }
+  /** "Hoje vence": as revisões da missão de hoje, separando as que vencem hoje (inclusive as que venceram
+   *  numa folga) das atrasadas (que passaram por um dia de estudo sem ser feitas). */
   _venceHoje(m) {
-    const caps = [...new Set(m.passos.filter(p => p.t === 'revisao').map(p => p.cap))];
-    if (!caps.length) return null;
-    const n = m.passos.filter(p => p.t === 'revisao').length;
-    const nomes = caps.map(c => `do ${this._nomeCap(c)}`), lista = nomes.length > 1 ? `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}` : nomes[0];
-    const vence = `Hoje ${n === 1 ? 'vence 1 revisão' : `vencem ${n} revisões`} ${lista}.`;
-    return { rotulo: 'Hoje vence', n, vence, porque: 'Revisando hoje, você guarda o conteúdo.', texto: `${vence} Revisando hoje, você guarda o conteúdo.` };
+    const revs = m.passos.filter(p => p.t === 'revisao');
+    if (!revs.length) return null;
+    const hoje = revs.filter(p => !p.atrasada), atr = revs.filter(p => p.atrasada), partes = [];
+    if (hoje.length) partes.push(`Hoje ${hoje.length === 1 ? 'vence 1 revisão' : `vencem ${hoje.length} revisões`} ${this._doLista(hoje.map(p => p.cap))}.`);
+    if (atr.length) {
+      const desde = atr.map(p => this._ef((this.st.topicos[p.cap] || {}).proxima)).filter(R.ehData).sort()[0];
+      const qtd = atr.length === 1 ? '1 revisão atrasada' : `${atr.length} revisões atrasadas`;
+      partes.push(`${hoje.length ? 'Mais ' : ''}${hoje.length ? qtd : cap1(qtd)}${desde ? ` desde ${R.fmtCurta(desde)}` : ''}: ${atr.length === 1 ? 'a' : 'as'} ${this._doLista(atr.map(p => p.cap))}.`);
+    }
+    const vence = partes.join(' '), porque = 'Revisando hoje, você guarda o conteúdo.';
+    return { rotulo: hoje.length ? 'Hoje vence' : atr.length === 1 ? 'Revisão atrasada' : 'Revisões atrasadas', n: revs.length, hoje: hoje.length, atrasadas: atr.length, vence, porque, texto: `${vence} ${porque}` };
   }
   /** "Semana nova" (1ª abertura da semana) ou "Bem-vindo de volta" (3 ou mais dias de estudo sem estudar): sem culpa. */
   _recomeco(m, d) {
@@ -432,8 +552,9 @@ export class Nucleo {
       if (feito && estudo) n++;
       dias.push({ dia: x, rotulo: R.SEMANA_CURTA[R.diaDaSemana(x)], estudado: feito, diaDeEstudo: estudo, hoje: x === d, futuro: x > d });
     }
-    const meta = p.metaSemana, ok = n >= meta;
-    return { n, meta, cumprida: ok, dias, texto: ok ? `Meta da semana cumprida: ${n} de ${meta} dias.` : `${n} de ${meta} ${meta === 1 ? 'dia' : 'dias'} nesta semana`, rotulo: 'Meta da semana', regra: 'Conta cada dia de estudo do seu plano em que você estudou. Na segunda, a semana começa limpa, e tudo o que você estudou continua nos risquinhos.' };
+    const meta = p.metaSemana, ok = n >= meta, nd = `${meta === 1 ? 'dia' : 'dias'}`;
+    // o rótulo ("Meta da semana") vem na frente na tela: o texto não o repete
+    return { n, meta, cumprida: ok, dias, texto: ok ? (n > meta ? `${n} dias, meta de ${meta} cumprida` : `${n} de ${meta} ${nd}, cumprida`) : `${n} de ${meta} ${nd}`, rotulo: 'Meta da semana', regra: 'Conta cada dia de estudo do seu plano em que você estudou. A semana entra na conta de semanas com a meta quando termina, no domingo. Na segunda, a semana começa limpa, e tudo o que você estudou continua nos risquinhos.' };
   }
   /** Coleção de vistos (Perfil): o calendário de um mês com o carimbo nos dias com o visto da missão. mes = 'AAAA-MM'. */
   colecao(mes) {
@@ -467,7 +588,7 @@ export class Nucleo {
     const v = verARegra(this.st, this.pack, this.M, soCaderno, d);
     for (const p of m.passos.filter(x => x.fonte === 'pratica' && x.t === 'revisao')) {
       const t = this.st.topicos[p.cap] || {};
-      v.revisoes.push(`Revisão: ${this.prat.titulo(p.cap)}, ${t.proxima === d ? 'vence hoje' : t.proxima < d ? `atrasada desde ${R.fmtCurta(t.proxima)}` : `vence ${R.fmtCurta(t.proxima)}`} (${p.motivo})`);
+      v.revisoes.push(`Revisão: ${this.prat.titulo(p.cap)}, ${quandoRevisao(this.st, t.proxima, d)} (${p.motivo})`);
     }
     const qp = m.passos.filter(x => x.fonte === 'pratica' && x.id && (x.t === 'questao' || x.t === 'revisao')).map(x => this.prat.item(x.id)).filter(Boolean).map(it => `${it.prova.replace(/^Enem /, '').replace(/, .*$/, '')} Q${it.numero}`);
     if (qp.length) v.questoes = v.questoes ? `${v.questoes}, ${qp.join(', ')}` : `Questões do Enem: ${qp.join(', ')}`;
@@ -561,12 +682,22 @@ export class Nucleo {
     };
   }
   passoAtual() {
+    const vm = this._passoAtual(), m = this.st.missao;
+    // estudo por conta própria (depois do Pronto): a tela troca a última etapa da trilha e o texto de "Encerrar"
+    if (vm && m) vm.livre = !!m.livre;
+    return vm;
+  }
+  _passoAtual() {
     const st = this.st, m = st.missao, pk = this.pack, nome = this.estado();
     if (!m || !DENTRO.has(nome)) return null;
     const p = m.passos[m.i];
     if (nome === 'feedback' || nome === 'trecho') {
       const fb = this.feedback();
-      if (nome === 'trecho' && m.ultima.fonte === 'pratica') return Object.assign({ estado: 'trecho' }, this.teoria(m.ultima.cap), { titulo: `Teoria: ${this.prat.titulo(m.ultima.cap)}`, ancora: null, feedback: fb, acao: { evento: 'VOLTAR', rotulo: 'Voltar ao resultado' } });
+      if (nome === 'trecho' && m.ultima.fonte === 'pratica') {
+        // "Rever a apostila": abre na seção que a questão cobra, quando o conteúdo informa (âncora "secao-N")
+        const it = this.missao.itemDe(m.ultima.item) || {}, sec = it.secao || null;
+        return Object.assign({ estado: 'trecho' }, this.teoria(m.ultima.cap), { titulo: 'Rever a apostila', secao: sec, ancora: sec ? `secao-${sec}` : null, feedback: fb, acao: { evento: 'VOLTAR', rotulo: 'Voltar ao resultado' } });
+      }
       return nome === 'trecho' ? Object.assign({ estado: 'trecho' }, this._trecho(m.ultima.paragrafo), { feedback: fb, acao: { evento: 'VOLTAR', rotulo: 'Voltar ao resultado' } }) : fb;
     }
     if (nome === 'fimDaRodada') return this.fimDaRodada();
@@ -598,20 +729,23 @@ export class Nucleo {
     const etapa = p.fonte === 'pratica' ? (p.t === 'pre' ? 'Aquecimento' : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : this.prat.curto(p.cap)) : p.t === 'pre' ? `Pergunta da p. ${pk.pagina(p.pagina).n}` : p.t === 'checagem' ? `Confira a p. ${pk.pagina(p.pagina).n}` : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : p.t === 'dia' ? 'Questão do dia' : r.tipo === 'enem' ? 'Questão do Enem' : r.tipo === 'antecipada' ? 'Revisão antecipada' : 'Questão da equipe';
     return {
       estado: 'pergunta', tipo: r.tipo, rotulo: r.rotulo, subrotulo: r.sub, aviso: r.aviso || null,
-      avisoPrimeiraChecagem: primeiraChecagem ? 'Isso fica só no seu celular. Ninguém da escola vê.' : null,
+      avisoPrimeiraChecagem: primeiraChecagem ? 'Isso fica só neste aparelho. Ninguém da escola vê.' : null,
       inserida: !!p.inserido,
       // Pilar III (b.3): a questão inserida depois do erro é anunciada no topo, com o trecho do erro
       avisoInserida: p.inserido ? `Depois do erro: uma questão da equipe sobre ${p.sobre && pk.local(p.sobre) ? `a ${pk.local(p.sobre).rotulo}` : 'o mesmo trecho'}.` : null,
       item: this._itemVM(item), topo: this._topo(p, etapa),
-      fase: p.fonte === 'pratica' ? (p.t === 'pre' ? 'aquecer' : 'questoes') : null,
+      fase: this._fase(p.t === 'pre' ? 'aquecer' : 'questoes'),
       acao: { evento: 'RESPONDER', rotulo: 'Responder', exige: 'alt' },
     };
   }
+  /** Etapa da trilha do tópico (Aquecer → Apostila → Questões → Visto) só na missão de tópico; null no caderno. */
+  _fase(f) { const m = this.st.missao; return m && m.tipo === 'topico' ? f : null; }
   /** Teoria de um tópico de prática, na folha pautada: seções, exemplos resolvidos, armadilhas e resumo. */
   teoria(id) {
     const t = this.prat.get(id);
     if (!t) return null;
     const te = t.teoria, s = x => (Array.isArray(x) ? x.filter(y => typeof y === 'string') : []);
+    const rev = te.revisao && typeof te.revisao === 'object' && typeof te.revisao.por === 'string' && te.revisao.por.trim() ? te.revisao : null;
     return {
       teoria: true, id, titulo: te.titulo || t.titulo, cabeco: `${t.materia}: teoria`, porQueCai: te.porQueCai || null,
       secoes: (() => {
@@ -626,7 +760,10 @@ export class Nucleo {
       })(),
       armadilhas: s(te.armadilhas), resumo: s(te.resumo),
       pagina: { titulo: te.titulo || t.titulo, pe: 'Teoria' },
-      credito: 'Texto da equipe Prumo · CC BY-SA 4.0 · revisão em andamento',
+      // "revisado por … em …" só quando o conteúdo registra a revisão (campo revisao: { por, em } no *.teoria.js)
+      credito: `Texto da equipe Prumo · CC BY-SA 4.0${rev ? ` · revisado por ${rev.por.trim()}${R.ehData(rev.em) ? ` em ${R.fmtCompleta(rev.em)}` : ''}` : ''}`,
+      // a conta da capa ("cerca de N min"), pronta: a mesma que a missão usa no tempo
+      minutos: this.prat.minutosTeoria(id),
       habilidades: (Array.isArray(te.habilidades) ? te.habilidades : []).filter(x => x && typeof x.codigo === 'string').map(x => ({ codigo: x.codigo, descricao: typeof x.descricao === 'string' ? x.descricao : '' })),
       fontes: (Array.isArray(te.fontes) ? te.fontes : []).filter(f => f && typeof f.titulo === 'string').map(f => ({
         titulo: f.titulo, url: /^https:\/\//.test(f.url || '') ? f.url : null, licenca: typeof f.licenca === 'string' ? f.licenca : '',
@@ -637,12 +774,14 @@ export class Nucleo {
   _leituraTeoria(p) {
     const m = this.st.missao, ant = m.passos[m.i - 1];
     const respondeuAgora = !!(ant && ant.t === 'pre' && ant.fonte === 'pratica' && m.ultimaPre && m.ultimaPre.cap === p.cap);
+    // aquecimento respondido numa missão encerrada antes do fim da apostila: a resposta aparece no fim desta leitura
+    const pr = ((this.st.praticas || {})[p.cap] || {}).pre, aguarda = !!(pr && pr.alt && !pr.revelado);
     const temQuestao = m.passos.slice(m.i + 1).some(x => x.t === 'questao' || x.t === 'revisao');
     return Object.assign(this.teoria(p.cap), {
-      estado: 'leitura', fase: 'apostila', topo: this._topo(p, `Apostila: ${this.prat.curto(p.cap)}`),
-      faixa: respondeuAgora ? 'Resposta guardada. No fim da apostila você vê se acertou.' : null,
-      jaSei: temQuestao || respondeuAgora ? { evento: 'JA_SEI', rotulo: 'Já sei isto: pular a leitura' } : null,
-      botao: { evento: 'TERMINEI_TRECHO', rotulo: respondeuAgora ? 'Terminei de ler: ver a pergunta do começo' : temQuestao ? 'Terminei de ler: ir para as questões' : 'Terminei de ler' },
+      estado: 'leitura', fase: this._fase('apostila'), topo: this._topo(p, `Apostila: ${this.prat.curto(p.cap)}`),
+      faixa: respondeuAgora ? 'Resposta guardada. No fim da apostila você vê se acertou.' : aguarda ? 'No fim da apostila você vê se acertou o aquecimento.' : null,
+      jaSei: temQuestao || aguarda ? { evento: 'JA_SEI', rotulo: 'Já sei isto: pular a leitura' } : null,
+      botao: { evento: 'TERMINEI_TRECHO', rotulo: aguarda ? 'Terminei de ler: ver a resposta do aquecimento' : temQuestao ? 'Terminei de ler: ir para as questões' : 'Terminei de ler' },
       nota: null,
     });
   }
@@ -683,13 +822,9 @@ export class Nucleo {
     };
     if (u.revisao) {
       const fr = u.revisao, cn = this._nomeCap(p.cap);
-      if (fr.venceu) {
-        vm.revisao = { texto: fr.caixaDepois > fr.caixaAntes ? `Certa. O ${cn} subiu para o ${rotuloNivel(fr.caixaDepois)}. Próxima revisão: ${R.fmtCurta(fr.proxima)}.` : `Certa. O ${cn} continua ${noNivel(fr.caixaDepois)}${st.config.nivelMaximo < 5 && fr.caixaDepois >= st.config.nivelMaximo ? ` (na demo, o nível vai até ${st.config.nivelMaximo} de 5)` : ''}. Próxima revisão: ${R.fmtCurta(fr.proxima)}.`, nivel: { de: fr.caixaAntes, para: fr.caixaDepois, animar: fr.caixaDepois > fr.caixaAntes } };
-        vm.titulo = vm.revisao.texto; vm.som = fr.caixaDepois > fr.caixaAntes ? 'nivel' : 'acerto';
-      } else {
-        vm.revisao = { texto: `A revisão ${this._de(p.cap)} volta para amanhã. Seus dias estudados e seu histórico continuam.`, nivel: { de: fr.caixaAntes, para: fr.caixaDepois, animar: false } };
-        vm.som = null;   // nível que desce: sem animação e sem som
-      }
+      vm.revisao = { texto: this._textoRevisao(fr, `o ${cn}`, p.cap), nivel: { de: fr.caixaAntes, para: fr.caixaDepois, animar: !!fr.venceu && fr.caixaDepois > fr.caixaAntes } };
+      if (fr.venceu) { vm.titulo = vm.revisao.texto; vm.som = fr.caixaDepois > fr.caixaAntes ? 'nivel' : 'acerto'; }
+      else vm.som = null;   // nível que desce: sem animação e sem som
       if (fr.antesDepois) {
         const a = fr.antesDepois, quando = R.diff(a.antesDia, d) === 1 ? 'Ontem' : `Em ${R.fmtCurta(a.antesDia)}`;
         vm.revisao.antesDepois = fr.venceu ? `${quando}, antes de ler, você marcou ${a.antes}. Hoje: ${a.hoje}, certa.` : `${quando}, antes de ler, você marcou ${a.antes}. Hoje: ${a.hoje}. A certa é ${a.certa}.`;
@@ -702,31 +837,46 @@ export class Nucleo {
     }
     return vm;
   }
+  /** Frase do resultado da revisão (feedback e Pronto), fiel ao motor: certa sobe um nível (ou continua no
+   *  teto); errada desce UM nível (nunca abaixo de 1) e volta no próximo dia de estudo. A data, nos dois casos,
+   *  é a do dia de estudo em que ela entra ("amanhã, qua 18/11" ou, na véspera da folga, "na segunda, 23/11"). */
+  _textoRevisao(fr, nome, cap, { certaAntes = true, semNota = false } = {}) {
+    const prox = R.fmtCurta(this._ef(fr.proxima));
+    if (fr.venceu) {
+      const t = fr.caixaDepois > fr.caixaAntes ? `${nome} subiu para o ${rotuloNivel(fr.caixaDepois)}` : `${nome} continua ${noNivel(fr.caixaDepois)}${semNota && fr.caixaDepois < 5 ? '' : this._notaTopo(fr.caixaDepois)}`;
+      return `${certaAntes ? 'Certa. ' : ''}${cap1(t)}. Próxima revisão: ${prox}.`;
+    }
+    const nivel = fr.caixaDepois < fr.caixaAntes ? `${cap1(nome)} desceu para o ${rotuloNivel(fr.caixaDepois)}.` : `${cap1(nome)} fica ${noNivel(fr.caixaDepois)}.`;
+    return `A revisão ${this._de(cap)} volta ${voltaEm(this._ef(fr.proxima), R.hoje())}. Seus dias estudados e seu histórico continuam. ${nivel}`;
+  }
   _feedbackPratica(u) {
     const st = this.st, m = st.missao, item = this.missao.itemDe(u.item), p = m.passos[u.passo] || {}, ok = u.res === 'ok', d = R.hoje();
     const alt = item.alternativas.find(a => a.letra === u.alt) || {}, nome = this.prat.titulo(u.cap);
     const depois = m.passos.slice(m.i + 1).some(x => x.t === 'questao' || x.t === 'revisao');
     const vm = {
       estado: 'feedback', tipo: u.revela ? 'revela' : u.t === 'revisao' ? 'revisao' : 'enem',
-      rotulo: u.revela ? 'A pergunta do começo' : u.t === 'revisao' ? `Revisão do ${this._nomeCap(u.cap)}` : 'Questão do Enem', subrotulo: null, certa: ok,
+      rotulo: u.revela ? 'Resposta do aquecimento' : u.t === 'revisao' ? `Revisão do ${this._nomeCap(u.cap)}` : 'Questão do Enem', subrotulo: null, certa: ok,
       titulo: u.revela ? (ok ? `Antes de ler, você marcou ${u.alt}. Certa.` : `Antes de ler, você marcou ${u.alt}. A certa é ${item.gabarito}.`) : ok ? 'Certa.' : `Você marcou ${u.alt}. A certa é ${item.gabarito}.`,
       porque: u.revela || ok ? item.explicacao || null : null,
       falta: u.revela || ok ? null : alt.falta || null,
       item: this._itemVM(item),
       alternativas: item.alternativas.map(a => ({ letra: a.letra, texto: a.texto, html: !!a.html, imagem: null, marca: a.letra === u.alt && a.certa ? 'sua-certa' : a.letra === u.alt ? 'sua' : a.certa ? 'certa' : null })),
-      trecho: !u.revela && !ok ? { evento: 'VOLTAR_AO_TRECHO', rotulo: 'Rever a teoria' } : null,
+      trecho: !u.revela && !ok ? { evento: 'VOLTAR_AO_TRECHO', rotulo: 'Rever a apostila', secao: item.secao || null } : null,
       resolucao: !u.revela && !ok && item.explicacao ? { evento: 'VER_RESOLUCAO', rotulo: 'Ver a resolução da equipe', aberta: !!m.resolucaoAberta, texto: item.explicacao } : null,
       proxima: u.revela && depois ? 'Agora, as questões do Enem, da mais fácil para a mais difícil.' : null,
       revisao: null, fimRodada: null,
       medidor: !u.revela && p.t === 'questao' && !p.antecipada ? this._medidorDepois(u, p) : null,
       continuar: { evento: 'CONTINUAR', rotulo: 'Continuar', texto: 'Leia a explicação', pausaMs: u.pausaMs, liberaEm: (m.feedbackEm || 0) + u.pausaMs, restanteMs: Math.max(0, (m.feedbackEm || 0) + u.pausaMs - R.agora()) },
       som: u.revela ? null : ok ? 'acerto' : 'erro',
-      topo: this._topo(p, u.revela ? `Teoria de ${this.prat.curto(u.cap)}` : 'Resultado'),
+      topo: this._topo(p, u.revela ? 'Aquecimento: a resposta' : 'Resultado'),
+      // a resposta do aquecimento vem depois da apostila: Aquecer e Apostila ficam feitos, e a trilha não anda para trás
+      fase: this._fase('questoes'),
     };
     if (u.revisao) {
       const fr = u.revisao;
-      if (fr.venceu) { vm.revisao = { texto: `Certa. ${nome} ${fr.caixaDepois > fr.caixaAntes ? `subiu para o ${rotuloNivel(fr.caixaDepois)}` : `continua ${noNivel(fr.caixaDepois)}`}. Próxima revisão: ${R.fmtCurta(fr.proxima)}.`, nivel: { de: fr.caixaAntes, para: fr.caixaDepois, animar: fr.caixaDepois > fr.caixaAntes } }; vm.titulo = vm.revisao.texto; vm.som = fr.caixaDepois > fr.caixaAntes ? 'nivel' : 'acerto'; }
-      else { vm.revisao = { texto: `A revisão ${this._de(u.cap)} volta para amanhã. Seus dias estudados e seu histórico continuam.`, nivel: { de: fr.caixaAntes, para: fr.caixaDepois, animar: false } }; vm.som = null; }
+      vm.revisao = { texto: this._textoRevisao(fr, nome, u.cap), nivel: { de: fr.caixaAntes, para: fr.caixaDepois, animar: !!fr.venceu && fr.caixaDepois > fr.caixaAntes } };
+      if (fr.venceu) { vm.titulo = vm.revisao.texto; vm.som = fr.caixaDepois > fr.caixaAntes ? 'nivel' : 'acerto'; }
+      else vm.som = null;
     }
     if (u.fimRodada) {
       const fr = m.fimRodada || m.resumo.rodadas[m.resumo.rodadas.length - 1];
@@ -744,8 +894,8 @@ export class Nucleo {
   }
   _fimRodadaPratica(fr) {
     const nome = this.prat.titulo(fr.cap), d = R.hoje();
-    if (fr.extra) return { variante: fr.venceu ? 'venceu' : 'teto', texto: fr.venceu ? `Revisão antecipada vencida. O nível de ${nome} só sobe na revisão do dia marcado (${R.fmtCurta(fr.proxima)}).` : `A revisão antecipada mostrou que ${nome} está escapando: a revisão passou para amanhã, ${R.fmtCurta(fr.proxima)}.` };
-    if (fr.venceu) return { variante: 'venceu', texto: `${nome} entrou ${noNivel(fr.caixaDepois)}. A primeira revisão fica para ${dataRevisao(fr.proxima, d)}.` };
+    if (fr.extra) return { variante: fr.venceu ? 'venceu' : 'teto', texto: fr.venceu ? `Revisão antecipada vencida. O nível de ${nome} só sobe na revisão do dia marcado (${R.fmtCurta(this._ef(fr.proxima))}).` : `A revisão antecipada mostrou que ${nome} está escapando: a revisão passou para ${dataRevisao(this._ef(fr.proxima), d)}.` };
+    if (fr.venceu) return { variante: 'venceu', texto: `${nome} entrou ${noNivel(fr.caixaDepois)}. A primeira revisão fica para ${dataRevisao(this._ef(fr.proxima), d)}.` };
     const resta = ineditas(this.st, this.prat, fr.cap).length;
     const prox = resta ? `Na próxima vez, o tópico continua com ${resta === 1 ? 'a questão que falta' : `as ${resta} questões que faltam`}.` : 'As questões deste tópico voltam quando fizer 7 dias que você as viu.';
     if (fr.naoFecha) return { variante: 'naoFecha', texto: `Com as questões que restam hoje, não dá mais para acertar duas seguidas. ${prox}` };
@@ -754,8 +904,8 @@ export class Nucleo {
   _textoFimRodada(fr) {
     if (fr.fonte === 'pratica') return this._fimRodadaPratica(fr);
     const pk = this.pack, c = pk.capitulo(fr.cap), d = R.hoje();
-    if (fr.extra) return { variante: fr.venceu ? 'venceu' : 'teto', texto: fr.venceu ? `Revisão antecipada vencida. O nível do Cap. ${c.n} só sobe na revisão do dia certo (${R.fmtCurta(fr.proxima)}).` : `A revisão antecipada mostrou que o Cap. ${c.n} está escapando: a revisão dele passou para amanhã, ${R.fmtCurta(fr.proxima)}.` };
-    if (fr.venceu) return { variante: 'venceu', texto: `${c.titulo} entrou ${noNivel(fr.caixaDepois)}. A primeira revisão fica para ${dataRevisao(fr.proxima, d)}.` };
+    if (fr.extra) return { variante: fr.venceu ? 'venceu' : 'teto', texto: fr.venceu ? `Revisão antecipada vencida. O nível do Cap. ${c.n} só sobe na revisão do dia certo (${R.fmtCurta(this._ef(fr.proxima))}).` : `A revisão antecipada mostrou que o Cap. ${c.n} está escapando: a revisão dele passou para ${dataRevisao(this._ef(fr.proxima), d)}.` };
+    if (fr.venceu) return { variante: 'venceu', texto: `${c.titulo} entrou ${noNivel(fr.caixaDepois)}. A primeira revisão fica para ${dataRevisao(this._ef(fr.proxima), d)}.` };
     if (fr.redireciona) return { variante: 'tetoPrereq', texto: `A prática vai para o Cap. ${pk.capitulo(fr.redireciona).n}, que é a base deste.` };
     const pe = paginasComErro(this.st, pk, fr.cap);
     const pg = c.paginas[pe.principal];
@@ -784,6 +934,7 @@ export class Nucleo {
       cards: fr.cardsRecebidos ? `Os ${fr.cardsRecebidos} cartões do ${this._nomeCap(fr.cap)} entraram no seu baralho.` : null,
       acao: { evento: 'SEGUIR', rotulo: 'Seguir' },
       topo: this._topo(m.passos[m.i], 'Fim da rodada'),
+      fase: this._fase('questoes'),
     };
   }
   /** Mão de cards (Decisão 1): frente → Virar → verso → Lembrei / Ainda não. */
@@ -821,34 +972,46 @@ export class Nucleo {
     const mud = [];
     for (const fr of res.rodadas) {
       const cn = this._nomeCap(fr.cap);
-      if (fr.extra) mud.push({ tipo: 'antecipada', texto: fr.venceu ? `A revisão antecipada do ${cn} fechou. O nível só sobe na revisão do dia certo.` : `A revisão do ${cn} ficou para amanhã.` });
-      else if (fr.venceu) mud.push({ tipo: 'nivel', texto: `O ${cn} entrou ${noNivel(fr.caixaDepois)}. Próxima revisão: ${dataRevisao(fr.proxima, d)}.`, nivel: { cap: fr.cap, de: fr.caixaAntes, para: fr.caixaDepois, animar: true } });
+      if (fr.extra) mud.push({ tipo: 'antecipada', texto: fr.venceu ? `A revisão antecipada do ${cn} fechou. O nível só sobe na revisão do dia certo.` : `A revisão do ${cn} ficou para ${dataRevisao(this._ef(fr.proxima), d)}.` });
+      else if (fr.venceu) mud.push({ tipo: 'nivel', texto: `O ${cn} entrou ${noNivel(fr.caixaDepois)}. Próxima revisão: ${dataRevisao(this._ef(fr.proxima), d)}.`, nivel: { cap: fr.cap, de: fr.caixaAntes, para: fr.caixaDepois, animar: true } });
       else mud.push({ tipo: 'teto', texto: `${cap1(this._curto(fr.cap))}: ${this._textoFimRodada(fr).texto}` });
       if (fr.cardsRecebidos) mud.push({ tipo: 'cards', texto: `Os ${fr.cardsRecebidos} cartões do ${cn} entraram no seu baralho.` });
     }
     for (const rv of res.revisoes) {
       const cn = this._nomeCap(rv.cap);
-      mud.push(rv.venceu ? { tipo: 'revisao', texto: `O ${cn} ${rv.caixaDepois > rv.caixaAntes ? `subiu para o ${rotuloNivel(rv.caixaDepois)}` : `continua ${noNivel(rv.caixaDepois)}`}. Próxima revisão: ${R.fmtCurta(rv.proxima)}.`, nivel: { cap: rv.cap, de: rv.caixaAntes, para: rv.caixaDepois, animar: rv.caixaDepois > rv.caixaAntes } }
-        : { tipo: 'revisao', texto: `A revisão ${this._de(rv.cap)} volta para amanhã. Seus dias estudados e seu histórico continuam.`, nivel: { cap: rv.cap, de: rv.caixaAntes, para: rv.caixaDepois, animar: false } });
+      mud.push({ tipo: 'revisao', texto: this._textoRevisao(rv, `o ${cn}`, rv.cap, { certaAntes: false, semNota: true }), nivel: { cap: rv.cap, de: rv.caixaAntes, para: rv.caixaDepois, animar: !!rv.venceu && rv.caixaDepois > rv.caixaAntes } });
     }
+    // o teto da demonstração, uma vez só (e não em cada revisão que ficou no nível)
+    if (res.revisoes.some(rv => rv.venceu && this._notaTeto(rv.caixaDepois))) mud.push({ tipo: 'nota', texto: `Na demonstração, o nível vai até ${this._teto()} de 5.` });
     const pres = m.passos.filter(p => p.t === 'pre'), ultimoFeito = m.parcial ? m.i - 1 : m.passos.length - 1;
-    if (pres.length && res.pres > 0 && pres.every(p => m.passos.indexOf(p) <= ultimoFeito || (!m.parcial))) mud.push({ tipo: 'antes', texto: pres.some(p => p.fonte === 'pratica') ? 'Você tentou responder antes de ler a teoria.' : 'Você tentou antes de ler em todos os trechos cobrados.' });
-    for (const mc of MARCOS) if (st.marcos[mc.id] === d) mud.push({ tipo: 'marco', texto: `Marco: ${mc.nome}.`, marco: mc.id });
+    const soAntes = m.parcial && res.tentativas === 0;   // encerrou sem responder questão: a frase do "vazio" já conta o que houve
+    if (!soAntes && pres.length && res.pres > 0 && pres.every(p => m.passos.indexOf(p) <= ultimoFeito || (!m.parcial))) mud.push({ tipo: 'antes', texto: pres.some(p => p.fonte === 'pratica') ? 'Você fez o aquecimento antes de ler a apostila.' : 'Você tentou antes de ler em todos os trechos cobrados.' });
+    // só os marcos ganhos NESTA missão (resumo.marcos); um estudo por conta própria não repete o marco ganho mais cedo
+    const marcosAqui = Array.isArray(res.marcos) ? res.marcos : m.livre ? [] : MARCOS.filter(mc => st.marcos[mc.id] === d).map(mc => mc.id);
+    for (const mc of MARCOS) if (marcosAqui.includes(mc.id)) mud.push({ tipo: 'marco', texto: `Marco: ${mc.nome}.`, marco: mc.id });
     if (res.cards) mud.push({ tipo: 'mao', texto: res.cards.texto });
     let manter = null;
-    if (m.tipo === 'questaoDoDia' && res.dia.n) manter = `Hoje foi dia de manter: ${nDe(res.dia.n, 'questão', 'questões')}, ${nDe(res.dia.certas, 'certa', 'certas')} de primeira. Nenhuma revisão venceu.`;
-    else if (m.retorno && res.revisoes.length) manter = `Hoje foi dia de pôr as revisões em dia: ${nDe(res.revisoes.length, 'revisão', 'revisões')}, ${nDe(res.revisoes.filter(x => x.venceu).length, 'certa', 'certas')} na primeira resposta.`;
+    const revsPassos = m.passos.some(p => p.t === 'revisao');
+    if (m.tipo === 'questaoDoDia' && res.dia.n) {
+      // com revisão somada (P1), nada de "Nenhuma revisão venceu": ela entra na conta do dia
+      const rv = res.revisoes.length;
+      manter = `Hoje foi dia de manter: ${nDe(res.dia.n, 'questão do dia', 'questões do dia')}, ${nDe(res.dia.certas, 'certa', 'certas')} de primeira${rv ? `, e ${nDe(rv, 'revisão', 'revisões')}` : ''}.${rv || revsPassos ? '' : ' Nenhuma revisão venceu.'}`;
+    } else if (m.retorno && res.revisoes.length) {
+      const atr = m.passos.some(p => p.t === 'revisao' && p.atrasada);
+      manter = `${atr ? 'Hoje foi dia de pôr as revisões em dia' : 'Hoje foi dia de revisões'}: ${nDe(res.revisoes.length, 'revisão', 'revisões')}, ${nDe(res.revisoes.filter(x => x.venceu).length, 'certa', 'certas')} na primeira resposta.`;
+    }
     if (manter) mud.unshift({ tipo: 'manter', texto: manter });
     const subiu = res.rodadas.some(x => x.venceu && !x.extra) || res.revisoes.some(x => x.caixaDepois > x.caixaAntes);
     if ((m.tipo === 'novo' || m.tipo === 'pratica') && !subiu && res.tentativas > 0) {
       const pe = paginasComErro(st, pk, m.cap), pg = pk.capitulo(m.cap).paginas[pe.principal];
-      mud.push({ tipo: 'nada', texto: `Hoje não subiu nível. Ficaram registradas ${nDe(res.tentativas, 'tentativa', 'tentativas')}; a p. ${pg.n} volta no próximo dia de estudo.` });
+      mud.push({ tipo: 'nada', texto: `Hoje não subiu nível. ${registradas(res.tentativas)}; a p. ${pg.n} volta no próximo dia de estudo.` });
     } else if (m.tipo === 'topico' && !subiu && res.tentativas > 0 && !res.rodadas.length) {
-      mud.push({ tipo: 'nada', texto: `Hoje não subiu nível. Ficaram registradas ${nDe(res.tentativas, 'tentativa', 'tentativas')}.` });
+      mud.push({ tipo: 'nada', texto: `Hoje não subiu nível. ${registradas(res.tentativas)}.` });
     }
     const ultimaRodada = res.rodadas.length ? res.rodadas[res.rodadas.length - 1] : null;
     const prox = this._proximoDia(d);
     const umaVezPorSemana = !st.config.ultimaCopia || R.diff(st.config.ultimaCopia, d) >= 7;
+    const horaProx = prox ? ((st.intencao && st.intencao.dia === prox.dia && st.intencao.horario) || st.perfil.horario || '19:00') : null;
     // o visto do dia (só quando o dia conta como estudado): a data e o que mudou, em poucas palavras
     const revOk = res.revisoes.filter(x => x.venceu).slice(-1)[0];
     const obsVisto = ultimaRodada && ultimaRodada.venceu && !ultimaRodada.extra ? `${this._curto(ultimaRodada.cap)}, ${rotuloNivel(ultimaRodada.caixaDepois)}`
@@ -861,24 +1024,53 @@ export class Nucleo {
         ancoras: ['depois que eu chegar da escola', 'depois do almoço', 'antes de dormir'],
         ancora: st.intencao && st.intencao.dia === prox.dia ? st.intencao.ancora : null,
         salvo: st.intencao && st.intencao.dia === prox.dia ? this._textoIntencao(d).texto : null,
-        lembrete: `Com isso, o alarme do Prumo fica para as ${(st.intencao && st.intencao.dia === prox.dia && st.intencao.horario) || st.perfil.horario || '19:00'}. Ajuste no app Relógio, se quiser.`,
+        // o alarme só "fica para" um horário se o aluno disse que criou o alarme no Primeiro uso
+        lembrete: st.config.alarme === 'criado' ? `Com isso, o alarme do Prumo fica para as ${horaProx}. Ajuste no app Relógio, se quiser.` : `Se quiser, crie um alarme "Prumo" às ${horaProx} no Relógio do celular.`,
       } : null,
-      amanha: prox && prox.primeira && !m.livre ? { rotulo: 'Amanhã começa por aqui', html: prox.primeira, aviso: 'Só para pensar no caminho. A resposta fica para a missão.' } : null,
+      // a pergunta da próxima missão, só o enunciado; o rótulo diz o dia certo e a questão do Enem leva o crédito
+      amanha: prox && prox.primeira && !m.livre ? { rotulo: `${prox.quando} começa por aqui`, html: prox.primeira, aviso: `${prox.fonte ? `${prox.fonte}. ` : ''}Só para pensar no caminho: a resposta fica para a missão.`, fonte: prox.fonte, rodape: prox.rodape, licencaUrl: prox.licencaUrl } : null,
       continuar: { rotulo: 'Continuar estudando', aba: 'estudar', texto: 'Se quiser, pode continuar estudando por conta própria.' },
       visto: st.dias[d] && !m.livre ? (() => { const obs = m.boasVindas ? ['retorno', obsVisto].filter(Boolean).join(', ') : obsVisto; return { palavra: 'Visto', data: R.fmtCompleta(d), obs, retorno: !!m.boasVindas, rotulo: `Visto de ${R.fmtCompleta(d)}${obs ? `. ${obs}` : ''}` }; })() : null,
-      fecho: m.livre ? 'Estudo por conta própria: conta como dia estudado e muda o nível pelas mesmas regras. O visto de hoje é o da missão. Está tudo guardado neste aparelho.' : 'Por hoje é isso. Está tudo guardado neste aparelho.',
+      fecho: m.livre ? this._fechoLivre(m, d) : 'Por hoje é isso. Está tudo guardado neste aparelho.',
+      fase: m.tipo === 'topico' ? (m.livre ? 'registro' : 'visto') : null,
       constancia: { simbolo: cons.simbolo, diasEstudados: cons.diasEstudados, rotulo: cons.rotulo, tracoDeHoje: !!st.dias[d] },
       semanaPassada: st.dias[d] ? Plano.linhaSemanaPassada(st, d) : null,
       mudancas: mud,
       nivelAnimado: ultimaRodada && ultimaRodada.venceu && !ultimaRodada.extra ? { cap: ultimaRodada.cap, de: ultimaRodada.caixaAntes, para: ultimaRodada.caixaDepois, nome: rotuloNivel(ultimaRodada.caixaDepois), rotulo: rotuloNivel(ultimaRodada.caixaDepois) } : null,
       parcial: m.parcial ? `Você encerrou no passo ${m.encerradoNoPasso} de ${m.passos.length}. O que já tinha fechado hoje continua; o resto não mudou nenhum nível.` : null,
-      vazio: m.parcial && res.tentativas === 0 ? (res.pres > 0 ? 'Hoje ficou só a pergunta de entrada. Ela volta no próximo dia de estudo.' : 'Hoje você encerrou antes da primeira pergunta. Nada mudou.') : null,
-      naoContou: m.parcial && !st.dias[d] ? 'O dia não conta como estudado.' : null,
+      vazio: soAntes ? this._vazioPronto(m) : null,
+      naoContou: m.parcial && !st.dias[d] ? (m.tipo === 'topico' ? 'O dia não conta como estudado: ele conta quando você responde uma questão ou revisão, e o aquecimento não entra nessa conta.' : 'O dia não conta como estudado: ele conta quando você responde uma checagem, questão ou revisão.') : null,
       proxima: prox ? { texto: prox.texto, gancho: prox.gancho, porque: prox.porque, rotuloPorque: 'Por quê?' } : null,
       copia: umaVezPorSemana ? { rotulo: 'Salvar uma cópia do meu progresso' } : null,
       som: subiu ? 'nivel' : null,
       acao: { evento: 'FECHAR', rotulo: 'Fechar' },
     };
+  }
+
+  /** O que ficou feito numa missão encerrada antes da primeira questão respondida (sem "pergunta de entrada"):
+   *  no tópico, o aquecimento (que não volta) e a apostila; no caderno, a pergunta antes de ler (que volta). */
+  _vazioPronto(m) {
+    const res = m.resumo;
+    if (m.tipo === 'topico') {
+      const aq = res.pres > 0, ap = res.apostila || (m.ultima && m.ultima.revela ? 'lida' : null);
+      const vem = m.passos.some(p => p.t === 'questao' && p.cap === m.cap) ? 'as questões do Enem' : 'a revisão do tópico';
+      const leu = ap === 'lida' ? 'leu a apostila' : 'passou pela apostila';
+      if (aq && ap) return `Hoje você fez o aquecimento e ${leu}. Na próxima vez que estudar este tópico, vêm ${vem}; a apostila abre antes, e dá para pular.`;
+      if (aq) return `Hoje você fez o aquecimento. Na próxima vez que estudar este tópico, vêm a apostila (no fim dela, a resposta do aquecimento) e ${vem}.`;
+      if (ap) return `Hoje você ${leu}. Na próxima vez que estudar este tópico, vêm ${vem}; a apostila abre antes, e dá para pular.`;
+      return 'Hoje você encerrou antes da primeira pergunta. Nada mudou.';
+    }
+    if (res.pres > 0) return res.pres === 1 ? 'Hoje ficou só a pergunta antes de ler. Ela volta no próximo dia de estudo.' : 'Hoje ficaram só as perguntas antes de ler. Elas voltam no próximo dia de estudo.';
+    return 'Hoje você encerrou antes da primeira pergunta. Nada mudou.';
+  }
+  /** Fecho do "Estudo registrado" (estudo por conta própria), fiel ao que a missão era: a revisão antecipada não
+   *  muda o nível; a rodada e a revisão do dia certo seguem as regras da missão. "Conta como dia" só se for novidade. */
+  _fechoLivre(m, d) {
+    const st = this.st;
+    const antecipada = m.tipo === 'antecipada' || (m.passos.some(p => p.antecipada) && !m.passos.some(p => (p.t === 'questao' && !p.antecipada) || p.t === 'revisao'));
+    const oQue = antecipada ? 'Estudo por conta própria: foi uma revisão antecipada, que firma o conteúdo; o nível só muda na revisão do dia marcado.' : 'Estudo por conta própria, pelas mesmas regras da missão.';
+    const visto = st.carimbos && st.carimbos[d] ? 'O visto de hoje é o da missão.' : st.dias[d] ? 'O dia conta como estudado, mas o estudo por conta própria não dá visto.' : 'Ele não dá visto.';
+    return `${oQue} ${visto} Está tudo guardado neste aparelho.`;
   }
 
   /* =========================================================
@@ -924,9 +1116,9 @@ export class Nucleo {
           : `Libera quando ${listaCaps((c.prereq || []).filter(p => ((st.topicos[p] || {}).caixa || 0) < P.limiarPrereq).map(p => pk.capitulo(p).n))} ${(c.prereq || []).filter(p => ((st.topicos[p] || {}).caixa || 0) < P.limiarPrereq).length > 1 ? 'estiverem' : 'estiver'} no nível 1 de 5.`;
       } else if (e === 'novo') estado = 'Ainda não começou.';
       else if (e === 'pratica') estado = 'Começado. Falta acertar duas seguidas para entrar no nível 1 de 5.';
-      else if (e === 'agendado') estado = 'Revisão marcada para hoje.';
-      else if (e === 'vencido') { const n = R.diff(t.proxima, d); estado = `Revisão atrasada há ${nDe(n, 'dia', 'dias')}.`; }
-      else estado = ultRev && !ultRev.venceu && ultRev.dia === [...(t.rodadas || [])].slice(-1)[0].dia ? `Voltou para o nível ${t.caixa} de 5. Próxima revisão: ${R.fmtQuando(t.proxima, d)}.` : `Em dia. Próxima revisão: ${R.fmtCurta(t.proxima)}.`;
+      else if ((e === 'agendado' || e === 'vencido') && revisaoAtrasada(st, t.proxima, d)) { const n = R.diff(this._ef(t.proxima), d); estado = `Revisão atrasada há ${nDe(n, 'dia', 'dias')}.`; }
+      else if ((e === 'agendado' || e === 'vencido') && this._ef(t.proxima) === d) estado = 'Revisão marcada para hoje.';
+      else estado = ultRev && !ultRev.venceu && ultRev.dia === [...(t.rodadas || [])].slice(-1)[0].dia ? `Voltou para o nível ${t.caixa} de 5. Próxima revisão: ${R.fmtQuando(this._ef(t.proxima), d)}.` : `Em dia. Próxima revisão: ${R.fmtCurta(this._ef(t.proxima))}.`;
       const pre = Object.entries(st.pre || {}).find(([id, x]) => x.cap === c.id && x.revelado);
       let antesDepois = null;
       if (pre) {
@@ -943,7 +1135,7 @@ export class Nucleo {
     const ce = M.chefeEstado(st, pk.id), ch = st.chefes[pk.id];
     return {
       titulo: pk.titulo, materia: MATERIAS[pk.materia] || pk.materia,
-      avisoDemo: null,
+      avisoDemo: this._teto() < 5 ? `Na demonstração, o nível vai até ${this._teto()} de 5.` : null,
       capitulos: caps,
       prova: {
         regra: Prova.regraProva(pk), estado: ce === 'vencido' ? 'vencida' : ce === 'disponivel' ? 'liberada' : 'bloqueada',
@@ -954,7 +1146,7 @@ export class Nucleo {
       marcos: MARCOS.map(mc => ({ id: mc.id, nome: mc.nome, condicao: mc.condicao, dia: st.marcos[mc.id] || null, texto: st.marcos[mc.id] ? `em ${R.fmtCompleta(st.marcos[mc.id])}` : null })),
       creditos: { rotulo: 'Créditos deste caderno' },
       niveis: [1, 2, 3, 4, 5].map(k => ({ n: k, nome: rotuloNivel(k) })),
-      regraNivel: 'Cada capítulo tem 5 níveis, de 1 a 5. Acertar duas seguidas na primeira vez põe o capítulo no nível 1 de 5. Depois, cada revisão que você acerta de primeira sobe um nível, e a revisão seguinte fica mais longe. Errar uma revisão volta o capítulo para o nível 1 de 5; nada do que você fez se apaga.',
+      regraNivel: `Cada capítulo tem 5 níveis, de 1 a 5. ${regraNivel('o capítulo', this._teto())}`,
     };
   }
   /** Leitor do Caderno (c.6): qualquer página abre a qualquer hora. Ler não conta como dia estudado. */
@@ -972,15 +1164,17 @@ export class Nucleo {
   }
   _situacaoErro(e) {
     const t = this.st.topicos[e.cap] || {}, d = R.hoje();
-    const c = this.pack.capitulo(e.cap);
-    if (e.estado === 'resolvido') return `Resolvido: você acertou uma questão parecida em ${R.fmtDiaMes(e.resolvidoEm)}.`;
+    const c = this.pack.capitulo(e.cap), quando = t.caixa && t.proxima ? (this._ef(t.proxima) <= d ? 'hoje' : R.fmtCurta(this._ef(t.proxima))) : null;
+    if (e.estado === 'resolvido') return c ? `Resolvido: você acertou uma questão parecida em ${R.fmtDiaMes(e.resolvidoEm)}.` : `Resolvido: você acertou esta questão em ${R.fmtDiaMes(e.resolvidoEm)}.`;
+    if (!c && this.prat.existe(e.cap)) return `Ela pode voltar quando fizer 7 dias que você a viu, depois das questões ainda inéditas do tópico.${quando ? ` A próxima revisão de ${this.prat.curto(e.cap)} é ${quando}.` : ''}`;
     if (!c) return 'Uma questão parecida volta numa próxima revisão.';
-    return t.caixa && t.proxima ? `Uma questão parecida, com outros números, volta na revisão do Cap. ${c.n}, ${t.proxima <= d ? 'hoje' : R.fmtCurta(t.proxima)}.` : `Uma questão parecida, com outros números, volta quando você revisar o Cap. ${c.n}.`;
+    return quando ? `Uma questão parecida, com outros números, volta na revisão do Cap. ${c.n}, ${quando}.` : `Uma questão parecida, com outros números, volta quando você revisar o Cap. ${c.n}.`;
   }
   _refazerInfo(e) {
     const st = this.st, d = R.hoje(), m = st.missao;
-    const mp = this._modeloRefazer(e);
     const rotulo = 'Refazer com outros números', nota = 'Uma vez por dia. Não muda o nível.';
+    if (!this.pack.capitulo(e.cap)) return { disponivel: false, rotulo, nota, motivo: 'Questão de um tópico: ela volta nas rodadas e revisões do próprio tópico.' };
+    const mp = this._modeloRefazer(e);
     if (m && m.dia === d && m.fechada) return { disponivel: false, rotulo, nota, motivo: 'Abre amanhã: hoje você já terminou o dia de estudo.' };
     if (e.refazerEm === d) return { disponivel: false, rotulo, nota, motivo: 'Abre amanhã: você já refez esta hoje.' };
     if (!mp || e.refazerLinha > 10 || e.refazerLinha >= (mp.linhas || []).length) return { disponivel: false, rotulo, nota, motivo: 'Por enquanto não há outra versão desta questão.' };
@@ -996,23 +1190,26 @@ export class Nucleo {
     const pk = this.pack, todos = [...(this.st.erros || [])].sort((a, b) => (a.dia < b.dia ? 1 : a.dia > b.dia ? -1 : 0));
     const lista = todos.filter(e => !filtroCap || e.cap === filtroCap);
     const itens = lista.map(e => {
-      let it = null; try { it = pk.item(e.item); } catch (x) { /* item removido do pack */ }
-      const loc = e.paragrafo ? pk.local(e.paragrafo) : null, c = pk.capitulo(e.cap);
+      let it = null; try { it = this.missao.itemDe(e.item); } catch (x) { /* item removido do pack */ }
+      const loc = e.paragrafo ? pk.local(e.paragrafo) : null, c = pk.capitulo(e.cap), tp = !c && this.prat.existe(e.cap);
       return {
-        id: e.id, cap: e.cap, capRotulo: c ? `Cap. ${c.n}` : '', dia: R.fmtDiaMes(e.dia),
+        id: e.id, cap: e.cap, capRotulo: c ? `Cap. ${c.n}` : tp ? this.prat.curto(e.cap) : '', dia: R.fmtDiaMes(e.dia),
         questao: it ? { rotulo: it.origem === 'enem' ? `Questão ${it.numero} do ${it.prova}` : `Questão da equipe${it.pagina ? ` sobre a p. ${pk.pagina(it.pagina).n}` : ''}`, enunciado: it.origem === 'enem' ? it.contexto : it.enunciado, introducao: it.introducao || '', imagens: it.imagens || [], rodape: it.rodape, alternativas: it.alternativas.map(a => ({ letra: a.letra, texto: a.texto, marca: a.letra === e.marcou ? 'sua' : a.certa ? 'certa' : null })) } : null,
         linha: `Você marcou ${e.marcou}. A certa é ${e.certa}.`,
         falta: e.falta || null, anotacao: e.anotacao || '', foiIsso: { valor: e.foiIsso, pergunta: 'Foi isso?', opcoes: [{ valor: 'sim', rotulo: 'Sim' }, { valor: 'outra', rotulo: 'Foi outra coisa' }] },
         trecho: loc ? { rotulo: `Abrir o trecho (p. ${loc.paginaN}, parágrafo ${loc.n})`, pagina: loc.pagina, paragrafo: loc.paragrafo } : null,
+        // erro de tópico de prática: a apostila do tópico (na seção da questão, quando o conteúdo informa)
+        apostila: tp ? { rotulo: 'Rever a apostila', topico: e.cap, secao: (it && it.secao) || null, ancora: it && it.secao ? `secao-${it.secao}` : null } : null,
         situacao: this._situacaoErro(e), estado: e.estado,
         refazer: this._refazerInfo(e),
         irAlem: c ? (c.irAlem || []).map(l => ({ rotulo: l.rotulo, url: l.url, aviso: l.aviso })) : [],
       };
     });
     return {
-      filtros: pk.capitulos.map(c => ({ cap: c.id, rotulo: `Cap. ${c.n}`, n: todos.filter(e => e.cap === c.id).length })), filtro: filtroCap,
+      filtros: [...pk.capitulos.map(c => ({ cap: c.id, rotulo: `Cap. ${c.n}`, n: todos.filter(e => e.cap === c.id).length })),
+        ...this.prat.ids().filter(id => todos.some(e => e.cap === id)).map(id => ({ cap: id, rotulo: this.prat.curto(id), n: todos.filter(e => e.cap === id).length }))], filtro: filtroCap,
       itens,
-      vazio: !todos.length ? 'Nenhum erro guardado ainda. Quando você errar uma questão, ela vem para cá com o trecho do caderno que explica.' : !itens.length ? 'Nenhum erro neste capítulo.' : null,
+      vazio: !todos.length ? 'Nenhum erro guardado ainda. Quando você errar uma questão, ela vem para cá com o que faltou e o trecho do caderno ou da apostila que explica.' : !itens.length ? (pk.capitulo(filtroCap) ? 'Nenhum erro neste capítulo.' : 'Nenhum erro neste tópico.') : null,
     };
   }
   notas() {
@@ -1032,25 +1229,44 @@ export class Nucleo {
      ========================================================= */
   constancia() { return Plano.constancia(this.st, R.hoje()); }
   agenda() {
-    const st = this.st, d = R.hoje(), m = st.missao, pk = this.pack, out = [];
+    const st = this.st, d = R.hoje(), m0 = st.missao, pk = this.pack, out = [];
+    // no estudo por conta própria, a linha de hoje é a da missão do dia (já cumprida)
+    const m = m0 && m0.livre && m0.missaoDoDia ? m0.missaoDoDia : m0;
     const atribuidos = new Set(), cardsAtrib = new Set();
+    // o próximo dia de estudo é projetado com a mesma conta da "Próxima missão" (montarMissaoGeral), quando
+    // nada de hoje ainda pode mudar o estado; com a missão de hoje por fazer, ele depende do resultado de hoje
+    const ativa = !!(m && m.passos.length && m.tipo !== 'folga' && m.tipo !== 'pausa');
+    const pendente = (ativa && !m.fechada && !m.hojeNao) || !!(m0 && m0.livre && !m0.fechada);
+    const prox = Plano.proximoDiaDeEstudo(st, d);
+    const proj = prox && m && !pendente ? montarMissaoGeral(st, pk, this.M, this.prat, prox) : null;
     for (let i = 0; i < 14; i++) {
       const dia = R.addDias(d, i);
       const estudo = Plano.ehDiaDeEstudo(st, dia), pausa = Plano.emPausa(st, dia);
       const linha = { dia, rotulo: R.fmtCurta(dia), tipo: pausa ? 'pausa' : estudo ? 'estudo' : 'folga', itens: [], texto: '' };
-      if (i === 0 && m && m.passos.length && m.tipo !== 'folga' && m.tipo !== 'pausa') {
+      let nota = null;
+      if (i === 0 && ativa) {
         linha.tipo = 'estudo';
         if (m.fechada) linha.status = m.parcial ? 'encerrada antes do fim' : 'feito';
+        else if (m.hojeNao) linha.status = 'você marcou “Hoje não”';
         if (m.tipo === 'novo') linha.itens.push(`${this._nomeCap(m.cap)} (novo)`);
         else if (m.tipo === 'pratica') linha.itens.push(`${this._nomeCap(m.cap)} (continuação)`);
         else if (m.tipo === 'antecipada') linha.itens.push(`revisão antecipada do ${this._nomeCap(m.cap)}`);
         else if (m.tipo === 'questaoDoDia') linha.itens.push('Questão do dia');
         else if (m.tipo === 'topico') linha.itens.push(this.prat.titulo(m.cap));
         const revs = m.passos.filter(p => p.t === 'revisao');
-        revs.forEach(p => atribuidos.add(p.cap));
+        // só fica "de hoje" a revisão ainda pendente; a feita hoje já tem data nova e aparece nela, mais abaixo
+        revs.forEach(p => { const t = st.topicos[p.cap]; if (!t || !t.proxima || t.proxima <= d) atribuidos.add(p.cap); });
         if (revs.length) linha.itens.push(this._revisoes(revs.map(p => p.cap)));
         const cd = m.passos.find(p => p.t === 'cards');
+        if (cd) { cd.ids.forEach(x => { const c = (st.cards || {})[x]; if (!c || c.proxima <= d) cardsAtrib.add(x); }); linha.itens.push(nDe(cd.ids.length, 'cartão', 'cartões')); }
+      } else if (linha.tipo === 'estudo' && proj && dia === prox) {
+        // a missão que o Prumo montaria nesse dia: o capítulo novo e as revisões anunciadas na "Próxima missão"
+        const pt = this._partesMissao(proj);
+        if (pt.principal) linha.itens.push(pt.principal);
+        if (pt.revs.length) { linha.itens.push(this._revisoes(pt.revs)); pt.revs.forEach(c => atribuidos.add(c)); }
+        const cd = proj.passos.find(p => p.t === 'cards');
         if (cd) { cd.ids.forEach(x => cardsAtrib.add(x)); linha.itens.push(nDe(cd.ids.length, 'cartão', 'cartões')); }
+        linha.projetada = true;
       } else if (linha.tipo === 'estudo') {
         const devidos = [...this.M.topicosAtivos(st), ...this.prat.ids()].filter(id => { const t = st.topicos[id]; return t && t.caixa && t.proxima && t.proxima <= dia && !atribuidos.has(id); });
         devidos.forEach(x => atribuidos.add(x));
@@ -1058,17 +1274,20 @@ export class Nucleo {
         const cs = Object.entries(st.cards || {}).filter(([id, c]) => c.proxima <= dia && !cardsAtrib.has(id)).slice(0, Cards.MAO_MAX);
         cs.forEach(([id]) => cardsAtrib.add(id));
         if (cs.length) linha.itens.push(nDe(cs.length, 'cartão', 'cartões'));
-        if (!linha.itens.length) linha.itens.push('sem revisão vencida');
+        // o que ainda não está marcado não é "sem revisão": depende do resultado de hoje (no próximo dia de estudo) ou do que vier até lá
+        if (pendente && dia === prox) nota = 'depende do resultado de hoje';
+        else if (!linha.itens.length) nota = 'depende do que você fizer até lá';
       }
       const its = linha.itens, frase = its.length > 1 ? `${its.slice(0, -1).join(', ')} e ${its[its.length - 1]}` : (its[0] || '');
-      linha.texto = `${cap1(linha.rotulo)}: ${linha.tipo === 'folga' ? 'folga' : linha.tipo === 'pausa' ? 'pausa' : frase}${linha.status ? `, ${linha.status}` : ''}.`;
+      const corpo = linha.tipo === 'folga' ? 'folga' : linha.tipo === 'pausa' ? 'pausa' : frase && nota ? `${frase}; o resto ${nota}` : (frase || nota || '');
+      linha.texto = `${cap1(linha.rotulo)}: ${corpo}${linha.status ? `, ${linha.status}` : ''}.`;
       out.push(linha);
     }
     const firme = this.M.topicosAtivos(st).length && this.M.topicosAtivos(st).every(id => (st.topicos[id] || {}).caixa >= Math.min(3, st.config.nivelMaximo || 5));
     const iv = Plano.intervalos(st, d);
     return {
-      dias: out, tudoFirme: firme ? 'Todos os capítulos estão no nível 3 de 5 ou acima. As revisões seguem a agenda abaixo.' : null,
-      porQueEstaOrdem: `As revisões vencem pela agenda calculada a partir da data da prova: no nível 1 de 5, ${nDe(iv[1], 'dia', 'dias')}; no nível 2, ${iv[2]}; no 3, ${iv[3]}; no 4, ${iv[4]}; no 5, ${iv[5]}. Revisão que vence numa folga entra no próximo dia de estudo, e as atrasadas vêm primeiro. Capítulo novo e Questão do dia dependem do que acontecer até lá, por isso a agenda mostra só o que já está marcado.`,
+      dias: out, tudoFirme: firme ? 'Todos os capítulos estão no nível 3 de 5 ou acima. As revisões voltam em intervalos que crescem com o nível.' : null,
+      porQueEstaOrdem: `As revisões vencem pela agenda calculada a partir da data da prova: no nível 1 de 5, ${nDe(iv[1], 'dia', 'dias')}; no nível 2, ${iv[2]}; no 3, ${iv[3]}; no 4, ${iv[4]}; no 5, ${iv[5]}.${this._teto() < 5 ? ` Na demonstração, o nível vai até ${this._teto()} de 5.` : ''} Revisão que vence numa folga (ou num dia em que você marcou “Hoje não”) entra no próximo dia de estudo, e as atrasadas vêm primeiro. O próximo dia de estudo mostra a missão que o Prumo montaria com o que você já fez; os dias depois dele mostram só o que já está marcado, porque capítulo novo e Questão do dia dependem do que acontecer até lá.`,
     };
   }
   plano() {
@@ -1079,7 +1298,7 @@ export class Nucleo {
       tiposProva: TIPOS_PROVA,
       dias: { valor: p.dias, texto: `${cap1(Plano.textoDiasLongo(p.dias))}, ${p.minutos} minutos por dia.` },
       minutos: { valor: p.minutos, opcoes: [15, 25, 40], capacidade: Plano.capacidade(st) },
-      meta: { valor: p.metaSemana, texto: p.metaSemana ? `Estudar ${nDe(p.metaSemana, 'dia', 'dias')} por semana (opcional).` : 'Sem meta por semana.', regra: 'Você só vê se cumpriu a meta depois que a semana termina. Estudar num dia de folga ganha risquinho, mas não conta para a meta.' },
+      meta: { valor: p.metaSemana, texto: p.metaSemana ? `Estudar ${nDe(p.metaSemana, 'dia', 'dias')} por semana (opcional).` : 'Sem meta por semana.', regra: 'Em Hoje você acompanha a semana. Ela entra na conta de semanas com a meta quando termina, no domingo. Estudar num dia de folga ganha risquinho, mas não conta para a meta.' },
       pausa: st.pausa && st.pausa.ate ? { ativa: true, ate: st.pausa.ate, texto: `Pausa até ${R.fmtDiaMes(st.pausa.ate)}. As revisões esperam: nenhuma fica atrasada por causa da pausa.`, acao: 'Encerrar pausa' } : { ativa: false, texto: 'Sem pausa. Se precisar parar de 1 a 14 dias (viagem, semana de provas), marque uma pausa: as revisões esperam.' },
       lembrete: { texto: textoAlarme(p.dias, p.horario), como: 'Crie esse alarme no app Relógio do celular. O Prumo não manda notificação.' },
       agenda: this.agenda(),
@@ -1121,12 +1340,14 @@ export class Nucleo {
   /* =========================================================
      Estudar: o mapa (área → matéria → tópico) e a página do tópico
      ========================================================= */
+  /** O nível já aparece na régua com o rótulo, ao lado: aqui só a revisão (pela data em que ela entra). */
   _textoEstadoTopico(e, t, d) {
     if (e === 'novo') return 'Ainda não começou.';
     if (e === 'pratica') return 'Começado. Acerte 2 questões seguidas para entrar no nível 1 de 5.';
-    if (e === 'agendado') return `${cap1(rotuloNivel(t.caixa))}. Revisão marcada para hoje.`;
-    if (e === 'vencido') return `${cap1(rotuloNivel(t.caixa))}. Revisão atrasada desde ${R.fmtCurta(t.proxima)}.`;
-    return `${cap1(rotuloNivel(t.caixa))}. Próxima revisão: ${R.fmtCurta(t.proxima)}.`;
+    const ef = this._ef(t.proxima);
+    if (revisaoAtrasada(this.st, t.proxima, d)) return `Revisão atrasada desde ${R.fmtCurta(ef)}.`;
+    if (ef === d) return 'Revisão marcada para hoje.';
+    return `Próxima revisão: ${R.fmtCurta(ef)}.`;
   }
   /** Resumo de um tópico de prática para o mapa. Arquivo ausente ou inválido: "em preparação". */
   _resumoTopico(id) {
@@ -1173,21 +1394,40 @@ export class Nucleo {
     });
     return {
       titulo: 'O que estudar',
-      intro: 'O mapa do que cai no Enem: área, matéria e tópico. Toque num tópico para ver o seu nível e estudar.',
+      intro: 'O mapa do que cai no Enem: área, matéria e tópico. Escolha um tópico para ver o seu nível e estudar.',
       areas,
-      regraNivel: 'O nível de cada tópico vai de 1 a 5. Acerte 2 questões seguidas para entrar no nível 1 de 5. Depois, cada revisão certa na primeira resposta sobe um nível; as revisões são marcadas pela data da sua prova.',
+      regraNivel: `${regraNivel('o tópico', this._teto())} As revisões são marcadas pela data da sua prova.`,
     };
   }
   /** O botão "Estudar este tópico hoje", com o motivo quando não dá. */
   _acaoTopico(id) {
-    const m = this.st.missao, fa = id === this.pack.id, rotulo = 'Estudar este tópico hoje';
+    const m = this.st.missao, fa = id === this.pack.id, rotulo = 'Estudar este tópico hoje', d = R.hoje();
     if (!m) return null;
-    if (m.livre && m.iniciada && !m.fechada) return m.cap === id
-      ? { disponivel: true, evento: 'CONTINUAR', rotulo: `Continuar do passo ${Math.min(m.i + 1, m.passos.length)} de ${m.passos.length}`, nota: 'Você está estudando este tópico por conta própria.' }
-      : { disponivel: false, rotulo, motivo: `Você está estudando ${this.prat.titulo(m.cap)} por conta própria. Termine ou encerre antes de abrir outro tópico.` };
-    if (m.fechada || m.livre) return fa
-      ? { disponivel: false, rotulo, motivo: 'Missão de hoje cumprida. As páginas do caderno ficam livres para ler na aba Caderno; as questões dele voltam na próxima missão.' }
-      : { disponivel: true, evento: 'ESTUDAR_TOPICO', id, rotulo: 'Estudar este tópico agora', nota: 'Missão de hoje cumprida. Este estudo é por conta própria: conta como dia estudado e muda o nível pelas mesmas regras, sem um segundo visto.' };
+    if (m.livre && m.iniciada && !m.fechada) {
+      const deste = fa ? !this.prat.existe(m.cap) : m.cap === id, nomeL = this.prat.existe(m.cap) ? this.prat.titulo(m.cap) : this.pack.titulo;
+      return deste
+        ? { disponivel: true, evento: 'CONTINUAR', rotulo: `Continuar do passo ${Math.min(m.i + 1, m.passos.length)} de ${m.passos.length}`, nota: 'Você está estudando este tópico por conta própria.' }
+        : { disponivel: false, rotulo, motivo: `Você está estudando ${nomeL} por conta própria. Termine ou encerre antes de abrir outro tópico.` };
+    }
+    const semVisto = this.st.carimbos && this.st.carimbos[d] ? 'sem um segundo visto' : 'sem visto';
+    // "conta como dia estudado" só quando o dia ainda não contou; o nível, só o que a missão livre faz de fato
+    const fimLivre = this.st.dias[d] ? `${cap1(semVisto)}.` : `Conta como dia estudado, ${semVisto}.`;
+    if (m.fechada || m.livre) {
+      if (fa) {
+        // o caderno por conta própria: revisão antecipada do capítulo mais fraco (não muda o nível)
+        const mm = montarMissao(this.st, this.pack, this.M, d, { livre: true, soCaderno: true });
+        if (!mm.passos.length) return { disponivel: false, rotulo, motivo: 'Missão de hoje cumprida. As páginas do caderno ficam livres para ler na aba Caderno; as questões dele voltam na próxima missão.' };
+        const oque = mm.tipo === 'antecipada' ? `uma revisão antecipada do ${this._nomeCap(mm.cap)}, o mais fraco, que não muda o nível` : `o ${this._nomeCap(mm.cap)}. Acerte 2 seguidas e ele entra no nível 1 de 5`;
+        return { disponivel: true, evento: 'ESTUDAR_TOPICO', id, rotulo: 'Estudar este tópico agora', nota: `Missão de hoje cumprida. Por conta própria: ${oque}. ${fimLivre}` };
+      }
+      const mm = montarMissaoGeral(this.st, this.pack, this.M, this.prat, d, { topico: id, livre: true }), titulo = this.prat.titulo(id);
+      const deste = mm.passos.filter(p => p.cap === id);
+      const oque = deste.some(p => p.t === 'questao' && !p.antecipada) ? `Este estudo é por conta própria: acerte 2 seguidas e ${titulo} entra no nível 1 de 5.`
+        : deste.some(p => p.antecipada) ? 'Este estudo é por conta própria e é uma revisão antecipada: firma o conteúdo, mas o nível só muda na revisão do dia marcado.'
+        : deste.some(p => p.t === 'revisao') ? `Este estudo é por conta própria, com a revisão do tópico que vence hoje. ${this._ganhoRevisao(id, titulo)}`
+        : 'Este estudo é por conta própria: a apostila do tópico.';
+      return { disponivel: true, evento: 'ESTUDAR_TOPICO', id, rotulo: 'Estudar este tópico agora', nota: `Missão de hoje cumprida. ${oque} ${fimLivre}` };
+    }
     if (m.tipo === 'pausa') return { disponivel: false, rotulo, motivo: `Você marcou pausa até ${R.fmtDiaMes(this.st.pausa.ate)}. Para estudar, encerre a pausa no Plano.` };
     const ehEste = fa ? m.tipo !== 'topico' && m.tipo !== 'folga' : m.tipo === 'topico' && m.cap === id;
     if (m.iniciada) return ehEste
@@ -1195,7 +1435,21 @@ export class Nucleo {
       : { disponivel: false, rotulo, motivo: 'A missão de hoje já começou. Termine ou encerre por hoje; amanhã este tópico pode ser a missão.' };
     const atual = m.tipo === 'folga' || !m.passos.length ? null : this._titulo(m);
     return { disponivel: true, evento: 'ESTUDAR_TOPICO', id, rotulo,
-      nota: ehEste ? 'Este tópico já é a sua missão de hoje.' : m.tipo === 'folga' ? 'Hoje é folga. Estudar conta como dia estudado, mas não para a meta da semana.' : atual ? `Ele vira a sua missão de hoje no lugar de "${atual}". É uma missão por dia.` : 'Ele vira a sua missão de hoje.' };
+      nota: ehEste ? 'Este tópico já é a sua missão de hoje.' : m.tipo === 'folga' ? 'Hoje é folga. Estudar conta como dia estudado, mas não para a meta da semana.' : atual ? this._notaTrocaTopico(id, m, d, atual) : 'Ele vira a sua missão de hoje.' };
+  }
+  /** Nota de "Estudar este tópico hoje" montada da missão que o P0 montaria: o que ele substitui, as revisões
+   *  que continuam e as que vão para o próximo dia de estudo (com o motivo: até capacidade(st) junto com um tópico). */
+  _notaTrocaTopico(id, m, d, atual) {
+    const mm = montarMissaoGeral(this.st, this.pack, this.M, this.prat, d, { topico: id, estudarMesmoAssim: !!m.estudarMesmoAssim });
+    const ficam = [...new Set(mm.passos.filter(p => p.t === 'revisao' && p.cap !== id).map(p => p.cap))];
+    const saem = [...new Set(mm.revisoesFora || [])];
+    if (!ficam.length && !saem.length) return `Ele vira a sua missão de hoje no lugar de “${atual}”. É uma missão por dia.`;
+    const comArtigo = caps => `${caps.length === 1 ? 'a' : 'as'} ${this._revisoes(caps)}`;
+    const pt = this._partesMissao(m), sai = pt.principal ? (m.tipo === 'novo' || m.tipo === 'pratica' ? this._tituloCap(m.cap) : pt.principal) : null;
+    const partes = [];
+    if (ficam.length) partes.push(`${cap1(comArtigo(ficam))} ${ficam.length === 1 ? 'continua' : 'continuam'}`);
+    if (saem.length) partes.push(`${ficam.length ? comArtigo(saem) : cap1(comArtigo(saem))} ${saem.length === 1 ? 'vai' : 'vão'} para o próximo dia de estudo: junto com um tópico, entram até ${Plano.capacidade(this.st)} revisões por dia`);
+    return `Ele entra na missão de hoje${sai ? ` no lugar de “${sai}”` : ''}. ${partes.join('; ')}.`;
   }
   /** Página do tópico: título, por que cai no Enem, o nível do aluno e "Estudar este tópico hoje". */
   topicoPagina(id) {
@@ -1203,20 +1457,70 @@ export class Nucleo {
     const r = fa ? this._resumoCaderno() : this._resumoTopico(id);
     if (!r) return null;
     if (!r.disponivel) return Object.assign({}, r, { acao: null, area: (AREAS.find(a => a.id === (CONHECIDOS.find(c => c.id === id) || {}).area) || {}).nome || '' });
-    const t = fa ? null : this.prat.get(id), st = this.st, d = R.hoje();
+    const t = fa ? null : this.prat.get(id), st = this.st, d = R.hoje(), m = st.missao;
+    const tempo = fa ? null : this._tempoTopico(id, d);
+    // depois do Pronto (ou no estudo livre), o visto do dia já foi dado (ou não vem): não anunciar outro
+    const fimHoje = m && (m.fechada || m.livre) ? (st.carimbos && st.carimbos[d] ? 'Sem visto extra: o de hoje já é seu.' : 'Estudo por conta própria não dá visto.') : 'No fim, o visto do dia.';
+    const ganho = fa ? '' : regraTopico(t.titulo).ganho;
     return Object.assign({}, r, {
       area: fa ? 'Matemática' : (AREAS.find(a => a.id === t.area) || {}).nome || '', materia: fa ? 'Matemática' : t.materia,
       porQueCai: fa ? 'Função afim cai todo ano no Enem: tarifas com uma parte fixa e uma parte por unidade, gráficos de retas e comparação de planos e preços.' : t.teoria.porQueCai,
       ideias: fa ? [] : (t.topico.ideias || []).filter(x => typeof x === 'string'),
+      // o que o tópico tem, separado do que entra hoje (a mesma missão do botão, com as revisões que vêm junto)
       composicao: fa ? 'Cada capítulo tem páginas para ler, uma pergunta antes de cada página e questões reais do Enem.'
-        : `Uma pergunta antes de ler, a teoria (${t.teoria.secoes.length} partes, com exemplos resolvidos) e ${t.itens.length} questões reais do Enem, da mais fácil para a mais difícil.`,
+        : [`O tópico tem a apostila (${t.teoria.secoes.length} seções, com exemplos resolvidos) e ${t.itens.length} questões reais do Enem, da mais fácil para a mais difícil.`,
+          tempo && tempo.partes ? `${tempo.rotulo}: ${tempo.partes}.` : null, tempo ? tempo.texto : null].filter(Boolean).join(' '),
+      tempo,
+      comoFunciona: fa ? null : COMO_FUNCIONA.map(x => Object.assign({}, x)),
       capitulos: fa ? this.pack.capitulos.map(c => { const x = st.topicos[c.id] || {}; return { n: c.n, titulo: c.titulo, nivel: { cheios: x.caixa || 0, nome: x.caixa ? rotuloNivel(x.caixa) : null, rotulo: rotuloNivel(x.caixa || 0) } }; }) : null,
-      regraNivel: fa ? 'Cada capítulo tem o seu nível, de 1 a 5. Acertar duas seguidas na primeira vez põe o capítulo no nível 1 de 5; cada revisão certa na primeira resposta sobe um nível.' : 'Acerte 2 questões seguidas e o tópico entra no nível 1 de 5. Depois, cada revisão certa na primeira resposta sobe um nível, até o 5 de 5. Errar uma revisão volta o tópico para o nível 1 de 5, sem apagar nada.',
+      regraNivel: fa ? `Cada capítulo tem o seu nível, de 1 a 5. ${regraNivel('o capítulo', this._teto())}` : regraNivel('o tópico', this._teto()),
       acao: this._acaoTopico(id),
-      leitura: fa ? { rotulo: 'Abrir o caderno', aba: 'caderno' } : { rotulo: 'Ler a teoria', nota: 'Ler é livre e não conta como dia estudado.' },
-      regraHoje: r.estado === 'novo' && !fa ? `Hoje: ${regraTopico(t.titulo).ganho} No fim, o visto do dia.` : null,
+      leitura: fa ? { rotulo: 'Abrir o caderno', aba: 'caderno' } : { rotulo: 'Ler a apostila', nota: 'Ler é livre e não conta como dia estudado.' },
+      regraHoje: r.estado === 'novo' && !fa ? `Hoje: ${ganho.charAt(0).toLowerCase()}${ganho.slice(1)} ${fimHoje}` : null,
       dia: d,
     });
+  }
+  /** A missão do tópico hoje: a que "Estudar este tópico" monta (P0, ou o estudo por conta própria depois do
+   *  Pronto, com as revisões que entram junto) ou a que já está em curso (o que falta dela). null quando outra
+   *  missão está em curso ou em pausa: o botão explica, e a página descreve uma missão do tópico em geral. */
+  _missaoDoTopico(id, d) {
+    const st = this.st, m = st.missao;
+    if (!m || !st.perfil || !this.prat.existe(id) || m.tipo === 'pausa') return null;
+    if (m.tipo === 'topico' && m.cap === id && !m.fechada) {
+      if (!m.iniciada) return { passos: m.passos, emCurso: false };
+      const feito = ['feedback', 'trecho', 'fimDaRodada', 'fimDaMao'].includes(m.retomar || this.estado());
+      return { passos: m.passos.slice(m.i + (feito ? 1 : 0)), emCurso: true };
+    }
+    if (m.iniciada && !m.fechada) return null;
+    const livre = !!(m.fechada || m.livre);
+    const mm = montarMissaoGeral(st, this.pack, this.M, this.prat, d, livre ? { topico: id, livre: true } : { topico: id, estudarMesmoAssim: m.tipo === 'folga' || !!m.estudarMesmoAssim });
+    return { passos: mm.passos, emCurso: false };
+  }
+  /** "um aquecimento, a apostila e até 4 questões (plano de 25 min)" · "a apostila, 1 revisão do tópico e a revisão do capítulo X" */
+  _composicaoTopico(passos, id) {
+    const t = this.prat.get(id), plano = (this.st.perfil || {}).minutos || 25, lim = QUESTOES_POR_MINUTOS[plano] || 4, partes = [];
+    if (passos.some(p => p.t === 'pre' && p.fonte === 'pratica' && p.cap === id)) partes.push('um aquecimento');
+    if (passos.some(p => p.t === 'teoria' && p.cap === id)) partes.push('a apostila');
+    const q = passos.filter(p => p.t === 'questao' && p.cap === id && !p.antecipada).length;
+    if (q) partes.push(`até ${nDe(q, 'questão', 'questões')}${q === lim && t.itens.length > lim ? ` (plano de ${plano} min)` : ''}`);
+    const ant = passos.filter(p => p.t === 'questao' && p.cap === id && p.antecipada).length;
+    if (ant) partes.push(`${nDe(ant, 'questão', 'questões')} de revisão antecipada, que não muda o nível`);
+    if (passos.some(p => p.t === 'revisao' && p.cap === id)) partes.push('1 revisão do tópico');
+    const outras = [...new Set(passos.filter(p => p.t === 'revisao' && p.cap !== id).map(p => p.cap))];
+    if (outras.length) partes.push(`${outras.length === 1 ? 'a' : 'as'} ${this._revisoes(outras, { curto: true })}`);
+    return juntarE(partes);
+  }
+  /** Quanto leva a missão do tópico hoje (a mesma conta do Hoje: a apostila pela capa, as questões e as revisões que vêm junto). */
+  _tempoTopico(id, d = R.hoje()) {
+    const st = this.st, t = this.prat.get(id);
+    if (!t || !st.perfil) return null;
+    const x = this._missaoDoTopico(id, d), plano = st.perfil.minutos || 25;
+    const passos = x ? x.passos : passosTopico(st, this.prat, id, d, new Set()).passos;
+    const min = estimarMinutosTopico(passos, this.prat, st), mt = passos.some(p => p.t === 'teoria' && p.cap === id) ? minutosDaTeoriaNaMissao(st, this.prat, id) : 0;
+    const emCurso = !!(x && x.emCurso);
+    return { minutos: min, apostila: mt, plano, passa: min > plano, emCurso, hoje: !!x,
+      rotulo: emCurso ? 'Hoje falta' : x ? 'Hoje' : 'Numa missão deste tópico', partes: this._composicaoTopico(passos, id) || null,
+      texto: `${emCurso ? 'Falta' : 'Leva'} cerca de ${min} min${mt > 6 ? ` (só a apostila, uns ${mt})` : ''}${min > plano ? `, mais que os seus ${plano} min` : ''}.` };
   }
   /** Teoria para leitura livre (fora da missão): não conta como dia estudado. */
   teoriaLivre(id) {
@@ -1321,7 +1625,11 @@ export class Nucleo {
 
   /* ---------------- dados: cópia, CSV, restaurar, apagar ---------------- */
   copia() {
-    const c = E.copiaJSON(this.st, this.pack, R.hoje());
+    // no modo demonstração com o estado real guardado, a cópia é do progresso real (não dos dias simulados)
+    const dm = this.st.config.demo;
+    let base = this.st;
+    if (dm.ativo && dm.guardado) { try { base = E.normalizar(JSON.parse(dm.guardado)); } catch (e) { base = this.st; } }
+    const c = E.copiaJSON(base, this.pack, R.hoje());
     this._acao(() => { this.st.config.ultimaCopia = R.hoje(); });
     return c;
   }
@@ -1358,18 +1666,27 @@ export class Nucleo {
   }
   /** Sai do modo demonstração: volta ao estado real guardado (ou ao Primeiro uso). */
   sairDaDemonstracao() {
-    const g = this.st.config.demo.guardado;
+    const dm = this.st.config.demo, g = dm.guardado;
     let real = null;
     if (g) { try { real = E.normalizar(JSON.parse(g)); } catch (e) { real = null; } }
     R.setOffset(0);
-    if (!real) { this.apagarTudo(); return this.tela(); }
+    if (!real) {
+      // sem estado guardado: o exemplo aberto no Primeiro uso volta ao Primeiro uso; um perfil real nunca é apagado
+      if (dm.exemplo || !this.st.perfil) { this.apagarTudo(); return this.tela(); }
+      real = E.normalizar(JSON.parse(JSON.stringify(this.st)));
+    }
     real.config.demo = { ativo: false, offset: 0, exemplo: false, guardado: null };
     this.missao.transicao(() => { this.missao.substituir(real); if (!this.st.missao || this.st.missao.dia !== R.hoje()) return this.missao.virarDia(); return this.st.missao.estado; });
     return this.tela();
   }
   /** Avança a data simulada (modo demonstração). */
   avancarDias(n) {
-    this._acao(() => { const dm = this.st.config.demo; dm.ativo = true; dm.offset = (dm.offset || 0) + Math.round(n); R.setOffset(dm.offset); });
+    this._acao(() => {
+      const dm = this.st.config.demo;
+      // num perfil real, a demonstração começa guardando o estado real: "Sair" o devolve intacto
+      if (!dm.ativo) { dm.guardado = this.st.perfil ? JSON.stringify(this.st) : null; dm.ativo = true; dm.exemplo = false; dm.offset = 0; }
+      dm.offset = (dm.offset || 0) + Math.round(n); R.setOffset(dm.offset);
+    });
     this.missao.abrir();
     return this.tela();
   }

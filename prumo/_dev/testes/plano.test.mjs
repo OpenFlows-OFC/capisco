@@ -96,7 +96,9 @@ for (const pk of await packs()) {
     assert.equal(p.lembrete.texto, '"Prumo", às 19:00, segunda, terça, quarta e quinta');
     assert.equal(p.agenda.dias.length, 14);
     assert.equal(p.agenda.dias[0].texto, 'Qua 18/11: capítulo Parte fixa e parte que varia (novo), feito.');
-    assert.match(p.agenda.dias[1].texto, /^Qui 19\/11: revisão do capítulo Parte fixa e parte que varia e \d+ cartões\.$/);
+    // R2-06: o próximo dia de estudo é a missão que o Prumo montaria (a mesma da "Próxima missão"), com o capítulo novo
+    assert.match(p.agenda.dias[1].texto, /^Qui 19\/11: capítulo .+ \(novo\), revisão do capítulo Parte fixa e parte que varia e \d+ cartões\.$/);
+    assert.ok(p.agenda.dias.every(x => !/sem revisão vencida/.test(x.texto)));
     assert.equal(p.agenda.dias[3].texto, 'Sáb 21/11: folga.');
     assert.deepEqual(p.intervalos.porNivel.map(x => x.dias), [1, 2, 3, 4, 5]);
     assert.equal(p.constancia.linhaMeta, 'semanas com a meta: 0');

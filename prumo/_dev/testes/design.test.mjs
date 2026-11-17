@@ -39,7 +39,7 @@ for (const pk of await packs()) {
     const passoN = n.st.missao.i + 1, total = n.st.missao.passos.length;
     n.despachar('PAUSAR');
     irPara(n, rel, '2026-11-19', '07:00');
-    assert.deepEqual(n.hoje().recado, { rotulo: null, texto: `Ontem ficou registrado até o passo ${passoN}.` });
+    assert.deepEqual(n.hoje().recado, { rotulo: null, texto: `Ontem você parou no passo ${passoN} de ${total}. O que fez ficou registrado; hoje a missão é nova.` });
   });
 
   test(`[${P}] design · Régua da missão: "passo N de M" e "faltam (até) N questões", nunca tempo`, () => {

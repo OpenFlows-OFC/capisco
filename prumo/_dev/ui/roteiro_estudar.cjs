@@ -1,7 +1,7 @@
 // Roteiro de Estudar, no navegador: onboarding → primeiro uso (nome, matérias) → Hoje (saudação e
 // "Seu próximo conteúdo") → aba Estudar (4 áreas, "em breve") → página do tópico → "Estudar este tópico
 // hoje" → pré-pergunta (sem acerto) → teoria (apostila) → a resposta da pré-pergunta → questões do Enem
-// (erro com "o que faltou" e "Rever a teoria") → fim → Pronto por hoje com o visto → o botão do tópico
+// (erro com "o que faltou" e "Rever a apostila") → fim → Pronto por hoje com o visto → o botão do tópico
 // leva, com "Continuar estudando", ao estudo livre de outro tópico (sem 2º visto); a teoria segue livre. Perfil: nome. Capturas 390×844 em _dev/capturas/est-*.png.
 // Uso (na pasta prumo/): NODE_PATH="$(npm root -g)" node _dev/ui/roteiro_estudar.cjs [chromium|webkit] [light|dark]
 const path = require('path');
@@ -80,7 +80,7 @@ async function roteiro(motor, tema) {
     await U.escolher(pg, await U.erradaDe(pg, 'E'));
     await pg.waitForSelector('.feedback');
     confere(await tem('O que faltou.'), 'feedback: o que faltou');
-    confere(await tem('Rever a teoria'), 'feedback: "Rever a teoria"');
+    confere(await tem('Rever a apostila'), 'feedback: "Rever a apostila"');
     await foto('feedback');
     await pg.click('[data-ev="VOLTAR_AO_TRECHO"]');
     await pg.waitForSelector('#trecho-corpo .teoria');

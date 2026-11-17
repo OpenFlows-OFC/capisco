@@ -7,7 +7,7 @@
    falha de forma visível (nada de engolir 404).
    A lista ARQUIVOS é gerada por _dev/ui/gera_precache.mjs (não edite à mão).
    ========================================================= */
-const VERSAO = 'prumo-pwa-v5';
+const VERSAO = 'prumo-pwa-v6';
 const FONTES = 'prumo-pwa-fontes-v2';   // fontes do design system (Gabarito, Atkinson Hyperlegible Next e Mono); o activate apaga o cache antigo
 const PREFIXO = 'prumo-pwa-';
 // <precache>
@@ -99,7 +99,6 @@ const ARQUIVOS = [
   'conteudo/praticas/mat-proporcao.js',
   'conteudo/praticas/mat-proporcao.teoria.js',
   'conteudo/praticas/img/enem-2020-145-1.png',
-  'conteudo/praticas/img/enem-2021-148-1.png',
   'conteudo/praticas/img/enem-2021-153-1.jpg',
   'conteudo/praticas/img/enem-2022-138-1.png',
   'conteudo/praticas/img/enem-2022-149-1.png',

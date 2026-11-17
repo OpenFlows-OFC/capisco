@@ -44,15 +44,19 @@ export function rotaAtual() {
 }
 
 export function criarApp(nucleo, raiz, { relogio } = {}) {
-  raiz.innerHTML = '<div id="faixas" class="faixas"></div><div id="tela"></div><div id="barra-raiz"></div><div id="folha-raiz"></div><div id="anuncio" class="so-leitor" aria-live="polite"></div>';
+  raiz.innerHTML = '<div id="faixas" class="faixas"></div><div id="tela"></div><div id="barra-raiz"></div><div id="aviso-raiz"></div><div id="folha-raiz"></div><div id="anuncio" class="so-leitor" aria-live="polite"></div>';
   const $faixas = raiz.querySelector('#faixas'), $tela = raiz.querySelector('#tela'), $barra = raiz.querySelector('#barra-raiz');
-  const $folha = raiz.querySelector('#folha-raiz'), $anuncio = raiz.querySelector('#anuncio');
+  const $aviso = raiz.querySelector('#aviso-raiz'), $folha = raiz.querySelector('#folha-raiz'), $anuncio = raiz.querySelector('#anuncio');
+  // o aviso de versão nova só vale para quem já abriu o app com o service worker no controle: na primeira
+  // visita, o sw.js assume a página (skipWaiting + claim) e não há versão nova nenhuma
+  const tinhaControle = !!(typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller);
 
   const ui = {
     folha: null,        // { tipo, dados, origem } (folha aberta pela tela; não passa pelo núcleo)
     pu: null,           // estado local do Primeiro uso (primeiro-uso.js)
     chave: null,        // chave da tela desenhada (muda → rola ao topo e foca o título)
-    aviso: null,        // faixa de aviso passageira
+    aviso: null,        // aviso passageiro (bilhete perto da ação; some ao navegar ou em "Fechar")
+    hashDesenhado: null, // hash da última tela desenhada (o hashchange não redesenha o que o popstate já desenhou)
     novaVersao: null,   // service worker novo esperando
     selecao: null,      // { chave, alt } alternativa marcada antes de "Responder"
     cancelar: [],       // limpezas da tela anterior (temporizadores, animações)
@@ -84,6 +88,8 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
     if (!el || el === document.body || !raiz.contains(el)) return null;
     const d = el.dataset || {}, q = s => (window.CSS && CSS.escape ? CSS.escape(s) : String(s).replace(/"/g, '\\"'));
     if (el.id) return `#${q(el.id)}`;
+    if (el.hasAttribute && el.hasAttribute('data-foco-inicial')) return '[data-foco-inicial]';
+    if (d.fig) return `[data-fig="${q(d.fig)}"]`;
     if (d.ev) return `[data-ev="${q(d.ev)}"]`;
     if (d.acao) return `[data-acao="${q(d.acao)}"]${d.arg != null ? `[data-arg="${q(d.arg)}"]` : ''}`;
     if (d.folha) return `[data-folha="${q(d.folha)}"]`;
@@ -111,12 +117,13 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
     if (f && f.falhaSalvar) out.push(h`<div class="faixa" role="alert"><span class="faixa-texto">${f.falhaSalvar.texto}</span><button type="button" class="link" data-acao="salvarCopia">${f.falhaSalvar.acao}</button></div>`);
     if (f && f.carga) out.push(h`<div class="faixa" role="status"><span class="faixa-texto">${f.carga}</span></div>`);
     if (ui.novaVersao && !cheia) out.push(h`<div class="faixa" role="status"><span class="faixa-texto">Há uma versão nova do Prumo. Ela entra quando você fechar e abrir o app. Seu progresso não muda.</span><button type="button" class="link" data-acao="atualizarApp">Atualizar agora</button></div>`);
-    if (ui.aviso) out.push(h`<div class="faixa" role="status"><span class="faixa-texto">${ui.aviso}</span><button type="button" class="link" data-acao="fecharAviso">Fechar</button></div>`);
     return out.join('');
   }
   function renderFaixas(f, cheia = telaCheia(nucleo.estado())) {
     const fx = htmlFaixas(f, cheia);
     $faixas.innerHTML = fx;
+    // aviso passageiro ("Cópia salva", "Plano guardado"): um bilhete fixo perto da ação, não no topo do documento
+    $aviso.innerHTML = ui.aviso ? String(h`<div class="bilhete" role="status"><span class="bilhete-texto">${ui.aviso}</span><button type="button" class="link" data-acao="fecharAviso">Fechar</button></div>`) : '';
     raiz.classList.toggle('sem-faixa', !fx);
     raiz.classList.toggle('com-faixa', !!fx);
   }
@@ -142,6 +149,7 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
     const mudou = s.chave !== ui.chave;
     ui.chave = s.chave;
     const y = window.scrollY;
+    ui.hashDesenhado = location.hash;
 
     renderFaixas(t.faixas, cheia);
     $tela.innerHTML = String(comAbas
@@ -172,7 +180,7 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
     if (!fechada && !folhas[ui.folha.tipo]) ui.folha = null;
     if (!ui.folha) {
       $folha.innerHTML = '';
-      $tela.removeAttribute('inert'); $barra.removeAttribute('inert'); $faixas.removeAttribute('inert');
+      $tela.removeAttribute('inert'); $barra.removeAttribute('inert'); $faixas.removeAttribute('inert'); $aviso.removeAttribute('inert');
       document.documentElement.style.overflow = '';
       return;
     }
@@ -181,8 +189,8 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
     if (!r) { ui.folha = null; return renderFolha(t); }
     const corpoY = ($folha.querySelector('.folha-corpo') || {}).scrollTop || 0;
     const focoK = chaveDoFoco(document.activeElement);
-    $folha.innerHTML = String(moldura({ id: `folha-${ui.folha.tipo}`, rotulo: r.rotulo, corpo: r.corpo, pe: r.pe, alta: r.alta }));
-    $tela.setAttribute('inert', ''); $barra.setAttribute('inert', ''); $faixas.setAttribute('inert', '');
+    $folha.innerHTML = String(moldura({ id: `folha-${ui.folha.tipo}`, rotulo: r.rotulo, corpo: r.corpo, pe: r.pe, alta: r.alta, fechar: r.fechar !== false }));
+    $tela.setAttribute('inert', ''); $barra.setAttribute('inert', ''); $faixas.setAttribute('inert', ''); $aviso.setAttribute('inert', '');
     document.documentElement.style.overflow = 'hidden';
     const corpo = $folha.querySelector('.folha-corpo');
     if (ui.folha.focou) { if (corpo) corpo.scrollTop = corpoY; if (!focarPorChave(focoK, $folha)) { const tt = $folha.querySelector('[data-foco-folha]'); if (tt) tt.focus({ preventScroll: true }); } }
@@ -218,7 +226,9 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
   }
   function aposTransicao(antes, t) {
     const depois = t.nome;
-    if (depois !== antes && !TRECHOS.has(antes) && t.vm && t.vm.som && somLigado()) Som.tocar(t.vm.som);
+    // a Prova vencida não manda vm.som: o troféu novo toca 'trofeu' na chegada ao resultado (só na transição, não ao recarregar)
+    const som = t.vm && (t.vm.som || (depois === 'provaResultado' && t.vm.trofeu && t.vm.trofeu.novo ? 'trofeu' : null));
+    if (depois !== antes && !TRECHOS.has(antes) && som && somLigado()) Som.tocar(som);
     if (!telaCheia(antes) && telaCheia(depois)) { ui.selecao = null; history.pushState({ guarda: 1 }, '', '#/missao'); }
     else if (telaCheia(antes) && !telaCheia(depois)) history.replaceState(null, '', '#/hoje');
     else if (antes === 'primeiroUso' && depois !== 'primeiroUso') history.replaceState(null, '', '#/hoje');
@@ -273,9 +283,17 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
       return;
     }
     if (nome === 'primeiroUso') { if (ui.pu) ui.pu.passo = (e.state && e.state.pu) || 0; render(); return; }
+    ui.aviso = null;   // navegou: o aviso passageiro fica para trás
     render();
   });
-  window.addEventListener('hashchange', () => { if (!telaCheia(nucleo.estado())) { if (ui.folha) { ui.folha = null; } render(); } });
+  // um clique numa aba dispara popstate e hashchange: desenha uma vez só (o 2º desenho tirava o foco do título)
+  window.addEventListener('hashchange', () => {
+    if (telaCheia(nucleo.estado())) return;
+    if (ui.folha) ui.folha = null;
+    else if (ui.hashDesenhado === location.hash) return;
+    ui.aviso = null;
+    render();
+  });
 
   // Virada de data (b.2): ao voltar ao app e à meia-noite
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && nucleo.conferirData()) render(); });
@@ -312,7 +330,7 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
       agendarMeiaNoite();
     },
     render: () => render(),
-    novaVersao(aplicar) { ui.novaVersao = aplicar; renderFaixas(nucleo.tela().faixas); },
+    novaVersao(aplicar) { if (!tinhaControle) return; ui.novaVersao = aplicar; renderFaixas(nucleo.tela().faixas); },
     ctx,
   };
 }

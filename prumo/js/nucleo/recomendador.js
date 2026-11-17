@@ -1,13 +1,13 @@
 /* =========================================================
    PRUMO · Recomendador "o que estudar agora" (f.1; núcleo, sem DOM)
-   IA baseada em regras: uma lista de decisão (a primeira regra que bate
-   decide), sem aprendizado de máquina. Cada regra tem uma linha própria na
+   Recomendação por regras fixas: uma lista de decisão (a primeira regra
+   que bate decide). Cada regra tem uma linha própria na
    trilha, com o texto da regra, e a missão vem com a frase de
    "Por que esta missão?". Tudo é determinístico: mesmo estado e mesma data
    dão a mesma missão. Desempates: mais atrasada, ordem do caderno, id.
    ========================================================= */
 import * as R from './relogio.js';
-import { rotuloNivel } from './motor.js';
+import { rotuloNivel, revisaoAtrasada, dataEfetiva, passouPorHojeNao } from './motor.js';
 import { capacidade, ehDiaDeEstudo, emPausa, diasPrevistosSemEstudo, ultimoDiaEstudado, textoDiasCurto } from './plano.js';
 import { maoDoDia, minutosDaMao } from './cards.js';
 
@@ -47,7 +47,7 @@ export function itemDeRevisao(st, pack, capId, d, reservados = new Set()) {
   if (primeira) {
     for (const p of [...(cap.paginas || [])].reverse()) {
       const id = `${p.modelo}#0`;
-      if (st.pre[id] && !st.pre[id].revelado && !reservados.has(id)) return { id, papel: 'compreender', antesDepois: id, motivo: '1ª revisão: a pergunta de entrada volta' };
+      if (st.pre[id] && !st.pre[id].revelado && !reservados.has(id)) return { id, papel: 'compreender', antesDepois: id, motivo: `1ª revisão: volta a pergunta de antes da p. ${p.n}` };
     }
   }
   // (2) cartão aberto
@@ -169,7 +169,7 @@ export function passoRevisao(st, pack, capId, d, reservados) {
   const it = itemDeRevisao(st, pack, capId, d, reservados);
   reservados.add(it.id);
   const t = st.topicos[capId];
-  return { t: 'revisao', id: it.id, cap: capId, papel: it.papel, origem: pack.questao(it.id) ? 'enem' : 'equipe', erro: it.erro || null, antesDepois: it.antesDepois || null, atrasada: !!(t && t.proxima && t.proxima < d), motivo: it.motivo };
+  return { t: 'revisao', id: it.id, cap: capId, papel: it.papel, origem: pack.questao(it.id) ? 'enem' : 'equipe', erro: it.erro || null, antesDepois: it.antesDepois || null, atrasada: !!(t && revisaoAtrasada(st, t.proxima, d)), motivo: it.motivo };
 }
 /** Revisão antecipada do capítulo mais fraco (treino 'extra' do motor: não sobe nível). */
 export function passosAntecipada(st, pack, capId, d, reservados = new Set()) {
@@ -212,14 +212,15 @@ export function regraDaFila(passos, cap, titulo) {
   const onde = todosEnem ? 'numa questão do Enem' : 'numa questão de aplicar (do Enem ou da equipe)';
   const ondeGanho = todosEnem ? 'numa questão do Enem' : 'numa questão de aplicar (do Enem ou da equipe)';
   if (antecipada) {
-    return { tipo: 'antecipada', todosEnem, frase: '2 acertos seguidos, um deles numa questão de aplicar, firmam a revisão antecipada.', insercao: 'Revisão antecipada: não sobe nível. Se a sequência não fechar, a revisão passa para amanhã.', ganho: 'Revisão antecipada: o nível só sobe na revisão do dia certo.', falta: todosEnem ? 'Falta acertar uma questão do Enem' : 'Falta acertar uma questão de aplicar' };
+    return { tipo: 'antecipada', todosEnem, frase: '2 acertos seguidos, um deles numa questão de aplicar, firmam a revisão antecipada', insercao: 'Revisão antecipada: não sobe nível. Se a sequência não fechar, a revisão passa para amanhã.', ganho: 'Revisão antecipada: o nível só sobe na revisão do dia certo.', falta: todosEnem ? 'Falta acertar uma questão do Enem' : 'Falta acertar uma questão de aplicar' };
   }
   return {
     tipo: 'capitulo', todosEnem,
     frase: `2 acertos seguidos, um deles ${onde}`,
     insercao: todosEnem ? 'Errou uma questão do Enem? A próxima é uma questão da equipe sobre o mesmo trecho.' : 'Errou uma questão de aplicar? A próxima é uma questão da equipe sobre o mesmo trecho.',
     ganho: `Acerte duas seguidas, uma delas ${ondeGanho}: ${titulo || 'o capítulo'} entra no nível 1 de 5.`,
-    falta: 'Para fechar: 2 certas seguidas, falta 1',
+    // com a casa do "acerto seguido" cheia e a de aplicar vazia, o que falta é sempre uma questão de aplicar certa
+    falta: todosEnem ? 'Falta acertar uma questão do Enem' : 'Falta acertar uma questão de aplicar',
   };
 }
 export function estimarMinutos(passos) {
@@ -266,10 +267,17 @@ const proximoLiberado = (st, M, d) => M.topicosAtivos(st).filter(id => M.estado(
  * Monta a missão do dia d. Pura: não muda o estado.
  * Devolve { dia, regra, tipo, trilha:[{id, ok, txt}], frase, passos, cap, ... }.
  */
-export function montarMissao(st, pack, M, d, { estudarMesmoAssim = false } = {}) {
+export function montarMissao(st, pack, M, d, { estudarMesmoAssim = false, livre = false, soCaderno = false, revisoesExtra = [] } = {}) {
   const trilha = [];
   const r = (id, ok, txt) => (trilha.push({ id, ok: !!ok, txt }), !!ok);
   const venc = vencidas(st, M, d);
+  // revisões de tópico que o recomendador geral (pratica.js, P1) soma a esta missão: [{ nome, atrasada }].
+  // Entram nas frases aqui, para "Por que esta missão?" já sair certo (sem "não tem revisão vencida" + "E as revisões de…").
+  const extra = Array.isArray(revisoesExtra) ? revisoesExtra.filter(x => x && x.nome) : [];
+  const nomesExtra = extra.map(x => x.nome);
+  const juntar = l => (l.length > 1 ? `${l.slice(0, -1).join(', ')} e ${l[l.length - 1]}` : l[0] || '');
+  /** "a revisão de X" · "as revisões de X e Y" (revisões de tópico) */
+  const dosTopicos = () => (extra.length === 1 ? `a revisão de ${nomesExtra[0]}` : `as revisões de ${juntar(nomesExtra)}`);
   const cap = capacidade(st), minutos = (st.perfil || {}).minutos || 25;
   const pv = M.prova(st, d), H = M.horizonte(st, d), reta = M.retaFinal(st, d), faltam = pv.passou ? null : pv.dias;
   const aberto = M.topicosAtivos(st).some(id => (st.topicos[id] || {}).caixa >= 1);
@@ -282,34 +290,66 @@ export function montarMissao(st, pack, M, d, { estudarMesmoAssim = false } = {})
   const nomeCap = id => `Cap. ${capN(pack, id)}`;
   const fim = (o) => { const out = Object.assign(base, o); out.passos = out.passos || []; out.minutos = estimarMinutos(out.passos); return out; };
 
-  const soRevisoes = (lista, regra, tipo, frase) => {
-    const orc = Math.max(1, Math.floor(minutos / 2));
+  const soRevisoes = (lista, regra, tipo, frase, extra = {}) => {
+    const orc = Math.max(1, Math.floor(minutos / MIN.revisao));
     const ps = lista.slice(0, orc).map(id => passoRevisao(st, pack, id, d, reservados));
-    return fim({ regra, tipo, frase, passos: comCards(ps) });
+    return fim(Object.assign({ regra, tipo, frase, passos: comCards(ps), revisoesForaDoOrcamento: Math.max(0, lista.length - orc) }, extra));
   };
-  const questaoDoDia = (regra, frase) => {
+  /** Questão do dia; com revisão de tópico somada (P1), a frase diz que ela vence e que o resto é a Questão do dia. */
+  const questaoDoDia = (regra, frase, fraseComTopicos = null) => {
     const ps = itensQuestaoDoDia(st, pack, M, d, reservados);
-    return fim({ regra, tipo: 'questaoDoDia', frase, passos: comCards(ps) });
+    const f = extra.length && fraseComTopicos ? (ps.length ? fraseComTopicos : `Hoje ${extra.length === 1 ? 'vence' : 'vencem'} ${dosTopicos()}.`) : frase;
+    return fim({ regra, tipo: 'questaoDoDia', frase: f, passos: comCards(ps) });
   };
+  const nRevs = () => venc.length + extra.length;
+  const asVencidas = () => (nRevs() === 1 ? 'a revisão vencida' : `as ${nRevs()} revisões vencidas`);
   const revisoesOuManter = (regra, prefixo) => {
-    if (venc.length) return soRevisoes(venc, regra, 'revisoes', `${prefixo} Hoje: ${venc.length === 1 ? 'a revisão vencida' : `as ${venc.length} revisões vencidas`}.`);
+    if (venc.length) return soRevisoes(venc, regra, 'revisoes', `${prefixo} Hoje: ${asVencidas()}.`);
     const fraco = capituloDeMenorNivel(st, M);
     if (fraco) {
       const ps = passosAntecipada(st, pack, fraco, d, reservados);
-      if (ps.length) return fim({ regra, tipo: 'antecipada', cap: fraco, frase: `${prefixo} Hoje: revisão antecipada do ${nomeCap(fraco)}, o mais fraco.`, passos: comCards(ps) });
+      if (ps.length) return fim({ regra, tipo: 'antecipada', cap: fraco, frase: `${prefixo} Hoje: revisão antecipada do ${nomeCap(fraco)}, o mais fraco${extra.length ? `, e ${dosTopicos()}` : ''}.`, passos: comCards(ps) });
     }
-    return questaoDoDia(regra, `${prefixo} Hoje: Questão do dia.`);
+    return questaoDoDia(regra, `${prefixo} Hoje: Questão do dia.`, `${prefixo} Hoje: Questão do dia e ${dosTopicos()}.`);
   };
   const comRevisoes = (regra, tipo, capId, passosCap, frase) => {
-    const orc = minutos - estimarMinutos(passosCap);
-    const cabem = Math.max(0, Math.floor(orc / MIN.revisao));
-    const revs = venc.filter(id => id !== capId).slice(0, cabem).map(id => passoRevisao(st, pack, id, d, reservados));
+    const outras = venc.filter(id => id !== capId);
+    // a revisão vencida tem prioridade: se ela não cabe junto com o capítulo nos minutos do plano,
+    // hoje vêm só as revisões e o capítulo fica para o próximo dia de estudo (a data anunciada se cumpre)
+    if (outras.length && estimarMinutos(passosCap) + MIN.revisao * outras.length > minutos) {
+      const n = outras.length + extra.length;
+      return soRevisoes(outras, regra, 'revisoes', `Hoje ${n === 1 ? 'vence 1 revisão' : `vencem ${n} revisões`}, e o ${nomeCap(capId)} não cabe junto nos seus ${minutos} min. ${n === 1 ? 'A revisão vem' : 'As revisões vêm'} primeiro; o ${nomeCap(capId)} fica para o próximo dia de estudo.`, { capAdiado: capId });
+    }
+    const revs = outras.map(id => passoRevisao(st, pack, id, d, reservados));
     const atrasadas = revs.filter(p => p.atrasada), doDia = revs.filter(p => !p.atrasada);
-    const fora = venc.filter(id => id !== capId).length - revs.length;
     const passos = comCards([...atrasadas, ...passosCap, ...doDia]);
-    return fim({ regra, tipo, cap: capId, frase, passos, revisoesForaDoOrcamento: fora });
+    return fim({ regra, tipo, cap: capId, frase, passos, revisoesForaDoOrcamento: 0 });
   };
-  const revTxt = () => (venc.length === 0 ? 'hoje não tem revisão vencida' : venc.length === 1 ? 'hoje só tem 1 revisão' : `hoje tem ${venc.length} revisões`);
+  /** "hoje não tem revisão vencida" · "hoje só tem 1 revisão" · com revisão de tópico: "hoje vence a revisão de X" ·
+   *  "hoje vencem 1 revisão do caderno e a de X" (a mesma contagem do quadro "Hoje vence"). */
+  const revTxt = () => {
+    const nv = venc.length, nt = extra.length;
+    if (!nt) return nv === 0 ? 'hoje não tem revisão vencida' : nv === 1 ? 'hoje só tem 1 revisão' : `hoje tem ${nv} revisões`;
+    if (!nv) return `hoje ${nt === 1 ? 'vence' : 'vencem'} ${dosTopicos()}`;
+    return `hoje vencem ${nv === 1 ? '1 revisão do caderno' : `${nv} revisões do caderno`} e ${nt === 1 ? `a de ${nomesExtra[0]}` : `as de ${juntar(nomesExtra)}`}`;
+  };
+
+  // L · o caderno por conta própria, com a missão do dia já cumprida: revisão antecipada do capítulo mais
+  // fraco (não muda o nível); sem capítulo aberto, o capítulo em curso ou o próximo liberado. Sem visto.
+  if (livre && soCaderno) {
+    r('L', true, 'Estudo por conta própria no caderno (a missão do dia já foi cumprida)');
+    const fraco = capituloDeMenorNivel(st, M);
+    if (fraco) {
+      const ps = passosAntecipada(st, pack, fraco, d, reservados);
+      if (ps.length) return fim({ regra: 'L', tipo: 'antecipada', cap: fraco, frase: `Missão de hoje cumprida. Por conta própria: revisão antecipada do ${nomeCap(fraco)}, o mais fraco. Ela não muda o nível.`, passos: ps });
+    }
+    const cmc = comecadoNaoVencido(st, M, d), nv = cmc ? null : proximoLiberado(st, M, d);
+    if (cmc || nv) {
+      const ps = cmc ? passosR7(st, pack, cmc, d, reservados) : passosNovo(st, pack, nv, d, reservados);
+      return fim({ regra: 'L', tipo: cmc ? 'pratica' : 'novo', cap: cmc || nv, frase: `Missão de hoje cumprida. Por conta própria: o ${nomeCap(cmc || nv)}.`, passos: ps });
+    }
+    return fim({ regra: 'L', tipo: 'livre', frase: 'Missão de hoje cumprida. No caderno, não há o que estudar a mais hoje.' });
+  }
 
   // R0 · a prova já passou (só com algum capítulo aberto: sem capítulo aberto, segue para o capítulo novo)
   const provaTxt = st.perfil && st.perfil.prova ? R.fmtDiaMes(st.perfil.prova) : '';
@@ -322,9 +362,15 @@ export function montarMissao(st, pack, M, d, { estudarMesmoAssim = false } = {})
   const folga = !ehDiaDeEstudo(st, d);
   if (r('R2', folga && !estudarMesmoAssim, folga ? (estudarMesmoAssim ? 'Hoje é folga, mas você escolheu estudar mesmo assim' : `Hoje é folga (seus dias: ${textoDiasCurto(st.perfil.dias)})`) : 'Hoje é dia de estudo'))
     return fim({ regra: 'R2', tipo: 'folga', frase: 'Hoje é folga no seu plano. Nada vence por isso.' });
-  // R3 · modo retorno
-  if (r('R3', venc.length >= cap, `${venc.length} ${venc.length === 1 ? 'revisão vencida' : 'revisões vencidas'}; capacidade ${cap}`))
-    return Object.assign(soRevisoes(venc, 'R3', 'retorno', `Você tem ${venc.length} revisões vencidas, e a capacidade de hoje é ${cap}: hoje é dia de pôr as revisões em dia, as mais atrasadas primeiro.`), { retorno: true });
+  // R3 · modo retorno: só quando há revisão atrasada de fato (passou por um dia de estudo sem ser feita).
+  // Revisões que venceram numa folga, ou que só vencem hoje, seguem o caminho normal (R7/R8/R9), sem "pôr em dia".
+  const atrC = venc.filter(id => revisaoAtrasada(st, st.topicos[id].proxima, d)).length;
+  const atrTot = atrC + extra.filter(x => x.atrasada).length;
+  const txtAtr = atrC ? `${atrC} ${atrC === 1 ? 'atrasada' : 'atrasadas'}` : 'nenhuma atrasada';
+  if (r('R3', venc.length >= cap && atrC > 0, `${venc.length} ${venc.length === 1 ? 'revisão vencida' : 'revisões vencidas'} no caderno, ${txtAtr}; o modo retorno vale com ${cap} ou mais vencidas e alguma atrasada`)) {
+    const paraHoje = nRevs() - atrTot;
+    return Object.assign(soRevisoes(venc, 'R3', 'retorno', `Você tem ${atrTot === 1 ? '1 revisão atrasada' : `${atrTot} revisões atrasadas`}${paraHoje > 0 ? ` e mais ${paraHoje} para hoje` : ''}: hoje é dia de pôr as revisões em dia, as mais atrasadas primeiro.`), { retorno: true });
+  }
   // R4 · reta final (só com algum capítulo aberto)
   const naReta = aberto && faltam !== null && faltam <= reta;
   if (r('R4', naReta, !aberto ? 'Nenhum capítulo aberto: reta final não se aplica' : faltam === null ? `Sem data de prova; reta final é de ${reta} dias` : `Faltam ${faltam} dias; reta final é de ${reta}`))
@@ -336,7 +382,7 @@ export function montarMissao(st, pack, M, d, { estudarMesmoAssim = false } = {})
       : passosAntecipada(st, pack, pre, d, reservados);
     const outras = venc.filter(id => id !== pre);
     const revs = outras.slice(0, Math.max(0, Math.floor((minutos - estimarMinutos(ps)) / MIN.revisao))).map(id => passoRevisao(st, pack, id, d, reservados));
-    return fim({ regra: 'R5a', tipo: 'prereq', cap: pre, capTravado: teto, frase: `O ${nomeCap(teto)} bateu no teto na última rodada, e a base dele, o ${nomeCap(pre)}, ainda está ${(st.topicos[pre] || {}).caixa ? 'no ' + rotuloNivel(st.topicos[pre].caixa) : 'sem nível'}. Hoje: revisão do ${nomeCap(pre)}.`, passos: comCards([...ps, ...revs]) });
+    return fim({ regra: 'R5a', tipo: 'prereq', cap: pre, capTravado: teto, frase: `O ${nomeCap(teto)} bateu no teto na última rodada, e a base dele, o ${nomeCap(pre)}, ainda está ${(st.topicos[pre] || {}).caixa ? 'no ' + rotuloNivel(st.topicos[pre].caixa) : 'sem nível'}. Hoje: revisão do ${nomeCap(pre)}${extra.length ? `, e ${dosTopicos()}` : ''}.`, passos: comCards([...ps, ...revs]) });
   }
   if (r('R5b', !!teto, teto ? `${nomeCap(teto)} bateu no teto na última rodada` : 'Nenhum capítulo bateu no teto')) {
     const ps = passosR5b(st, pack, teto, d, reservados);
@@ -357,24 +403,52 @@ export function montarMissao(st, pack, M, d, { estudarMesmoAssim = false } = {})
     return comRevisoes('R8', 'novo', novo, ps, `Você ainda não abriu o ${nomeCap(novo)}, e ${revTxt()}.`);
   }
   // R9 · nada novo nem em curso
-  r('R9', true, venc.length ? 'Só revisões' : 'Nada vence: Questão do dia');
-  if (venc.length) return soRevisoes(venc, 'R9', 'revisoes', `Nada novo nem em curso: hoje ${venc.length === 1 ? 'é a revisão vencida' : `são as ${venc.length} revisões vencidas`}.`);
-  return questaoDoDia('R9', 'Nada vence hoje: a missão é a Questão do dia, com questões dos capítulos que você já abriu.');
+  r('R9', true, venc.length ? 'Só revisões' : 'Nada vence no caderno: Questão do dia');
+  if (venc.length) return soRevisoes(venc, 'R9', 'revisoes', `Nada novo nem em curso: hoje ${nRevs() === 1 ? 'é a revisão vencida' : `são as ${nRevs()} revisões vencidas`}.`);
+  return questaoDoDia('R9', 'Nada vence hoje: a missão é a Questão do dia, com questões dos capítulos que você já abriu.',
+    `Hoje ${extra.length === 1 ? 'vence' : 'vencem'} ${dosTopicos()}; o caderno está em dia, então o resto é a Questão do dia.`);
 }
 
-/** Textos de "ver a regra": a trilha da árvore, as revisões, a lembrança estimada e as questões. */
+/** Ordem em que as regras valem de fato (a árvore do caderno e as regras dos tópicos, juntas):
+ *  o tópico escolhido vem antes de tudo; o tópico começado, antes do capítulo novo; o tópico novo, antes
+ *  da Questão do dia; as revisões de tópico (P1) se somam à missão que a lista escolheu. */
+const ORDEM_REGRAS = ['L', 'P0', 'R0', 'R1', 'R2', 'R3', 'R4', 'R5a', 'R5b', 'R7', 'P2', 'R8', 'P3', 'R9', 'P1'];
+/** Quando a revisão marcada para x entra, para "ver a regra": "vence hoje", "atrasada desde …", "venceu numa folga…". */
+export function quandoRevisao(st, x, d) {
+  if (!R.ehData(x)) return 'sem data';
+  if (x === d) return 'vence hoje';
+  if (x < d) return revisaoAtrasada(st, x, d) ? `atrasada desde ${R.fmtCurta(dataEfetiva(st, x))}` : `venceu em ${R.fmtCurta(x)}, ${passouPorHojeNao(st, x, d) ? 'num dia em que você marcou “Hoje não”' : 'numa folga'}, e entra hoje`;
+  return `vence ${R.fmtCurta(dataEfetiva(st, x))}`;
+}
+/** As linhas de "ver a regra", sem códigos internos: numeradas na ordem em que valem, até a regra que
+ *  decidiu ("sim"); as revisões de tópico que se somam à missão vêm por último ("também").
+ *  Cada linha: { n, texto, decidiu, tambem, linha: "3. sim: Hoje é folga…" }. */
+export function regrasDaMissao(missao) {
+  const dec = missao.regra;
+  const ord = id => { const i = ORDEM_REGRAS.indexOf(id); return i < 0 ? ORDEM_REGRAS.length : i; };
+  const tr = (missao.trilha || []).map((x, i) => ({ x, i })).sort((a, b) => ord(a.x.id) - ord(b.x.id) || a.i - b.i).map(o => o.x);
+  const iDec = tr.findIndex(x => x.id === dec && x.ok);
+  const out = [];
+  tr.forEach((x, i) => {
+    if (x.id === 'P1' && x.ok && dec !== 'P1') { out.push({ texto: x.txt, decidiu: false, tambem: true }); return; }
+    if (iDec >= 0 && i > iDec) return;   // a primeira regra que vale decide: as de depois não chegam a contar
+    out.push({ texto: x.txt, decidiu: i === iDec, tambem: false });
+  });
+  return out.map((r, k) => Object.assign(r, { n: k + 1, linha: `${k + 1}. ${r.decidiu ? 'sim' : r.tambem ? 'também' : 'não'}: ${r.texto}` }));
+}
+/** Textos de "ver a regra": a lista de regras, as revisões, a lembrança estimada e as questões. */
 export function verARegra(st, pack, M, missao, d) {
-  const linhas = (missao.trilha || []).map(x => `${x.id} ${x.ok ? 'sim' : 'não'}: ${x.txt}`);
+  const regras = regrasDaMissao(missao);
+  const linhas = regras.map(r => r.linha);
   const revs = (missao.passos || []).filter(p => p.t === 'revisao').map(p => {
     const t = st.topicos[p.cap] || {};
-    const quando = t.proxima === d ? 'vence hoje' : t.proxima < d ? `atrasada desde ${R.fmtCurta(t.proxima)}` : `vence ${R.fmtCurta(t.proxima)}`;
-    return `Revisão: Cap. ${capN(pack, p.cap)}, ${quando} (${p.motivo})`;
+    return `Revisão: Cap. ${capN(pack, p.cap)}, ${quandoRevisao(st, t.proxima, d)} (${p.motivo})`;
   });
   const lembranca = M.topicosAtivos(st).filter(id => (st.topicos[id] || {}).caixa >= 1).map(id => `Cap. ${capN(pack, id)}: lembrança estimada ${M.recuperabilidade(st, id, d)}% (estimativa do modelo, não é medida: R = 0,85^(t/I))`);
   const questoes = (missao.passos || []).filter(p => p.id && pack.questao(p.id)).map(p => { const q = pack.questao(p.id); return `${q.ano} Q${q.numero}`; });
   return {
-    linhas, revisoes: revs, lembranca, questoes: questoes.length ? `Questões do Enem: ${questoes.join(', ')}` : null,
+    linhas, regras, revisoes: revs, lembranca, questoes: questoes.length ? `Questões do Enem: ${questoes.join(', ')}` : null,
     texto: [...linhas, ...revs].join(' · '),
-    oQueE: 'O Prumo escolhe a missão por regras fixas: uma lista de decisão em que a primeira regra que bate decide. Sem aprendizado de máquina e sem sorteio: o mesmo estado e a mesma data dão a mesma missão.',
+    oQueE: 'O Prumo escolhe a missão por regras fixas, conferidas na ordem abaixo: a primeira que vale decide. Sem sorteio: o mesmo estado e a mesma data dão a mesma missão.',
   };
 }

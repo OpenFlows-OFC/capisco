@@ -23,9 +23,10 @@ export const topico = {
       alternativas: { A: '…', B: '…', C: '…', D: '…', E: '…' },   // texto íntegro do INEP (HTML permitido)
       explicacao: 'Texto da equipe: como resolver, em 2 a 5 frases.',
       faltou: { A: 'Texto da equipe: o erro provável de quem marca A.', B: '…', D: '…', E: '…' }, // todas as erradas
+      secao: 3,                     // número (1, 2, 3…) da seção da apostila (<id>.teoria.js) que explica o assunto da questão; "Rever a teoria" pode abrir nela
       nivel: 'médio',               // fácil (b < 0,5) | médio (0,5 ≤ b < 1,5) | difícil (b ≥ 1,5); só itens com b informado
       fonte: 'Enem 2021, 2º dia, Caderno Azul, questão 150. INEP, CC BY-ND 3.0.',
-      transcricao: 'enem.dev, conferida com ITENS_PROVA' 
+      transcricao: 'enem.dev, conferida com ITENS_PROVA e, palavra por palavra, com o caderno oficial do INEP (PDF, Caderno Azul, p. N)'
     },
   ],
   autoria: { equipe: 'Prumo', ia: 'Claude Opus 5.5 (Anthropic), via Claude Code', revisao: 'pendente' },
@@ -33,7 +34,8 @@ export const topico = {
 ```
 
 Regras:
-- Questão do INEP: texto íntegro, sem adaptar (CC BY-ND 3.0). Só formato muda. Atribuição em `fonte`.
+- Questão do INEP: texto íntegro, sem adaptar (CC BY-ND 3.0). Só formato muda. Atribuição em `fonte`. Copie do PDF oficial (Caderno Azul), não só do enem.dev: palavras, acentos, pontuação, travessões (—), aspas curvas, reticências e destaques das referências como no caderno; alternativas de Linguagens com minúscula inicial, como no caderno. Erro que já está no caderno fica como está (ex.: "sumário, térbio" na 2020 Q10; "www.rascunho.com br." na 2023 Q23). Quadro que vira ilegível no celular pode ser transcrito como `<table>` (mesmos dados, mesma ordem).
+- Texto da equipe (`ideias`, `explicacao`, `faltou` e as apostilas): espaço como separador de milhar e espaço fixo (U+00A0) no milhar, depois de `R$`, entre número e unidade e em torno do `:` da escala (`1 : 50`), para nada quebrar no meio da linha. Potência com caractere sobrescrito (², ³, ᵗ), nunca `^`. Os números de `ideias` não podem ser os de uma questão do tópico.
 - Gabarito, CO_ITEM, habilidade e a, b, c conferidos no `rebranding/anexos/inep/ITENS_PROVA_<ano>.csv` (Caderno Azul, 1ª aplicação). Item anulado ou com gabarito divergente: fora.
 - Prefira questões sem imagem ou com imagem simples; imagem baixada para `conteudo/praticas/img/` com o mesmo conteúdo do original.
 - `explicacao`, `faltou` e `ideias` são texto da equipe, em português claro para aluno de 16 anos, sem copiar 6 palavras seguidas do INEP.

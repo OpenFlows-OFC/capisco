@@ -6,11 +6,11 @@
    A chama (Decisão 3) saiu com o design system: o único símbolo são os risquinhos.
    ========================================================= */
 import * as R from './relogio.js';
-import { intervalos, retaFinal, prova as provaDe, horizonte, NIVEL, rotuloNivel } from './motor.js';
+import { intervalos, retaFinal, prova as provaDe, horizonte, NIVEL, rotuloNivel, dataEfetiva, revisaoAtrasada } from './motor.js';
 
 export const CAPACIDADE = { 15: 2, 25: 3, 40: 5 };
 export const capacidade = st => CAPACIDADE[(st.perfil || {}).minutos] || 3;
-export { intervalos, retaFinal, horizonte };
+export { intervalos, retaFinal, horizonte, dataEfetiva, revisaoAtrasada };
 
 /* ---------------- dias de estudo, folga e pausa ---------------- */
 export const ehDiaDeEstudo = (st, d) => !!st.perfil && (st.perfil.dias || []).includes(R.diaDaSemana(d));
@@ -147,9 +147,9 @@ export function resumoProva(st, d) {
 }
 /** Tabela de intervalos por nível, com a regra escrita. */
 export function tabelaIntervalos(st, d) {
-  const iv = intervalos(st, d), H = horizonte(st, d);
+  const iv = intervalos(st, d), H = horizonte(st, d), ns = iv.slice(1);
   return {
     porNivel: [1, 2, 3, 4, 5].map(k => ({ nivel: k, nome: rotuloNivel(k), dias: iv[k] })),
-    verARegra: `O Prumo conta ${H} dias${(st.perfil || {}).prova ? ' até a sua prova' : ' (você ainda não marcou a data da prova)'}. O maior intervalo entre revisões é 15% desse prazo (no mínimo 4 dias, no máximo 60); os outros vão dobrando aos poucos, cada um pelo menos 1 dia maior que o anterior. Hoje, os intervalos são de ${iv.slice(1).join(', ')} dias.`,
+    verARegra: `O Prumo conta ${H} dias${(st.perfil || {}).prova ? ' até a sua prova' : ' (você ainda não marcou a data da prova)'}. O maior intervalo entre revisões é 15% desse prazo, arredondado (no mínimo 5 dias, no máximo 60); os outros crescem aos poucos até ele, cada um pelo menos 1 dia maior que o anterior. Hoje, os intervalos são de ${ns.slice(0, -1).join(', ')} e ${ns[ns.length - 1]} dias.`,
   };
 }

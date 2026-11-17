@@ -70,6 +70,7 @@ const L_DUAS = (() => {
 export const pack = {
   id: 'mat-fa', versao: '0.0.1-fixture', materia: 'mat', titulo: 'Funções afins',
   licencaPadrao: 'CC BY-SA 4.0',
+  nivelMaximoDemo: 3,   // como o pack real: o estado de exemplo vai até o nível 3 de 5
   avisoColetanea: 'Este pack é uma coletânea. O texto, os modelos e as explicações da equipe Prumo estão em CC BY-SA 4.0. Cada questão do Enem mantém a licença indicada nela e não é relicenciada pela licença do pack.',
   creditos: [{ fonte: 'Fixture de teste do núcleo', licenca: 'CC BY-SA 4.0', autoria: AUT }],
   chefao: { trofeu: 'Funções afins', selo: 'mat', regra: '4 acertos seguidos, um de cada capítulo' },

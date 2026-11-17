@@ -39,12 +39,13 @@ export const topico = {
       "faltou": {
         "B": "Você se guiou pela maior pontuação em um único jogo (27, do jogador II). O que decide é a soma dos quatro jogos: o II tem só 71 e ainda precisa de 19 pontos.",
         "C": "Você olhou para quem foi melhor no último jogo (26, do jogador III). Mas a soma do III é 71, e ele precisaria de 19 pontos no quinto jogo.",
-        "D": "Você comparou a soma de cada um com 4 × 18 = 72 e escolheu quem está mais perto disso. O critério certo é quem tem a maior soma, porque assim falta menos para chegar a 90; o IV, com 75, ainda precisa de 15.",
+        "D": "Você escolheu o jogador mais regular: o IV fez entre 15 e 21 pontos em cada jogo. Regularidade não conta aqui; o que conta é a soma dos quatro jogos. O IV soma 75 e precisa de 15 pontos no quinto jogo, mas o I já soma 77 e precisa de só 13.",
         "E": "Você somou só os três primeiros jogos: aí o V lidera com 60, contra 57 do I. Com os quatro jogos, o I chega a 77 e o V fica em 75."
       },
+      "secao": 1,
       "nivel": "médio",
       "fonte": "Enem 2022, 2º dia, Caderno Azul, questão 171. INEP, CC BY-ND 3.0.",
-      "transcricao": "enem.dev, conferida com ITENS_PROVA"
+      "transcricao": "enem.dev, conferida com ITENS_PROVA e, palavra por palavra, com o caderno oficial do INEP (PDF, Caderno Azul, p. 29)"
     },
     {
       "id": "enem-2021-148",
@@ -59,8 +60,8 @@ export const topico = {
       "b": 1.468,
       "c": 0.171,
       "gabarito": "C",
-      "contexto": "<p>O quadro apresenta o número de terremotos de magnitude maior ou igual a 7, na escala de Richter, ocorridos em nosso planeta nos anos de 2000 a 2011.</p><figure><img src=\"./conteudo/praticas/img/enem-2021-148-1.png\" alt=\"Quadro com o número de terremotos por ano: 2000: 15; 2001: 16; 2002: 13; 2003: 15; 2004: 16; 2005: 11; 2006: 11; 2007: 18; 2008: 12; 2009: 17; 2010: 24; 2011: 20.\"></figure>",
-      "enunciado": "<p>Um pesquisador acredita que a mediana representa bem o número anual típico de terremotos em um período. Segundo esse pesquisador, o número anual típico de terremotos de magnitude maior ou igual a 7 é</p>",
+      "contexto": "<p>O quadro apresenta o número de terremotos de magnitude maior ou igual a 7, na escala Richter, ocorridos em nosso planeta nos anos de 2000 a 2011.</p><table><thead><tr><th scope=\"col\">Ano</th><th scope=\"col\">Terremotos</th></tr></thead><tbody><tr><td>2000</td><td>15</td></tr><tr><td>2001</td><td>16</td></tr><tr><td>2002</td><td>13</td></tr><tr><td>2003</td><td>15</td></tr><tr><td>2004</td><td>16</td></tr><tr><td>2005</td><td>11</td></tr><tr><td>2006</td><td>11</td></tr><tr><td>2007</td><td>18</td></tr><tr><td>2008</td><td>12</td></tr><tr><td>2009</td><td>17</td></tr><tr><td>2010</td><td>24</td></tr><tr><td>2011</td><td>20</td></tr></tbody></table><p>Disponível em: https://earthquake.usgs.gov/earthquakes/browse/m7-world.php. Acesso em: 13 ago. 2012 (adaptado).</p><p>Um pesquisador acredita que a mediana representa bem o número anual típico de terremotos em um período.</p>",
+      "enunciado": "<p>Segundo esse pesquisador, o número anual típico de terremotos de magnitude maior ou igual a 7 é</p>",
       "alternativas": {
         "A": "11.",
         "B": "15.",
@@ -75,9 +76,10 @@ export const topico = {
         "D": "Você calculou a média: 188 ÷ 12 ≈ 15,7. A questão pede a mediana, que é o valor central da lista ordenada.",
         "E": "Você fez a média entre o menor e o maior valor, ou entre o primeiro e o último ano. Isso não é mediana: é preciso ordenar os 12 valores e olhar o centro."
       },
+      "secao": 3,
       "nivel": "médio",
       "fonte": "Enem 2021, 2º dia, Caderno Azul, questão 148. INEP, CC BY-ND 3.0.",
-      "transcricao": "enem.dev, conferida com ITENS_PROVA e com o PDF oficial do INEP (enunciado corrigido pelo PDF)"
+      "transcricao": "enem.dev, conferida com ITENS_PROVA e, palavra por palavra, com o caderno oficial do INEP (PDF, Caderno Azul, p. 21); corrigido \"escala Richter\"; o quadro, que no caderno é uma linha de anos e uma de terremotos, foi transcrito como tabela de duas colunas (mesmos dados, na mesma ordem) para ser lido no celular"
     },
     {
       "id": "enem-2023-140",
@@ -108,9 +110,10 @@ export const topico = {
         "C": "Você tomou como moda o valor 6, cuja barra (50) é quase do tamanho da barra de 3 viagens (55). A moda é 3, que é menor que a mediana e a média.",
         "D": "Você calculou a média dos valores 1, 2, 3, 4, 6 e 7 sem levar em conta quantos motoristas há em cada um (23 ÷ 6 ≈ 3,8). A média precisa usar as frequências e dá cerca de 4,16."
       },
+      "secao": 5,
       "nivel": "difícil",
       "fonte": "Enem 2023, 2º dia, Caderno Azul, questão 140. INEP, CC BY-ND 3.0.",
-      "transcricao": "enem.dev, conferida com ITENS_PROVA"
+      "transcricao": "enem.dev, conferida com ITENS_PROVA e, palavra por palavra, com o caderno oficial do INEP (PDF, Caderno Azul, p. 17)"
     },
     {
       "id": "enem-2022-149",
@@ -134,16 +137,17 @@ export const topico = {
         "D": "2,1.",
         "E": "2,5."
       },
-      "explicacao": "Há 100 + 400 + 200 + 150 + 100 + 50 = 1 000 famílias. Com quantidade par, a mediana é a média da 500ª e da 501ª famílias, em ordem. Acumulando: as famílias com 0 crianças vão até a 100ª e as com 1 criança vão até a 500ª; a 501ª já tem 2 crianças. Logo, a mediana é (1 + 2) ÷ 2 = 1,5.",
+      "explicacao": "Há 100 + 400 + 200 + 150 + 100 + 50 = 1 000 famílias. Com quantidade par, a mediana é a média da 500ª e da 501ª famílias, em ordem. Acumulando: as famílias com 0 crianças vão até a 100ª e as com 1 criança vão até a 500ª; a 501ª já tem 2 crianças. Logo, a mediana é (1 + 2) ÷ 2 = 1,5.",
       "faltou": {
-        "A": "Você ficou só com a 500ª família (1 criança) ou com a moda, que também é 1. Como são 1 000 famílias, a mediana é a média da 500ª com a 501ª, que tem 2 crianças.",
-        "C": "Você calculou a média: 1 900 crianças ÷ 1 000 famílias = 1,9. A questão pede a mediana.",
-        "D": "Você deixou de fora as famílias sem crianças e calculou uma média: 1 900 ÷ 900 ≈ 2,1. Nem a média nem a mediana podem ignorar essas 100 famílias.",
+        "A": "Você ficou só com a 500ª família (1 criança) ou com a moda, que também é 1. Como são 1 000 famílias, a mediana é a média da 500ª com a 501ª, que tem 2 crianças.",
+        "C": "Você calculou a média: 1 900 crianças ÷ 1 000 famílias = 1,9. A questão pede a mediana.",
+        "D": "Você deixou de fora as famílias sem crianças e calculou uma média: 1 900 ÷ 900 ≈ 2,1. Nem a média nem a mediana podem ignorar essas 100 famílias.",
         "E": "Você achou o meio dos valores 0, 1, 2, 3, 4 e 5 sem considerar as frequências, obtendo 2,5. Cada valor pesa pela quantidade de famílias que o têm."
       },
+      "secao": 4,
       "nivel": "difícil",
       "fonte": "Enem 2022, 2º dia, Caderno Azul, questão 149. INEP, CC BY-ND 3.0.",
-      "transcricao": "enem.dev, conferida com ITENS_PROVA"
+      "transcricao": "enem.dev, conferida com ITENS_PROVA e, palavra por palavra, com o caderno oficial do INEP (PDF, Caderno Azul, p. 21)"
     },
     {
       "id": "enem-2022-138",
@@ -174,9 +178,10 @@ export const topico = {
         "C": "Você calculou a média dos lucros: 23 ÷ 8 ≈ 2,9. A questão pede a mediana.",
         "E": "Você achou a mediana das receitas (5,5), sem descontar as despesas de cada mês."
       },
+      "secao": 6,
       "nivel": "difícil",
       "fonte": "Enem 2022, 2º dia, Caderno Azul, questão 138. INEP, CC BY-ND 3.0.",
-      "transcricao": "enem.dev, conferida com ITENS_PROVA"
+      "transcricao": "enem.dev, conferida com ITENS_PROVA e, palavra por palavra, com o caderno oficial do INEP (PDF, Caderno Azul, p. 17)"
     },
     {
       "id": "enem-2020-165",
@@ -200,16 +205,17 @@ export const topico = {
         "D": "2,06",
         "E": "2,08"
       },
-      "explicacao": "Com 15 jogadores e média 1,99 m, a soma das alturas deve ser pelo menos 15 × 1,99 = 29,85 m. Hoje a soma é 15 × 1,93 = 28,95 m. Saem 1,78 + 1,82 + 1,84 + 1,86 = 7,30 m, então os 11 que ficam somam 21,65 m. Somando o reforço já contratado, de 2,02 m, a soma vai a 23,67 m. Os três que faltam precisam somar 29,85 − 23,67 = 6,18 m, ou seja, média de 6,18 ÷ 3 = 2,06 m.",
+      "explicacao": "Com 15 jogadores e média 1,99 m, a soma das alturas deve ser pelo menos 15 × 1,99 = 29,85 m. Hoje a soma é 15 × 1,93 = 28,95 m. Saem 1,78 + 1,82 + 1,84 + 1,86 = 7,30 m, então os 11 que ficam somam 21,65 m. Somando o reforço já contratado, de 2,02 m, a soma vai a 23,67 m. Os três que faltam precisam somar 29,85 − 23,67 = 6,18 m, ou seja, média de 6,18 ÷ 3 = 2,06 m.",
       "faltou": {
         "A": "Você fez a média entre a média atual e a desejada, (1,93 + 1,99) ÷ 2 = 1,96. Para subir a média do time, os novos precisam compensar os quatro baixos que saem; isso pede uma conta com as somas.",
         "B": "Você exigiu média 1,99 só para os quatro novos jogadores: (4 × 1,99 − 2,02) ÷ 3 ≈ 1,98. Mas quem sai tem média bem menor que 1,93, então os novos precisam ser bem mais altos.",
-        "C": "Você calculou a média dos quatro novos juntos: (29,85 − 21,65) ÷ 4 = 2,05. O jogador de 2,02 m já está contratado; a pergunta é sobre os outros três.",
-        "E": "Você exigiu mais do que o necessário, por exemplo somando 0,06 m à altura do jogador já contratado (2,02 + 0,06 = 2,08). A conta das somas mostra que basta média 2,06 m."
+        "C": "Você calculou a média dos quatro novos juntos: (29,85 − 21,65) ÷ 4 = 2,05. O jogador de 2,02 m já está contratado; a pergunta é sobre os outros três.",
+        "E": "Você exigiu mais do que o necessário, por exemplo somando 0,06 m à altura do jogador já contratado (2,02 + 0,06 = 2,08). A conta das somas mostra que basta média 2,06 m."
       },
+      "secao": 1,
       "nivel": "difícil",
       "fonte": "Enem 2020, 2º dia, Caderno Azul, questão 165. INEP, CC BY-ND 3.0.",
-      "transcricao": "enem.dev, conferida com ITENS_PROVA"
+      "transcricao": "enem.dev, conferida com ITENS_PROVA e, palavra por palavra, com o caderno oficial do INEP (PDF, Caderno Azul, p. 25)"
     }
   ],
   "autoria": {

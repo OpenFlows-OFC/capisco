@@ -7,7 +7,7 @@
    Leitura livre: nada aqui passa pela máquina da missão.
    ========================================================= */
 import { h, cru, cada } from './dom.js';
-import { nivel, blocos } from './componentes.js';
+import { nivel, blocos, trofeu } from './componentes.js';
 import { topoAba } from './hoje.js';
 
 const SUBS = [
@@ -20,6 +20,8 @@ function subabas(atual) {
 }
 // do Caderno de erros, a página abre com o marca-texto no trecho que o erro cobrou (".../erro")
 const linkTrecho = (tr, erro = false) => (tr ? h`<a class="link" href="#/caderno/pagina/${tr.pagina}/${tr.paragrafo}${erro ? '/erro' : ''}">${tr.rotulo}</a>` : '');
+// erro de tópico de prática: a apostila do tópico, aberta na seção que a questão cobrou (quando o conteúdo informa)
+const linkApostila = ap => (ap ? h`<a class="link" href="#/estudar/${ap.topico}/teoria${ap.ancora ? `/${ap.ancora}` : ''}">${ap.rotulo}</a>` : '');
 
 function sumario(n) {
   const s = n.sumario();
@@ -34,22 +36,51 @@ function sumario(n) {
       ${c.antesDepois ? h`<p class="pequeno" style="margin:4px 0 0">${c.antesDepois}</p>` : ''}
       <p style="margin:4px 0 0">${cada(c.paginaIds, id => h`<a class="link link-pequeno" href="#/caderno/pagina/${id}" style="margin-right:16px">abrir a p. ${(n.pagina(id) || {}).n}</a>`)}</p>
     </li>`)}</ul>
-    <section class="secao"><p class="rotulo">Prova do caderno</p><p>${s.prova.regra}</p><p class="texto-2 pequeno">${s.prova.texto}</p></section>
+    <section class="secao"><p class="rotulo">Prova do caderno</p><p>${s.prova.regra}</p><p class="texto-2 pequeno">${s.prova.texto}</p>
+      ${s.prova.trofeu && s.prova.trofeu.ganho ? trofeu(s.prova.trofeu) : ''}</section>
     <section class="secao"><p class="rotulo">Marcos</p><ul class="lista-fios">${cada(s.marcos, m => h`<li><strong>${m.nome}</strong> <span class="texto-2 pequeno">${m.texto || m.condicao}</span></li>`)}</ul></section>
     <p class="pequeno texto-2" style="margin-top:16px">${s.regraNivel}</p>`;
 }
 
-function erros(n, filtro) {
+/** Erros agrupados pela fonte: o caderno (capítulos do pack, sob o título dele) e cada tópico de prática
+ *  (erro de tópico vem com o link da apostila), na ordem do erro mais recente. A área de cada grupo vai
+ *  para o rótulo do topo ("Matemática", ou "Matemática e Linguagens"). */
+function gruposDeErros(n, s, itens) {
+  const grupos = [], porNome = new Map();
+  for (const it of itens) {
+    const doTopico = !!it.apostila, nome = doTopico ? it.capRotulo : s.titulo;
+    let g = porNome.get(nome);
+    if (!g) {
+      let area = s.materia;
+      if (doTopico) { try { area = (n.topicoPagina(it.cap) || {}).area || area; } catch (x) { /* tópico fora do mapa: fica a matéria do caderno */ } }
+      g = { nome, area, doTopico, itens: [] };
+      porNome.set(nome, g); grupos.push(g);
+    }
+    g.itens.push(it);
+  }
+  return grupos;
+}
+const juntar = l => (l.length < 2 ? l.join('') : `${l.slice(0, -1).join(', ')} e ${l[l.length - 1]}`);
+
+function erros(n, s, filtro) {
   const e = n.erros(filtro);
-  if (e.vazio) return h`<p>${e.vazio}</p>`;
-  return h`<ul class="lista-fios">${cada(e.itens, it => h`<li>
-    <p class="rotulo">${it.capRotulo}, ${it.dia}</p>
-    ${it.questao ? h`<p style="margin:4px 0"><strong>${it.questao.rotulo}</strong></p>` : ''}
-    <p style="margin:0">${it.linha}</p>
-    ${it.falta ? h`<p class="pequeno" style="margin:4px 0 0"><strong>O que faltou.</strong> ${it.falta}</p>` : ''}
-    <p class="pequeno texto-2" style="margin:4px 0 0">${it.situacao}</p>
-    ${linkTrecho(it.trecho, true)}
-  </li>`)}</ul>`;
+  if (e.vazio) return { rotulo: s.materia, html: h`<p>${e.vazio}</p>` };
+  const grupos = gruposDeErros(n, s, e.itens);
+  return {
+    rotulo: juntar([...new Set(grupos.map(g => g.area))]),
+    html: h`<div class="erros-grupos">${cada(grupos, (g, k) => h`<section class="secao" aria-labelledby="erros-g${k}">
+      <h2 class="titulo-pequeno" id="erros-g${k}">${g.nome}</h2>
+      <ul class="lista-fios">${cada(g.itens, it => h`<li>
+        <p class="rotulo">${g.doTopico || !it.capRotulo ? it.dia : `${it.capRotulo}, ${it.dia}`}</p>
+        ${it.questao ? h`<p style="margin:4px 0"><strong>${it.questao.rotulo}</strong></p>` : ''}
+        <p style="margin:0">${it.linha}</p>
+        ${it.falta ? h`<p class="pequeno" style="margin:4px 0 0"><strong>O que faltou.</strong> ${it.falta}</p>` : ''}
+        <p class="pequeno texto-2" style="margin:4px 0 0">${it.situacao}</p>
+        ${linkTrecho(it.trecho, true)}
+        ${linkApostila(it.apostila)}
+      </li>`)}</ul>
+    </section>`)}</div>`,
+  };
 }
 
 function notas(n) {
@@ -88,19 +119,20 @@ function pagina(n, id, ancora, erro) {
 export function telaCaderno(ctx, t, rota) {
   const n = ctx.nucleo;
   const sub = rota.sub || 'sumario';
-  let corpo;
+  const s = n.sumario();
+  // o título do pack fica no Sumário, nas Notas e nos Cartões; os Erros juntam o caderno e os tópicos de prática
+  let corpo, rotulo = `Caderno de ${s.materia}`, titulo = s.titulo;
   if (sub === 'pagina') corpo = pagina(n, rota.resto[0], rota.resto[1], rota.resto[2] === 'erro');
-  else if (sub === 'erros') corpo = erros(n, rota.resto[0] || null);
+  else if (sub === 'erros') { const e = erros(n, s, rota.resto[0] || null); corpo = e.html; rotulo = e.rotulo; titulo = 'Caderno de erros'; }
   else if (sub === 'notas') corpo = notas(n);
   else if (sub === 'cards') corpo = cards(n);
   else corpo = sumario(n);
-  const s = n.sumario();
   return {
     chave: `caderno:${sub}:${rota.resto.join('/')}`,
     titulo: 'Caderno',
     html: h`${topoAba()}
-      <p class="rotulo">Caderno de ${s.materia}</p>
-      <h1 class="titulo" tabindex="-1" data-foco-inicial>${s.titulo}</h1>
+      <p class="rotulo">${rotulo}</p>
+      <h1 class="titulo" tabindex="-1" data-foco-inicial>${titulo}</h1>
       ${subabas(sub === 'pagina' ? 'sumario' : sub)}
       ${corpo}`,
     depois(raiz) {

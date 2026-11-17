@@ -34,6 +34,10 @@
   --scrim: rgba(36, 38, 42, .48);
   --marca-anel: #0B1B33;          /* símbolo sem alteração: anel marinho no claro… */
   --marca-esquadro: #2348C9;
+  /* apostila: capa em tinta e quadro "No Enem" em marca-texto claro; no escuro, capa em papel de trás
+     com fio de tinta e "No Enem" na ficha com o rótulo grifado (nada claro e grande no escuro) */
+  --apostila-capa-fundo: #1f3a9e; --apostila-capa-texto: #ffffff; --apostila-capa-selo: #ffffff; --apostila-capa-fio: #1f3a9e;
+  --quadro-enem-fundo: color-mix(in srgb, #ffe76a 38%, #ffffff); --quadro-enem-borda: transparent; --quadro-enem-grifo: transparent;
 
   --font-display: Gabarito, "Atkinson Hyperlegible Next", system-ui, sans-serif;
   --font-texto: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
@@ -61,6 +65,8 @@
     --carimbo: #b9a3f0;
     --scrim: rgba(5, 7, 10, .62);
     --marca-anel: #FFFFFF;        /* …e branco no escuro (prumo-simbolo-negativo.svg) */
+    --apostila-capa-fundo: var(--papel-2); --apostila-capa-texto: var(--grafite); --apostila-capa-selo: var(--tinta); --apostila-capa-fio: var(--tinta);
+    --quadro-enem-fundo: var(--ficha); --quadro-enem-borda: var(--pauta-forte); --quadro-enem-grifo: var(--marca-texto);
     color-scheme: dark;
   }
 }
@@ -73,6 +79,8 @@
   --carimbo: #b9a3f0;
   --scrim: rgba(5, 7, 10, .62);
   --marca-anel: #FFFFFF;
+  --apostila-capa-fundo: var(--papel-2); --apostila-capa-texto: var(--grafite); --apostila-capa-selo: var(--tinta); --apostila-capa-fio: var(--tinta);
+  --quadro-enem-fundo: var(--ficha); --quadro-enem-borda: var(--pauta-forte); --quadro-enem-grifo: var(--marca-texto);
   color-scheme: dark;
 }
 
@@ -208,15 +216,20 @@ details > summary::-webkit-details-marker { display: none; }
   font: 600 12px/16px var(--font-texto); color: var(--grafite-2); text-decoration: none;
   -webkit-tap-highlight-color: transparent; border-radius: var(--radius-controle);
 }
-.aba-icone { display: grid; place-items: center; width: 44px; height: 28px; border-radius: 999px; }
+.aba-icone { display: grid; place-items: center; width: 44px; height: 28px; border-radius: 4px; }   /* grifo de marca-texto: retângulo, nunca pílula */
 .aba-icone svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .aba-rotulo { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .aba[aria-current="page"] { color: var(--tinta); }
 .aba[aria-current="page"] .aba-icone { background: var(--marca-texto); color: var(--on-marca-texto); }
 .aba:focus-visible { outline-offset: -3px; }
 @media (min-width: 960px) {
-  /* no computador, as mesmas abas viram o trilho lateral */
-  .com-abas .conteudo { margin-left: 232px; padding-left: 48px; padding-bottom: 64px; max-width: calc(44rem + 48px); }
+  /* no computador, as mesmas abas viram o trilho lateral; a coluna fica no centro do espaço à direita dele */
+  .com-abas { padding-left: 232px; }
+  .com-abas .conteudo { margin-left: auto; margin-right: auto; padding-left: 48px; padding-right: 48px; padding-bottom: 64px; max-width: calc(44rem + 96px); }
+  body:not(.modo-missao) .faixas { margin-left: 232px; }   /* as faixas começam depois do trilho, nunca por baixo dele */
+  /* o trilho já tem a marca: a do topo das abas some (no Hoje, fica a data) */
+  .com-abas .linha-topo .marca-prumo { display: none; }
+  .com-abas .linha-topo:not(:has(> :not(.marca-prumo))) { display: none; }
   .trilho {
     top: 0; right: auto; width: 232px; display: flex; flex-direction: column; align-items: stretch; gap: 4px;
     border-top: 0; border-right: 1px solid var(--pauta); padding: calc(24px + var(--seguro-topo)) 16px 24px;
@@ -313,7 +326,17 @@ details > summary::-webkit-details-marker { display: none; }
 .topo-linha { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--alvo); }
 .topo-etapa { flex: 1 1 auto; min-width: 0; margin: 0; font: 600 16px/24px var(--font-texto); }
 .topo-acoes { display: flex; align-items: center; gap: 16px; flex: 0 0 auto; }
-.topo-medidor { margin-top: var(--space-3); }
+/* régua e medidor lado a lado quando cabem (no celular, o medidor desce para a linha de baixo) */
+.topo-progresso { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 20px; }
+.topo-progresso .pr-regua { flex: 1 1 16rem; width: auto; }
+.topo-medidor { flex: 0 1 auto; margin-top: 2px; }
+/* no tópico de prática: a régua só na etapa Questões, com "faltam N" e as duas casas na mesma linha */
+.topo-topico .topo-progresso { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 16px; }
+.topo-topico .topo-progresso .pr-regua, .topo-topico .topo-medidor, .topo-topico .medidor { display: contents; }
+.topo-topico .pr-regua-barra { grid-column: 1 / -1; }
+.topo-topico .pr-regua-legenda { grid-column: 1; grid-row: 2; margin-top: 0; }
+.topo-topico .casas { grid-column: 2; grid-row: 2; font-size: 13px; line-height: 16px; }
+.topo-topico .medidor-texto { grid-column: 1 / -1; font-size: 13px; line-height: 16px; }
 
 /* Regua: progresso em passos; preenchimento tinta .82 por baixo dos traços de 1, 5 e 10 */
 .pr-regua { width: 100%; margin-top: 4px; }
@@ -325,17 +348,15 @@ details > summary::-webkit-details-marker { display: none; }
 .pr-regua-marcas { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--passos, 5), 1fr); }
 .pr-regua-marcas span { border-right: 1.5px solid var(--grafite); }
 .pr-regua-marcas span:last-child { border-right: 0; }
-.pr-regua-legenda { display: flex; justify-content: space-between; gap: 12px; margin-top: 4px; font: 600 13px/16px var(--font-texto); color: var(--grafite-2); font-variant-numeric: tabular-nums; }
+.pr-regua-legenda { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0 12px; margin-top: 4px; font: 600 13px/16px var(--font-texto); color: var(--grafite-2); font-variant-numeric: tabular-nums; }
 
 /* medidor de duas casas (só nos passos que contam) */
 .medidor { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; line-height: 16px; }
-.casas { display: inline-flex; gap: 6px; }
-.casa {
-  display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px 0 6px;
-  border: 1px solid var(--pauta-forte); border-radius: var(--radius-caixa); color: var(--grafite-2); font-weight: 600;
-}
-.casa::before { content: ""; width: 10px; height: 10px; border: 1.5px solid var(--grafite); border-radius: 2px; }
-.casa.cheia { color: var(--grafite); border-color: var(--grafite); }
+/* cada casa é um traço de régua com o rótulo ao lado: sem moldura (não é botão, nem caixa de marcar, nem a trilha) */
+.casas { display: inline-flex; gap: 14px; }
+.casa { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; color: var(--grafite-2); font-weight: 600; }
+.casa::before { content: ""; width: 20px; height: 8px; border: 1.5px solid var(--grafite-2); border-radius: 2px; }
+.casa.cheia { color: var(--grafite); }
 .casa.cheia::before { background: var(--tinta); border-color: var(--tinta); }
 .medidor-texto { color: var(--grafite); font-weight: 600; }
 
@@ -414,7 +435,7 @@ figure { margin: 12px 0 16px; }
 .linha-nivel { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
 /* nível do capítulo: uma régua curta de 5 passos com o nome ao lado (nunca o número) */
-.nivel { display: inline-grid; grid-template-columns: repeat(5, 22px); height: 16px; border: 1.5px solid var(--grafite); border-radius: var(--radius-caixa); overflow: hidden; }
+.nivel { display: inline-grid; grid-template-columns: repeat(5, 22px); height: 16px; border: 1.5px solid var(--grafite); border-radius: 2px; overflow: hidden; }
 .nivel i { display: block; position: relative; border-right: 1.5px solid var(--grafite); }
 .nivel i:last-child { border-right: 0; }
 .nivel i.cheio::after { content: ""; position: absolute; inset: 0; background: var(--tinta); opacity: .82; }
@@ -456,7 +477,7 @@ figure { margin: 12px 0 16px; }
   font: 500 13px/30px var(--font-numeros); color: var(--grafite-2);
 }
 .par.ancora .par-n { color: var(--tinta); }
-.par-texto { font-size: 18px; line-height: var(--pauta-passo); max-width: 64ch; }
+.par-texto { font-size: 18px; line-height: var(--pauta-passo); max-width: 35rem; }   /* cerca de 62 caracteres por linha */
 .par-texto p { margin: 0; }
 .par-texto figure { margin: var(--pauta-passo) 0; background: var(--papel); }
 .par-texto .tabela-equipe { background: var(--papel); }
@@ -474,9 +495,11 @@ figure { margin: 12px 0 16px; }
 .nota-margem { font-size: 15px; line-height: var(--pauta-passo); color: var(--grafite-2); margin: 0; font-style: italic; }
 .nota-dia { font-style: normal; }
 @media (min-width: 1100px) {
-  .missao-leitura .missao { max-width: calc(var(--coluna) + 240px); }
-  .par { display: grid; grid-template-columns: minmax(0, 64ch) 220px; column-gap: 24px; }
-  .par-notas { grid-column: 2; grid-row: 1; }
+  /* a margem das notas só existe quando há nota; sem nota, o texto usa a coluna inteira (cerca de 60 caracteres) */
+  main.missao-leitura:has(.par-notas) { max-width: calc(var(--coluna) + 240px); }
+  .par:has(.par-notas) { display: grid; grid-template-columns: minmax(0, 35rem) 220px; column-gap: 24px; }
+  .par:has(.par-notas) .par-notas { grid-column: 2; grid-row: 1; }
+  .folha .par:has(.par-notas) { display: block; }
 }
 .pe { text-align: center; color: var(--grafite-2); font: 500 13px/16px var(--font-numeros); margin: 28px 0 0; padding-top: 12px; border-top: 1px solid var(--pauta); }
 .nota-pagina { margin-top: 28px; }
@@ -544,6 +567,11 @@ figure { margin: 12px 0 16px; }
 .pr-visto-palavra { font: 800 36px/36px var(--font-display); letter-spacing: .08em; text-transform: uppercase; }   /* "VISTO", como no carimbo */
 .pr-visto-data { font: 500 14px/18px var(--font-numeros); font-variant-numeric: tabular-nums; }
 .pr-visto-obs { font: 600 13px/16px var(--font-texto); }
+/* Troféu da Prova do caderno: o mesmo carimbo, com a taça em traço; "Troféu" em caixa normal (só VISTO vai em maiúsculas) */
+.pr-trofeu { gap: 4px; padding: 12px 22px 10px; }
+.pr-trofeu-taca { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.pr-trofeu-palavra { font: 800 28px/30px var(--font-display); letter-spacing: -.01em; }
+.secao .pr-visto-lugar { margin: 4px 0 12px; }
 @media (prefers-reduced-motion: no-preference) { .pr-visto.is-novo { animation: pr-carimbar 140ms cubic-bezier(.2, 0, 0, 1) both; } }
 @keyframes pr-carimbar { from { opacity: 0; transform: rotate(-4deg) scale(1.06); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
 
@@ -566,6 +594,11 @@ figure { margin: 12px 0 16px; }
 .escolha .marcador { width: 30px; height: 20px; border: 1.5px solid var(--grafite); border-radius: var(--radius-bolha); flex: 0 0 auto; }
 .escolha input:checked + .marcador { background: var(--tinta); border-color: var(--tinta); }
 .escolha input:focus-visible + .marcador { outline: 3px solid var(--foco); outline-offset: 3px; }
+/* caixa de marcar (vale mais de uma): quadrado com ✓, para não parecer a bolha de escolha única */
+.escolha input[type="checkbox"] + .marcador { display: grid; place-items: center; width: 22px; height: 22px; margin: 0 4px; border-radius: var(--radius-caixa); }
+.escolha input[type="checkbox"]:checked + .marcador::after { content: ""; width: 6px; height: 11px; margin-top: -2px; border: solid var(--on-tinta); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+.escolha input:disabled + .marcador { border-style: dashed; border-color: var(--pauta-forte); }
+.escolha:has(input:disabled) { cursor: default; color: var(--grafite-2); }
 .aviso-escolha { margin: 0 0 8px 42px; color: var(--grafite-2); font-size: 14px; line-height: 20px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .chip { position: relative; }
@@ -577,6 +610,9 @@ figure { margin: 12px 0 16px; }
 .chip input:checked + span { background: var(--tinta); border-color: var(--tinta); color: var(--on-tinta); }
 .chip input:focus-visible + span { outline: 3px solid var(--foco); outline-offset: 3px; }
 .chip input:disabled + span { border-style: dashed; color: var(--grafite-2); cursor: default; }
+.chips-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.chips-dias .chip label { display: block; }
+.chips-dias .chip span { display: flex; width: 100%; min-width: 0; padding: 0 2px; }
 .campo-data { max-width: 220px; }
 .ajuda-campo { color: var(--grafite-2); font-size: 14px; line-height: 20px; margin: 6px 0 0; }
 .alarme-texto { font: 600 20px/28px var(--font-texto); padding: 16px 0; border-top: 1px solid var(--pauta); border-bottom: 1px solid var(--pauta); margin: 16px 0; }
@@ -584,9 +620,22 @@ figure { margin: 12px 0 16px; }
 .acoes-pu .botao, .acoes-pu .botao-sec { width: 100%; }
 .erro-campo { color: var(--grafite); font-weight: 600; font-size: 14px; margin: 8px 0 0; }
 
-/* ---------------- zoom de imagem (tela cheia) ---------------- */
-.zoom-corpo { overflow: auto; flex: 1 1 auto; background: #FFFFFF; color: #24262a; --foco: #1f3a9e; touch-action: pan-x pan-y pinch-zoom; }
+/* ---------------- zoom de imagem (tela cheia) ----------------
+   A área branca enche a folha entre o título e os controles; a figura fica no meio quando cabe e rola
+   nos dois sentidos quando não cabe (margem automática de item flex: nada fica fora do alcance).
+   No celular, a folha é a tela inteira, sem margem: a figura abre maior do que na página. */
+.folha:has(.zoom-corpo) { max-width: min(1200px, calc(100vw - 48px)); }
+.folha-corpo:has(> .zoom-corpo) { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.zoom-corpo { overflow: auto; flex: 1 1 auto; min-height: 0; display: flex; background: #FFFFFF; color: #24262a; --foco: #1f3a9e; touch-action: pan-x pan-y pinch-zoom; overscroll-behavior: contain; }
+.zoom-quadro { flex: none; margin: auto; padding: 8px; }
 .zoom-corpo img, .zoom-corpo svg { display: block; max-width: none; height: auto; margin: 0 auto; color: #24262a; }
+@media (max-width: 719.98px) {
+  .folha:has(.zoom-corpo) {
+    max-width: none; height: 100vh; height: 100dvh; max-height: none;
+    border-top: 0; border-radius: 0; padding-top: var(--seguro-topo);
+  }
+  .zoom-quadro { padding: 0; }
+}
 .zoom-controles { display: flex; gap: 8px; }
 .zoom-controles > * { flex: 1 1 0; }
 
@@ -597,6 +646,8 @@ figure { margin: 12px 0 16px; }
 .lista-fios > li { padding: 12px 0; border-top: 1px solid var(--pauta); }
 .lista-fios > li:last-child { border-bottom: 1px solid var(--pauta); }
 .lista-fios .titulo-pequeno { margin: 4px 0 6px; }
+/* Caderno de erros: um grupo por fonte (o caderno, cada tópico de prática); o primeiro cola nas subabas */
+.erros-grupos > .secao:first-child { margin-top: 0; }
 .subabas { display: flex; gap: 4px; border-bottom: 1px solid var(--pauta-forte); margin: 12px 0 16px; overflow-x: auto; }
 .subaba { min-height: var(--alvo); padding: 0 12px; display: inline-flex; align-items: center; color: var(--grafite-2); text-decoration: none; font: 700 16px/20px var(--font-display); position: relative; white-space: nowrap; }
 .subaba[aria-current="page"] { color: var(--grafite); }
@@ -618,26 +669,52 @@ figure { margin: 12px 0 16px; }
 
 /* ---------------- Apostila do tópico: material impresso, não o caderno ----------------
    Três superfícies, três papéis: o caderno pautado é do aluno; a prova é o caderno do Enem;
-   a apostila é folha branca impressa, com capa, sumário, exemplos e quadros. */
-.apostila { margin: 0 0 var(--space-4); background: var(--ficha); border: 1px solid var(--pauta-forte); border-radius: var(--radius-ficha); overflow: clip; box-shadow: 0 1px 0 var(--pauta), 0 8px 20px rgba(20, 30, 60, .07); }
+   a apostila é folha branca impressa, com capa, sumário, exemplos e quadros. Sem sombra:
+   o contorno é o fio de 1 px; rótulos em caixa normal e negrito, como .rotulo. */
+.apostila { margin: 0 0 var(--space-4); background: var(--ficha); border: 1px solid var(--pauta-forte); border-radius: var(--radius-ficha); overflow: clip; }
 .apostila .cabeco { display: none; }
-.apostila-capa { background: var(--tinta); color: var(--on-tinta); padding: 18px 20px 16px; }
-.apostila-selo { margin: 0 0 8px; font: 700 13px/18px var(--font-texto); letter-spacing: .06em; text-transform: uppercase; }
-.apostila-selo span { display: inline-block; padding: 1px 7px; margin-right: 2px; border: 1.5px solid currentColor; border-radius: var(--radius-caixa); }
-.apostila .apostila-titulo { margin: 0; font: 800 27px/32px var(--font-display); color: inherit; letter-spacing: -.01em; }
+.apostila-capa { background: var(--apostila-capa-fundo); color: var(--apostila-capa-texto); border-bottom: 3px solid var(--apostila-capa-fio); padding: 14px 16px 12px; }
+.apostila-selo { margin: 0 0 6px; font: 700 14px/20px var(--font-texto); color: var(--apostila-capa-selo); }
+.apostila .apostila-titulo { margin: 0; font: 800 24px/30px var(--font-display); color: inherit; letter-spacing: -.01em; text-wrap: balance; }
 .apostila-base { margin: 8px 0 0; font-size: 15px; line-height: 21px; }
 .apostila-base cite { font-style: italic; font-weight: 600; }
-.apostila-dados { margin: 6px 0 0; font: 600 14px/20px var(--font-texto); opacity: .9; }
-.apostila-sumario { padding: 14px 20px 12px; border-bottom: 1px dashed var(--pauta-forte); }
-.apostila-sumario .rotulo { margin: 0 0 4px; }
-.apostila-sumario ol { margin: 0; padding-left: 1.4em; font-size: 16px; line-height: 25px; }
-.apostila-corpo { padding: 16px 20px 20px; font-size: 18px; line-height: 1.6; }
+.apostila-dados { margin: 6px 0 0; font: 600 14px/20px var(--font-texto); }
+.teoria-secao, .apostila-quadro { scroll-margin-top: 16px; }
+.teoria-sub[tabindex="-1"]:focus, .quadro-rotulo[tabindex="-1"]:focus { outline: none; }
+
+/* sumário: índice que leva a cada seção (botões, não href="#": o roteador usa o hash) */
+.apostila-sumario { padding: 4px 16px; border-bottom: 1px dashed var(--pauta-forte); }
+.sumario-abrir {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: var(--alvo);
+  padding: 0; border: 0; background: none; color: var(--tinta); font: 600 16px/22px var(--font-texto); text-align: left; cursor: pointer;
+}
+.sumario-abrir::after { content: "+"; flex: none; width: 24px; text-align: center; font: 400 24px/1 var(--font-texto); }
+.apostila-sumario.aberto .sumario-abrir::after { content: "−"; }
+.sumario-rotulo { margin: 0 0 4px; }
+.sumario-lista { list-style: none; margin: 0 0 8px; padding: 0; }
+.sumario-lista li + li { border-top: 1px solid var(--pauta); }
+.sumario-item {
+  display: flex; align-items: baseline; gap: 10px; width: 100%; min-height: var(--alvo); padding: 13px 0;
+  border: 0; background: none; color: var(--grafite); font: 400 16px/22px var(--font-texto); text-align: left; cursor: pointer;
+}
+.sumario-item > span:last-child { text-decoration: underline; text-decoration-color: var(--pauta-forte); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.sumario-n { flex: none; min-width: 1.5em; font: 500 14px/22px var(--font-numeros); color: var(--grafite-2); }
+.sumario-item[aria-current] { color: var(--tinta); font-weight: 700; }
+.sumario-item[aria-current] > span:last-child { text-decoration-color: var(--tinta); text-decoration-thickness: 2px; }
+.sumario-item[aria-current] .sumario-n { color: var(--tinta); }
+@media (max-width: 719.98px) {
+  .apostila-sumario:not(.aberto) .sumario-lista, .sumario-rotulo { display: none; }
+  .apostila-base { display: none; }   /* no celular, a capa é selo, título e dados; o livro de origem está nas Fontes, no fim */
+}
+@media (min-width: 720px) { .sumario-abrir { display: none; } .apostila-sumario { padding-top: 14px; } }
+
+.apostila-corpo { padding: 16px 16px 20px; font-size: 18px; line-height: 1.6; }
 .apostila-corpo p { margin: 0 0 12px; max-width: 64ch; }
 .apostila-abre { padding-bottom: 14px; border-bottom: 1px solid var(--pauta); }
 .teoria-secao + .teoria-secao { margin-top: 8px; }
 .teoria-sub { display: flex; align-items: flex-start; gap: 10px; margin: 24px 0 10px; font: 700 21px/28px var(--font-display); color: var(--grafite); }
 .teoria-n { flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-caixa); background: var(--tinta); color: var(--on-tinta); font: 500 15px/1 var(--font-numeros); }
-.teoria-figura { margin: 16px 0; padding: 10px; background: var(--papel); border: 1px solid var(--pauta); border-radius: var(--radius-caixa); color: var(--grafite); }
+.teoria-figura { margin: 16px 0; color: var(--grafite); }
 .teoria-figura svg { display: block; width: 100%; height: auto; max-height: 340px; }
 .teoria-figura figcaption { font-size: 14px; line-height: 20px; color: var(--grafite-2); margin-top: 8px; }
 .teoria-tabela-rolagem { margin: 16px 0; overflow-x: auto; border: 1px solid var(--pauta); border-radius: var(--radius-caixa); }
@@ -645,41 +722,56 @@ figure { margin: 12px 0 16px; }
 .teoria-tabela caption { text-align: left; font-size: 14px; line-height: 20px; color: var(--grafite-2); caption-side: bottom; padding: 8px 10px; }
 .teoria-tabela th, .teoria-tabela td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--pauta); vertical-align: top; }
 .teoria-tabela th { font-weight: 600; background: color-mix(in srgb, var(--tinta) 9%, var(--ficha)); border-bottom: 1.5px solid var(--pauta-forte); }
-.grifo { background: linear-gradient(to bottom, transparent 14%, var(--marca-texto) 14%, var(--marca-texto) 90%, transparent 90%); color: var(--on-marca-texto); padding: 0 3px; }
-.exemplo { margin: 16px 0; padding: 12px 14px; background: var(--papel); border: 1px solid var(--pauta-forte); border-radius: var(--radius-caixa); }
+.grifo { background: linear-gradient(to bottom, transparent 14%, var(--marca-texto) 14%, var(--marca-texto) 90%, transparent 90%); color: var(--on-marca-texto); padding: 0 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+/* exemplo resolvido: no celular, uma faixa de papel de trás de borda a borda (sem caixa dentro de caixa) */
+.exemplo { margin: 16px -16px; padding: 12px 16px; background: var(--papel-2); border-top: 1px solid var(--pauta); border-bottom: 1px solid var(--pauta); font-size: 17px; line-height: 1.55; }
 .apostila-corpo .exemplo p { margin: 0; }
-.exemplo-rotulo { margin: 0 0 6px !important; font: 700 13px/18px var(--font-texto); letter-spacing: .05em; text-transform: uppercase; color: var(--tinta); }
-.exemplo-res { margin: 10px 0 2px !important; font: 700 13px/18px var(--font-texto); letter-spacing: .05em; text-transform: uppercase; color: var(--grafite-2); }
+.exemplo-rotulo { margin: 0 0 6px !important; font: 700 15px/20px var(--font-texto); color: var(--tinta); }
+.exemplo-res { margin: 10px 0 2px !important; font: 700 15px/20px var(--font-texto); color: var(--grafite-2); }
 .exemplo-passos, .teoria-lista { margin: 0; padding-left: 1.25em; }
 .exemplo-passos li + li { margin-top: 4px; }
 .teoria-lista li + li { margin-top: 4px; }
-.apostila-quadro { margin: 16px 0; padding: 12px 14px; border-radius: var(--radius-caixa); font-size: 16.5px; line-height: 1.5; }
-.exemplo { font-size: 16.5px; line-height: 1.5; }
+.apostila-quadro { margin: 16px 0; padding: 12px 14px; border-radius: var(--radius-caixa); font-size: 17px; line-height: 1.5; }
 .apostila-corpo .apostila-quadro p { margin: 0; }
 .quadro-rotulo { margin: 0 0 4px !important; font: 700 15px/20px var(--font-display); }
-.quadro-enem { background: color-mix(in srgb, var(--marca-texto) 38%, var(--ficha)); }
-.quadro-cuidado { margin-top: 24px; background: color-mix(in srgb, var(--margem-caderno) 20%, var(--ficha)); border-left: 4px solid var(--margem-caderno); }
+.quadro-enem { background: var(--quadro-enem-fundo); border: 1px solid var(--quadro-enem-borda); }
+.quadro-enem .grifo { background: linear-gradient(to bottom, transparent 14%, var(--quadro-enem-grifo) 14%, var(--quadro-enem-grifo) 90%, transparent 90%); }
+.quadro-cuidado { margin-top: 24px; background: var(--papel); border: 1px solid var(--pauta-forte); }
 .quadro-resumo { border: 1.5px solid var(--tinta); background: var(--papel); }
-.teoria .rodape-licenca { margin: 0; padding: 0 20px 16px; }
-.apostila .teoria-rodape { margin: 0; padding: 12px 20px 0; border-top: 1px solid var(--pauta); }
+.teoria .rodape-licenca { margin: 0; padding: 0 16px 16px; }
+.apostila .teoria-rodape { margin: 0; padding: 12px 16px 0; border-top: 1px solid var(--pauta); }
 
-/* Trilha do tópico: Aquecer → Apostila → Questões → Visto */
-.trilha { list-style: none; display: flex; gap: 6px; margin: 10px 0 14px; padding: 0; }
-.trilha li { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px 5px; border: 1px solid var(--pauta); border-radius: var(--radius-caixa); font: 600 12.5px/16px var(--font-texto); color: var(--grafite-2); text-align: center; }
-.trilha li.feita { color: var(--grafite); border-color: var(--pauta-forte); }
-.trilha li.atual { background: var(--tinta); border-color: var(--tinta); color: var(--on-tinta); }
-.trilha-n { flex: none; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; font: 500 12px/1 var(--font-numeros); }
-.aquecer-recado { margin: 0 0 var(--space-4); }
+/* Trilha do tópico: Aquecer → Apostila → Questões → Visto (ou Registro, no estudo por conta própria).
+   Mostra onde o aluno está; não é botão nem aba: sem caixa, número e rótulo, a etapa atual sublinhada
+   em tinta (3 px, como a subaba atual), as feitas com ✓ em grafite, um traço fino entre as etapas. */
+.trilha { list-style: none; display: flex; align-items: center; margin: 0 0 12px; padding: 0; font: 600 14px/20px var(--font-texto); color: var(--grafite-2); }
+.trilha li { display: flex; align-items: center; min-width: 0; white-space: nowrap; }
+.trilha li + li { flex: 1 1 auto; }
+.trilha li + li::before { content: ""; flex: 1 1 auto; min-width: 8px; margin: 0 8px; border-top: 1.5px solid var(--pauta-forte); }
+.trilha-passo { display: inline-flex; align-items: baseline; gap: 5px; padding: 4px 0 3px; border-bottom: 3px solid transparent; }
+.trilha .trilha-n { font: 500 13px/20px var(--font-numeros); }
+.trilha li.feita .trilha-n { font-family: var(--font-texto); font-weight: 700; color: var(--grafite); }
+.trilha li.atual { color: var(--grafite); }
+.trilha li.atual .trilha-passo { border-bottom-color: var(--tinta); font-weight: 700; }
+@media (max-width: 359.98px) { .trilha { font-size: 13px; } .trilha li + li::before { min-width: 4px; margin: 0 5px; } .trilha-passo { gap: 3px; } }
 
-/* Como funciona um tópico (aberta na primeira vez) */
-.como-funciona-caixa { padding: 14px 16px; background: var(--ficha); border: 1.5px solid var(--tinta); border-radius: var(--radius-ficha); }
-details.como-funciona-caixa { border-width: 1px; border-color: var(--pauta-forte); }
-.como-funciona-caixa summary { cursor: pointer; margin: 0; }
+/* Como funciona um tópico: aberta na primeira vez (logo abaixo do botão), depois recolhida */
+.como-funciona-caixa { padding: 14px 16px; background: var(--ficha); border: 1px solid var(--pauta-forte); border-radius: var(--radius-ficha); }
+details.como-funciona-caixa { padding-top: 4px; padding-bottom: 4px; }
+details.como-funciona-caixa[open] { padding-bottom: 14px; }
 .como-funciona-caixa h2 { margin: 0; }
 .como-funciona { list-style: none; margin: 8px 0 0; padding: 0; }
 .como-funciona li { display: flex; gap: 12px; align-items: flex-start; margin-top: 12px; }
-.como-funciona .trilha-n { margin-top: 2px; color: var(--tinta); }
+.cf-n { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; margin-top: 2px; border-radius: 50%; border: 1.5px solid currentColor; color: var(--tinta); font: 500 12px/1 var(--font-numeros); }
 .como-funciona p { margin: 2px 0 0; font-size: 16px; line-height: 23px; color: var(--grafite-2); }
+
+/* details recolhido (Como funciona, Ferramentas de demonstração, O que o Prumo não tem): "+" que vira "−" */
+details.como-funciona-caixa > summary, details.recolhida > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: var(--alvo); margin: 0; }
+details.como-funciona-caixa > summary::after, details.recolhida > summary::after { content: "+"; flex: none; width: 24px; text-align: center; font: 400 26px/1 var(--font-texto); color: var(--tinta); }
+details.como-funciona-caixa[open] > summary::after, details.recolhida[open] > summary::after { content: "−"; }
+details.recolhida { border-top: 1px solid var(--pauta); border-bottom: 1px solid var(--pauta); }
+details.recolhida[open] { padding-bottom: 12px; }
+details.recolhida > summary.titulo-pequeno { margin: 0; }
 
 /* ---------------- Hoje: saudação, risquinhos em destaque e o próximo conteúdo ---------------- */
 .saudacao { margin: var(--space-2) 0 0; font: 800 28px/34px var(--font-display); color: var(--grafite); letter-spacing: -.01em; }
@@ -717,7 +809,6 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
 
 /* ---------------- Onboarding (3 telas antes do primeiro uso) ---------------- */
 .onb { display: grid; gap: var(--space-4); padding-top: var(--space-6); }
-.onb-n { font: 500 15px/20px var(--font-numeros); color: var(--grafite-2); margin: 0; }
 .onb-titulo { font: 800 30px/36px var(--font-display); margin: 0; letter-spacing: -.01em; }
 .onb-texto { font-size: 18px; line-height: 28px; margin: 0; }
 .onb-pontos { display: flex; gap: 8px; }
@@ -733,7 +824,7 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
 .semana-texto { margin: 0 0 var(--space-3); }
 .semana-marcas { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
 .semana-marcas li { display: grid; justify-items: center; gap: 4px; font-size: 13px; line-height: 16px; color: var(--grafite-2); }
-.semana-marcas .marca { width: 100%; max-width: 40px; height: 10px; border: 1.5px solid var(--pauta-forte); border-radius: var(--radius-caixa); }
+.semana-marcas .marca { width: 100%; max-width: 40px; height: 10px; border: 1.5px solid var(--pauta-forte); border-radius: 2px; }
 .semana-marcas li.folga .marca { border-style: dashed; }
 .semana-marcas li.feito .marca { background: var(--tinta); border-color: var(--tinta); }
 .semana-marcas li.hoje .dia { color: var(--grafite); font-weight: 600; }
@@ -756,14 +847,11 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
 .quando .escolhas { margin-bottom: 8px; }
 .quando .botao-sec { margin-top: 8px; }
 .amanha { margin: var(--space-6) 0; padding-top: var(--space-4); border-top: 1px solid var(--pauta); }
-.amanha-enunciado { max-height: 18rem; overflow: auto; }
 .amanha-enunciado img { max-width: 100%; height: auto; }
 
 .vence-hoje .grifo { background: var(--marca-texto); border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 
-/* ---------------- Apostila no computador: página de apostila impressa ----------------
-   Capa larga, sumário fixo à esquerda, texto em coluna de leitura,
-   figuras ao lado do texto (como na página impressa) e exemplos em caixas. */
+/* ---------------- Apostila do tablet para cima: caixas de papel dentro da folha ---------------- */
 @media (min-width: 720px) {
   .apostila-capa { padding: 24px 32px 22px; }
   .apostila .apostila-titulo { font-size: 34px; line-height: 40px; }
@@ -771,31 +859,72 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
   .apostila-corpo { padding: 24px 32px 28px; }
   .apostila .teoria-rodape { padding: 14px 32px 0; }
   .teoria .rodape-licenca { padding: 0 32px 20px; }
+  .exemplo { margin: 16px 0; padding: 12px 14px; background: var(--papel); border: 1px solid var(--pauta-forte); border-radius: var(--radius-caixa); }
+  .apostila-corpo .teoria-figura { padding: 10px; background: var(--papel); border: 1px solid var(--pauta); border-radius: var(--radius-caixa); }
 }
+/* ---------------- Apostila no computador: página de apostila impressa ----------------
+   Capa larga, sumário fixo à esquerda, texto em coluna de leitura e exemplos em duas colunas.
+   Só na apostila da página (.apostila-larga): dentro da folha "Rever a teoria" fica em uma coluna.
+   O topo da missão, a trilha, o recado e "Terminei de ler" ficam na coluna de 40rem, no mesmo lugar
+   das outras etapas; só a apostila passa disso. */
 @media (min-width: 1100px) {
-  main.missao-leitura:has(.apostila) { max-width: 1120px; }
-  .com-abas .conteudo:has(.apostila) { max-width: 1120px; }
-  .apostila { display: grid; grid-template-columns: 260px minmax(0, 1fr); }
-  .apostila > * { grid-column: 2; }
-  .apostila > .apostila-capa { grid-column: 1 / -1; display: grid; grid-template-columns: 260px minmax(0, 1fr); column-gap: 0; padding: 36px 0 30px; }
-  .apostila-capa > * { grid-column: 2; padding: 0 56px; }
-  .apostila-capa .apostila-selo { grid-column: 1; grid-row: 1 / span 3; padding: 6px 0 0 32px; }
-  .apostila .apostila-titulo { font-size: 44px; line-height: 50px; }
-  .apostila > .apostila-sumario { grid-column: 1; grid-row: 2 / span 4; align-self: start; position: sticky; top: 24px; border-bottom: 0; padding: 28px 24px 28px 32px; }
-  .apostila-sumario ol { font-size: 15px; line-height: 22px; }
-  .apostila-sumario li + li { margin-top: 8px; }
-  .apostila-corpo { padding: 32px 56px 40px; border-left: 1px solid var(--pauta); font-size: 19px; line-height: 1.65; }
-  .apostila-corpo p { max-width: 68ch; }
-  .teoria-secao { display: flow-root; }
-  .teoria-sub { font-size: 25px; line-height: 32px; margin-top: 36px; }
-  .teoria-n { width: 34px; height: 34px; font-size: 17px; }
-  .apostila-corpo .teoria-figura { width: min(100%, 620px); margin: 24px auto; padding: 16px 20px; }
-  .apostila-corpo .teoria-tabela-rolagem, .apostila-corpo .exemplo, .apostila-corpo .apostila-quadro { clear: both; }
-  .exemplo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; padding: 16px 20px; }
-  .exemplo .exemplo-rotulo { grid-column: 1 / -1; }
-  .exemplo .exemplo-enunciado { grid-column: 1; grid-row: 2 / span 2; padding-right: 4px; }
-  .exemplo .exemplo-res { grid-column: 2; grid-row: 2; margin-top: 0 !important; }
-  .exemplo .exemplo-passos { grid-column: 2; grid-row: 3; }
-  .apostila .teoria-rodape { padding: 16px 56px 0; border-left: 1px solid var(--pauta); }
-  .teoria .rodape-licenca { padding: 8px 56px 24px; border-left: 1px solid var(--pauta); }
+  main.missao-leitura:has(.apostila-larga) { max-width: 1120px; }
+  main.missao-leitura:has(.apostila-larga) > :not(.apostila) { max-width: calc(var(--coluna) - 2 * var(--space-4)); margin-left: auto; margin-right: auto; }
+  .com-abas .conteudo:has(.apostila-larga) { max-width: 1120px; }
+  .apostila-larga { display: grid; grid-template-columns: 260px minmax(0, 1fr); }
+  .apostila-larga > * { grid-column: 2; }
+  .apostila-larga > .apostila-capa { grid-column: 1 / -1; display: grid; grid-template-columns: 260px minmax(0, 1fr); column-gap: 0; padding: 36px 0 30px; }
+  .apostila-larga .apostila-capa > * { grid-column: 2; padding: 0 56px; }
+  .apostila-larga .apostila-capa .apostila-selo { grid-column: 1; grid-row: 1 / span 3; padding: 6px 24px 0 32px; }
+  .apostila-larga .apostila-titulo { font-size: 44px; line-height: 50px; }
+  .apostila-larga > .apostila-sumario { grid-column: 1; grid-row: 2 / span 4; align-self: start; position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow: auto; border-bottom: 0; padding: 24px 20px 24px 28px; }
+  .apostila-larga .sumario-item { font-size: 15px; line-height: 21px; }
+  .apostila-larga .apostila-corpo { padding: 32px 56px 40px; border-left: 1px solid var(--pauta); font-size: 19px; line-height: 1.65; }
+  .apostila-larga .apostila-corpo p { max-width: 68ch; }
+  .apostila-larga .teoria-secao { display: flow-root; }
+  .apostila-larga .teoria-sub { font-size: 25px; line-height: 32px; margin-top: 36px; }
+  .apostila-larga .teoria-n { width: 34px; height: 34px; font-size: 17px; }
+  .apostila-larga .apostila-corpo .teoria-figura { width: min(100%, 620px); margin: 24px auto; padding: 16px 20px; }
+  .apostila-larga .apostila-corpo .teoria-tabela-rolagem, .apostila-larga .apostila-corpo .exemplo, .apostila-larga .apostila-corpo .apostila-quadro { clear: both; }
+  .apostila-larga .exemplo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; padding: 16px 20px; }
+  .apostila-larga .exemplo .exemplo-rotulo { grid-column: 1 / -1; }
+  .apostila-larga .exemplo .exemplo-enunciado { grid-column: 1; grid-row: 2 / span 2; padding-right: 4px; }
+  .apostila-larga .exemplo .exemplo-res { grid-column: 2; grid-row: 2; margin-top: 0 !important; }
+  .apostila-larga .exemplo .exemplo-passos { grid-column: 2; grid-row: 3; }
+  .apostila-larga .teoria-rodape { padding: 16px 56px 0; border-left: 1px solid var(--pauta); }
+  .apostila-larga .rodape-licenca { padding: 8px 56px 24px; border-left: 1px solid var(--pauta); }
+}
+
+/* ---------------- Bilhete: aviso passageiro ("Cópia salva", "Plano guardado") ----------------
+   Nasce perto de quem clicou, acima da barra de baixo, e não no topo do documento. Papel de trás,
+   fio de 1 px, canto de caixa; some ao navegar ou em "Fechar". */
+.bilhete {
+  position: fixed; z-index: 6; left: 16px; right: 16px; bottom: calc(80px + var(--seguro-baixo)); max-width: 36rem; margin: 0 auto;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; padding: 2px 12px 2px 16px;
+  background: var(--papel-2); color: var(--grafite); border: 1px solid var(--pauta-forte); border-radius: var(--radius-caixa);
+  font-size: 15px; line-height: 20px;
+}
+.bilhete-texto { flex: 1 1 180px; padding: 12px 0; }
+body.modo-missao .bilhete { bottom: calc(16px + var(--seguro-baixo)); }
+.com-barra .bilhete { bottom: calc(96px + var(--seguro-baixo)); }
+@media (min-width: 960px) { body:not(.modo-missao) .bilhete { left: calc(232px + 24px); right: 24px; bottom: 24px; } }
+@media print { .bilhete { display: none !important; } }
+
+/* ---------------- botões no computador: do tamanho do rótulo, não da coluna inteira ---------------- */
+@media (min-width: 960px) {
+  .fim-leitura .botao, .topico-acao .botao, .proximo .botao { width: auto; min-width: min(100%, 22.5rem); justify-self: start; }
+}
+
+/* ---------------- mouse: o que se clica responde ao passar por cima (sem sombra) ---------------- */
+@media (hover: hover) {
+  .aba:hover { color: var(--tinta); }
+  .alt:not(.estatica):hover .letra { border-color: var(--tinta); }
+  .alt:not(.estatica):hover .alt-texto { color: var(--grafite); }
+  .botao:not([aria-disabled="true"]):not(:disabled):not(.esperando):hover { filter: brightness(1.12); }
+  .botao-sec:not(:disabled):hover { background: color-mix(in srgb, var(--tinta) 8%, transparent); }
+  .link:hover { text-decoration-thickness: 3px; }
+  .escolha:hover .marcador, .chip input:not(:disabled) + span:hover { border-color: var(--tinta); }
+  .subaba:hover { color: var(--grafite); }
+  .sumario-item:hover > span:last-child { text-decoration-color: var(--tinta); }
+  .sumario-abrir:hover, details > summary:hover { color: var(--tinta); }
 }

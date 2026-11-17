@@ -20,7 +20,8 @@ for (const pk of await packs()) {
       // forma e plano
       assert.equal(st.app, 'prumo'); assert.equal(st.versao, 2);
       assert.deepEqual(E.normalizar(JSON.parse(JSON.stringify(st))), st, 'o estado já está normalizado');
-      assert.equal(st.perfil.minutos, 15); assert.equal(st.perfil.provaTipo, 'escola');
+      assert.equal(st.perfil.minutos, 25); assert.equal(st.perfil.provaTipo, 'escola');
+      assert.equal(st.config.nivelMaximo, 3, 'o estado de exemplo usa o teto da demonstração (pack.nivelMaximoDemo)');
       assert.equal(st.perfil.prova, R.addDias(T, 28));
       assert.ok(st.perfil.dias.includes(R.diaDaSemana(T)), 'hoje é dia de estudo');
       assert.equal(st.config.demo.ativo, true); assert.equal(st.config.demo.exemplo, true);
@@ -34,7 +35,7 @@ for (const pk of await packs()) {
       const reveladas = Object.entries(st.pre).filter(([, x]) => x.revelado);
       assert.ok(reveladas.length >= 2);
       for (const [id, x] of reveladas) assert.ok(st.topicos[x.cap].tentativas.some(y => y.item === id && y.dia === x.revelado && y.tipo === 'revisao'));
-      // uma revisão errada que volta o Cap. 1 para Aprendendo
+      // uma revisão errada que desce o Cap. 1 um nível
       assert.ok(st.topicos['mat-fa.c1'].rodadas.some(r => r.tipo === 'revisao' && !r.venceu && r.de >= 2 && r.para === Math.max(1, r.de - 1)));
       // caderno de erros com a Q168
       assert.ok(st.erros.some(e => e.item === 'enem-2019-168' && e.tipo === 'revisao' && e.marcou));

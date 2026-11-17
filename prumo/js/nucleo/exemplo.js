@@ -1,13 +1,14 @@
 /* =========================================================
    PRUMO · Estado de exemplo (Decisão 5 do dono; núcleo, sem DOM)
    Três semanas que terminam ontem, relativas à data real de hoje; prova da
-   escola em hoje + 28 dias; 15 min por dia (capacidade 2). O estado NÃO é
+   escola em hoje + 28 dias; 25 min por dia (capacidade 3: com a revisão vencida
+   antes do capítulo novo, 15 min não abrem os 4 capítulos em 3 semanas). O estado NÃO é
    escrito à mão: um aluno simulado joga as missões dia a dia com um relógio
    falso, pelo próprio motor e pela própria máquina de estados. Por isso ele é
    consistente por construção.
    O que o roteiro garante (conferido nos testes):
    - a 1ª revisão de cada capítulo com o "antes x depois";
-   - uma revisão errada que volta o Cap. 1 para Aprendendo (e o cartão da
+   - uma revisão errada que desce o Cap. 1 um nível (e o cartão da
      questão do Enem no caderno de erros, a 2019 Q168 no pack real);
    - semanas com a meta (marcas de latão), cards em várias caixas, uma
      Prova do caderno feita e vencida;
@@ -59,7 +60,9 @@ function simular(pack, hoje, recuoFalta, recuoParada, praticas) {
   const inicio = R.addDias(hoje, -21);
   const rel = R.relogioFalso(`${inicio}T19:00`);
   const n = new Nucleo({ pack, storage: E.memoria(), praticas: praticas || undefined });
-  n.concluirPrimeiroUso({ nome: 'Daniel', provaTipo: 'escola', prova: R.addDias(hoje, 28), dias: diasDoExemplo(hoje), minutos: 15, metaSemana: 3, horario: '19:00', som: false, alarme: 'criado' });
+  n.concluirPrimeiroUso({ nome: 'Daniel', provaTipo: 'escola', prova: R.addDias(hoje, 28), dias: diasDoExemplo(hoje), minutos: 25, metaSemana: 3, horario: '19:00', som: false, alarme: 'criado' });
+  // teto de nível da demonstração (pack.nivelMaximoDemo); um perfil real vai até o 5 de 5
+  n.st.config.nivelMaximo = Math.min(5, Math.max(1, Math.round(Number(n.pack.dados.nivelMaximoDemo)) || 5));
   const ctx = { diaDeEstudo: 0, errouRevisaoEnemC1: false, errouDia: false, provaFeita: false, maos: 0, notaFeita: false, jaSeiUsado: false, refeito: false };
   const diasDeEstudo = [];
   for (let k = 21; k >= 1; k--) { const x = R.addDias(hoje, -k); if (n.st.perfil.dias.includes(R.diaDaSemana(x))) diasDeEstudo.push(x); }
@@ -126,7 +129,7 @@ function jogarDia(n, rel, ctx, { ultimo, jaComecou = false }) {
         alt = segunda ? letraErrada(item, 'C') : item.gabarito;
       } else if (p.t === 'revisao' && p.cap === pk.capitulos[0].id && item.origem === 'enem' && !ctx.errouRevisaoEnemC1
         && (item.id === 'enem-2019-168' || !pk.questoesDoCap(p.cap).includes('enem-2019-168'))) {
-        alt = letraErrada(item, 'E');          // a revisão errada: o Cap. 1 volta para Aprendendo
+        alt = letraErrada(item, 'E');          // a revisão errada: o Cap. 1 desce um nível
         ctx.errouRevisaoEnemC1 = true;
       } else if (p.t === 'dia' && !ctx.errouDia) {
         alt = letraErrada(item, 'B');          // um erro na Questão do dia: cartão aberto no caderno

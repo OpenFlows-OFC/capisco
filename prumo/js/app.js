@@ -40,7 +40,8 @@ if (app && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol)) 
     reg.addEventListener('updatefound', () => {
       const sw = reg.installing;
       if (!sw) return;
-      sw.addEventListener('statechange', () => { if (sw.state === 'installed' && navigator.serviceWorker.controller) avisar(sw); });
+      // primeira visita (sem controle na abertura): a versão instalada já é a que está na tela; nada a avisar
+      sw.addEventListener('statechange', () => { if (sw.state === 'installed' && tinhaControle && navigator.serviceWorker.controller) avisar(sw); });
     });
     // confere de novo quando o app volta ao primeiro plano (fora da missão)
     document.addEventListener('visibilitychange', () => {

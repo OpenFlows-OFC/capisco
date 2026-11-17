@@ -7,9 +7,10 @@
    ========================================================= */
 import { h, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { nivel, teoria, prepararFiguras, comoFunciona } from './componentes.js';
+import { nivel, teoria, prepararFiguras, ampliarFigura, comoFunciona, acompanharSumario, idDaAncora, irParaSecao } from './componentes.js';
 
-/* "Como funciona um tópico": aberta até o aluno começar o primeiro tópico; depois, recolhida. */
+/* "Como funciona um tópico": aberta até o aluno começar o primeiro tópico (logo abaixo do botão, que fica
+   à vista); depois, recolhida. */
 const CHAVE_COMO = 'prumo-ui-como-funciona';
 function jaViuComo() { try { return localStorage.getItem(CHAVE_COMO) === '1'; } catch (e) { return false; } }
 function marcarComo() { try { localStorage.setItem(CHAVE_COMO, '1'); } catch (e) { /* sem armazenamento: segue aberta */ } }
@@ -52,9 +53,8 @@ function paginaTopico(p) {
       ${nivel({ cheios: p.nivel.cheios, nome: p.nivel.cheios ? p.nivel.rotulo : null })}
       <p style="margin:8px 0 0">${p.estadoTexto}</p>
       ${p.progresso ? h`<p class="texto-2" style="margin:4px 0 0">${p.progresso.texto}</p>` : ''}
-      ${jaViuComo() ? '' : comoFunciona({ aberto: true })}
       ${botaoAcao(p.acao)}
-      ${jaViuComo() ? comoFunciona() : ''}
+      ${p.comoFunciona === null ? '' : comoFunciona({ aberto: !jaViuComo(), itens: p.comoFunciona || undefined })}
       <section class="secao" aria-labelledby="pq-t"><h2 class="titulo-pequeno" id="pq-t">Por que cai no Enem</h2><p>${p.porQueCai}</p></section>
       ${p.ideias && p.ideias.length ? h`<section class="secao" aria-labelledby="id-t"><h2 class="titulo-pequeno" id="id-t">O essencial</h2><ul class="teoria-lista">${cada(p.ideias, x => h`<li>${x}</li>`)}</ul></section>` : ''}
       <section class="secao" aria-labelledby="co-t"><h2 class="titulo-pequeno" id="co-t">Como é o estudo</h2><p>${p.composicao}</p>
@@ -67,29 +67,32 @@ function paginaTopico(p) {
     : h`<p>${p.estadoTexto}</p>`}`;
 }
 
-function teoriaLivre(v, id) {
-  if (!v) return h`<p>Teoria não encontrada.</p><p><a class="link" href="#/estudar">Voltar ao mapa</a></p>`;
+function teoriaLivre(v, id, ancora) {
+  if (!v) return h`<p>Apostila não encontrada.</p><p><a class="link" href="#/estudar">Voltar ao mapa</a></p>`;
   return h`<p class="voltar-mapa"><a class="link" href="#/estudar/${id}">Voltar ao tópico</a></p>
     <p class="pr-recado" role="note">${v.aviso}</p>
-    ${teoria(v)}
+    ${teoria(v, { ancora, grifar: !!ancora })}
     <p style="margin-top:24px"><a class="link" href="#/estudar/${id}">Voltar ao tópico</a></p>`;
 }
 
 /** Aba Estudar. rota.sub = id do tópico; rota.resto[0] = 'teoria'. */
 export function telaEstudar(ctx, t, rota) {
   const n = ctx.nucleo, id = rota.sub;
-  let corpo, titulo = 'Estudar';
+  let corpo, titulo = 'Estudar', ancora = null;
   if (!id) corpo = mapa(n.estudar());
-  else if (rota.resto[0] === 'teoria') { const v = n.teoriaLivre(id); corpo = teoriaLivre(v, id); titulo = v ? `Teoria: ${v.titulo}` : titulo; }
+  else if (rota.resto[0] === 'teoria') { const v = n.teoriaLivre(id); ancora = idDaAncora(rota.resto[1]); corpo = teoriaLivre(v, id, ancora); titulo = v ? `Apostila: ${v.titulo}` : titulo; }
   else { const p = n.topicoPagina(id); corpo = paginaTopico(p); titulo = p ? p.titulo : titulo; }
   return {
     chave: `estudar:${id || ''}:${rota.resto.join('/')}`,
     titulo,
     html: h`${topoAba()}${corpo}`,
-    depois(raiz) {
+    depois(raiz, { mudou } = {}) {
+      // vindo do Caderno de erros: abre na seção que a questão cobrou (o título dela, com o marca-texto)
+      if (ancora && mudou) irParaSecao(ancora, { suave: false });
       prepararFiguras(raiz.querySelector('#principal') || raiz, {
-        aoAmpliar: el => { const c = el.cloneNode(true); c.removeAttribute('role'); c.removeAttribute('tabindex'); c.classList.remove('ampliavel'); ctx.abrirFolha('zoom', { html: c.outerHTML, zoom: 1 }, el); },
+        aoAmpliar: el => ampliarFigura(ctx, el),
       });
+      return acompanharSumario(raiz);
     },
   };
 }

@@ -8,7 +8,8 @@
    ========================================================= */
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { marca, visto, constancia } from './componentes.js';
+import { marca, visto, constancia, trilha, rodape } from './componentes.js';
+import { trilhaDe } from './missao.js';
 
 /** "Quando e onde": dia (o próximo dia de estudo), hora e uma âncora da rotina. Vira o horário do lembrete. */
 function quando(q) {
@@ -34,6 +35,8 @@ export function telaPronto(ctx, vm) {
   const chave = `pronto:${vm.data}`;
   const nova = ctx.ui.chave !== chave;   // o carimbo desce só na primeira vez que a tela aparece
   const p = vm.proxima;
+  // tópico de prática terminado: a trilha com todas as etapas feitas (o visto, ou o registro no estudo livre)
+  const tr = vm.parcial ? null : trilhaDe(ctx, vm, 'encerramento');
   const frases = [
     vm.parcial, vm.vazio, vm.naoContou,
     ...(vm.mudancas || []).map(m => m.texto),
@@ -44,6 +47,7 @@ export function telaPronto(ctx, vm) {
     titulo: 'Pronto por hoje',
     html: h`<main class="colofao">
       <div class="linha-topo">${marca()}</div>
+      ${tr ? trilha(['visto', 'registro'].includes(tr.fase) ? 'fim' : tr.fase, { livre: tr.livre }) : ''}
       <h1 class="manchete colofao-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>
       ${frases.length ? h`<ul class="pr-frases" aria-label="O que mudou hoje">${cada(frases, f => h`<li>${f}</li>`)}</ul>` : ''}
       ${visto(vm.visto, { novo: nova })}
@@ -53,7 +57,7 @@ export function telaPronto(ctx, vm) {
         ${p.porque ? h`<details class="porque"><summary class="link">${p.rotuloPorque || 'Por quê?'}</summary><p class="texto-2">${p.porque}</p></details>` : ''}
       </section>` : ''}
       ${quando(vm.quando)}
-      ${vm.amanha ? h`<section class="amanha" aria-labelledby="amanha-t"><h2 class="titulo-pequeno" id="amanha-t">${vm.amanha.rotulo}</h2><div class="enunciado amanha-enunciado">${cru(vm.amanha.html)}</div><p class="pequeno texto-2">${vm.amanha.aviso}</p></section>` : ''}
+      ${vm.amanha ? h`<section class="amanha" aria-labelledby="amanha-t"><h2 class="titulo-pequeno" id="amanha-t">${vm.amanha.rotulo}</h2><div class="enunciado amanha-enunciado">${cru(vm.amanha.html)}</div>${vm.amanha.fonte ? rodape(vm.amanha.aviso, vm.amanha.licencaUrl) : h`<p class="pequeno texto-2">${vm.amanha.aviso}</p>`}</section>` : ''}
       ${constancia(vm.constancia)}
       <p class="fecho">${vm.fecho}</p>
       ${vm.continuar ? h`<p class="continuar-livre">${vm.continuar.texto} <button type="button" class="link" data-acao="continuarEstudando">${vm.continuar.rotulo}</button></p>` : ''}

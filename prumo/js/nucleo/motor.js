@@ -36,9 +36,9 @@ export const MATERIAS = { mat: 'Matemática', cn: 'Ciências da Natureza', ch: '
 export const CHEFE = 'chefe:';
 export const ehChefe = id => typeof id === 'string' && id.startsWith(CHEFE);
 export const chefeId = cjId => CHEFE + cjId;
-/** Rótulo do nível para a tela (os nomes de NIVEL são só chaves internas): "nível 2 de 5"; o topo, "nível 5 de 5: dominado". */
-export const rotuloNivel = k => (k >= 1 ? (k >= 5 ? 'nível 5 de 5: dominado' : `nível ${k} de 5`) : 'ainda não começou');
-/** "no nível 2 de 5" (para "entrou no", "continua no", "volta para o"). */
+/** Rótulo do nível para a tela (os nomes de NIVEL são só chaves internas; nível não tem nome): "nível 2 de 5". */
+export const rotuloNivel = k => (k >= 1 ? `nível ${Math.min(5, k)} de 5` : 'ainda não começou');
+/** "no nível 2 de 5" (para "entrou no", "continua no", "desceu para o"). */
 export const noNivel = k => `no ${rotuloNivel(k)}`;
 export const nomeNivel = k => rotuloNivel(k);
 
@@ -55,17 +55,42 @@ export function horizonte(st, d = R.hoje()) {
   if (pv.dias === null || pv.passou) return P.horizontePadrao;
   return Math.max(7, pv.dias);
 }
-/** out[caixa] = dias até a próxima revisão. Último = max(4, round(0,15 × H)), até 60; os outros em
- *  progressão geométrica, cada um pelo menos 1 dia maior que o anterior. */
+/** out[caixa] = dias até a próxima revisão. Último = 15% de H, arredondado, entre 5 e 60 (com 5 níveis,
+ *  cada um pelo menos 1 dia maior que o anterior, o último nunca fica abaixo de 5); os outros crescem
+ *  aos poucos (progressão geométrica), cada um pelo menos 1 dia maior que o anterior. */
 export function intervalos(st, d = R.hoje()) {
   const H = horizonte(st, d);
-  const max = Math.min(60, Math.max(4, Math.round(H * P.razaoCepeda)));
+  const max = Math.min(60, Math.max(P.caixas, Math.round(H * P.razaoCepeda)));
   const out = [0];
   for (let k = 1; k <= P.caixas; k++) {
     const v = Math.round(Math.pow(max, (k - 1) / (P.caixas - 1)));
     out.push(Math.max(v, (out[k - 1] || 0) + 1));
   }
   return out;
+}
+/** Data em que a revisão marcada para x entra de fato: o primeiro dia de estudo (fora de pausa e fora de um
+ *  dia de "Hoje não") igual ou depois de x. Revisão que vence numa folga entra no próximo dia de estudo; o dia
+ *  em que o aluno marcou "Hoje não" conta como folga para as revisões (o app prometeu que elas passam adiante). */
+export function dataEfetiva(st, x) {
+  const p = st && st.perfil;
+  if (!R.ehData(x) || !p || !(p.dias || []).length) return x;
+  const pz = st.pausa || {}, hn = st.hojeNao || {};
+  for (let i = 0; i <= 21; i++) {
+    const y = R.addDias(x, i), pausa = R.ehData(pz.ate) && y <= pz.ate && (!pz.desde || y >= pz.desde);
+    if (p.dias.includes(R.diaDaSemana(y)) && !pausa && !hn[y]) return y;
+  }
+  return x;
+}
+/** Revisão atrasada: passou por um dia de estudo sem ser feita. Vencer numa folga (ou num dia de "Hoje não") não atrasa. */
+export const revisaoAtrasada = (st, x, d = R.hoje()) => R.ehData(x) && x < d && dataEfetiva(st, x) < d;
+/** A revisão marcada para x passou por um dia em que o aluno marcou "Hoje não" (antes de d)? */
+export const passouPorHojeNao = (st, x, d = R.hoje()) => R.ehData(x) && Object.keys((st && st.hojeNao) || {}).some(k => k >= x && k < d);
+/** A última revisão do capítulo/tópico foi errada (ou a revisão antecipada não fechou) e a data marcada é a
+ *  do dia seguinte ao erro: a revisão volta no próximo dia de estudo por causa do erro, não pelo intervalo. */
+export function voltaPorErro(t) {
+  const ult = t && (t.rodadas || []).slice(-1)[0];
+  if (!ult || ult.venceu || !(ult.tipo === 'revisao' || ult.tipo === 'extra') || !R.ehData(t.proxima) || !R.ehData(ult.dia)) return null;
+  return R.diff(ult.dia, t.proxima) <= 1 ? ult.tipo : null;
 }
 /** Reta final: últimos max(3, round(0,10 × H)) dias antes da prova (regra de projeto, f.1). */
 export const retaFinal = (st, d = R.hoje()) => Math.max(3, Math.round(0.10 * horizonte(st, d)));
@@ -152,9 +177,17 @@ export function criarMotor(indice) {
         return `Libera quando ${(T.prereq || []).filter(p => ((st.topicos[p] || {}).caixa || 0) < P.limiarPrereq).map(p => `Cap. ${topico(p).n}`).join(' e ')} estiver${(T.prereq || []).length > 1 ? 'em' : ''} no nível 1 de 5.`;
       case 'novo': return 'Pré-requisitos em dia. Pronto para a primeira rodada.';
       case 'pratica': return 'Já teve tentativas, mas ainda não venceu a primeira rodada.';
-      case 'consolidado': return `${cap1(nomeNivel(t.caixa))}. A revisão vence em ${R.fmtCurta(t.proxima)}, quando a lembrança estimada chega a 85%.${est}`;
+      case 'consolidado': {
+        // revisão errada (ou antecipada que não fechou): ela volta no próximo dia de estudo por causa do erro
+        const erro = voltaPorErro(t);
+        if (erro) return `${cap1(nomeNivel(t.caixa))}. ${erro === 'extra' ? 'A revisão antecipada não fechou' : 'Você errou a última revisão'}, e ela volta no próximo dia de estudo: ${R.fmtCurta(dataEfetiva(st, t.proxima))}.`;
+        const ef = dataEfetiva(st, t.proxima);
+        return `${cap1(nomeNivel(t.caixa))}. A revisão vence em ${R.fmtCurta(t.proxima)}, quando a lembrança estimada chega a 85%${ef !== t.proxima ? `; ela entra no primeiro dia de estudo depois disso, ${R.fmtCurta(ef)}` : ''}.${est}`;
+      }
       case 'agendado': return `${cap1(nomeNivel(t.caixa))}. A revisão vence hoje: a lembrança estimada chegou a 85%.${est}`;
-      case 'vencido': return `${cap1(nomeNivel(t.caixa))}. A revisão venceu em ${R.fmtCurta(t.proxima)}; revisões atrasadas vêm primeiro.${est}`;
+      case 'vencido': return revisaoAtrasada(st, t.proxima, d)
+        ? `${cap1(nomeNivel(t.caixa))}. A revisão venceu em ${R.fmtCurta(dataEfetiva(st, t.proxima))}; revisões atrasadas vêm primeiro.${est}`
+        : `${cap1(nomeNivel(t.caixa))}. A revisão venceu em ${R.fmtCurta(t.proxima)}, ${passouPorHojeNao(st, t.proxima, d) ? 'num dia em que você marcou “Hoje não”' : 'numa folga'}, e entra no próximo dia de estudo.${est}`;
     }
     return '';
   }
@@ -272,10 +305,11 @@ export function criarMotor(indice) {
       delete t.travado;
       out.regra = `${T.nome} entrou ${noNivel(t.caixa)}. Revisão: ${R.fmtRelativa(t.proxima, d)}.`;
     } else if (antes >= 1) {
-      // não acontece no Prumo (revisão usa fecharRevisao), mantido do motor: o consolidado não zera
-      t.caixa = 1;
+      // não acontece no Prumo (revisão usa fecharRevisao; rodada de capítulo com nível é 'extra'):
+      // se acontecer, segue a mesma regra da revisão errada, desce UM nível (nunca abaixo de 1)
+      t.caixa = Math.max(1, antes - 1);
       t.proxima = R.addDias(d, 1);
-      out.regra = `Rodada encerrada em ${rodada.tentativas} tentativas. O Cap. ${T.n} volta para o nível 1 de 5 e revisa amanhã. Seu histórico continua.`;
+      out.regra = `Rodada encerrada em ${rodada.tentativas} tentativas. O Cap. ${T.n} fica ${noNivel(t.caixa)} e revisa amanhã. Seu histórico continua.`;
     } else {
       // teto na primeira vez: falta base; a prática vai para o pré-requisito
       t.caixa = 0;
@@ -304,7 +338,7 @@ export function criarMotor(indice) {
   }
 
   /** Adaptador de revisão (b.3): a revisão é 1 item e vale a primeira resposta.
-   *  Certa sobe um nível (até o nível máximo); errada volta a Aprendendo (Leitner clássico). */
+   *  Certa sobe um nível (até o nível máximo); errada desce UM nível (nunca abaixo de 1) e volta amanhã. */
   function fecharRevisao(st, capId, res, d = R.hoje()) {
     const t = reg(st, capId), iv = intervalos(st, d), antes = t.caixa || 0;
     const max = (st.config && st.config.nivelMaximo) || P.caixas;
@@ -340,6 +374,6 @@ export function criarMotor(indice) {
   return {
     P, NIVEL, NIVEIS, indice: IDX, topico, nomeCurto, ativos, topicosAtivos, chefeEstado, prereqOk, travadoAtivo, estado, porqueEstado,
     recompensa, tetoDe, criterioDe, chefeTopicos, novaRodada, registrar, fecharRodada, fecharChefe, fecharRevisao,
-    agenda, proximaRevisao, avaliar, pausa, prova, horizonte, intervalos, retaFinal, recuperabilidade,
+    agenda, proximaRevisao, avaliar, pausa, prova, horizonte, intervalos, retaFinal, recuperabilidade, dataEfetiva, revisaoAtrasada,
   };
 }

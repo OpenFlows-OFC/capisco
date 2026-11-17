@@ -6,7 +6,7 @@
    ========================================================= */
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { marca } from './componentes.js';
+import { marca, trofeu } from './componentes.js';
 import { secoesAjustes } from './ajustes.js';
 
 const SEM_DATA = new Set(['enem', 'naosei']);
@@ -28,6 +28,7 @@ export function telaPerfil(ctx) {
       <p class="pequeno texto-2" style="margin-top:0">${v.fotoNota}</p>
 
       ${colecao(n.colecao(ctx.ui.memoria.mesColecao))}
+      ${trofeus(n)}
 
       <form class="secao" data-enviar="pfNome" novalidate aria-labelledby="pf-nome-t">
         <h2 class="titulo-pequeno" id="pf-nome-t">Seu nome</h2>
@@ -48,7 +49,7 @@ export function telaPerfil(ctx) {
         <h2 class="titulo-pequeno" style="margin-top:24px">Dias e minutos</h2>
         <p>${pl.dias.texto}</p>
         <fieldset style="border:0;margin:0;padding:0;min-width:0"><legend style="font-weight:600;margin-bottom:8px;padding:0">Dias de estudo (de 3 a 5)</legend>
-          <ul class="chips">${cada([1, 2, 3, 4, 5, 6, 0], d => h`<li class="chip"><label><input type="checkbox" name="dias" value="${d}" ${p.dias.includes(d) ? cru('checked') : ''}><span>${['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'][d]}</span></label></li>`)}</ul></fieldset>
+          <ul class="chips chips-dias">${cada([1, 2, 3, 4, 5, 6, 0], d => h`<li class="chip"><label><input type="checkbox" name="dias" value="${d}" ${p.dias.includes(d) ? cru('checked') : ''}><span>${['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'][d]}</span></label></li>`)}</ul></fieldset>
         <fieldset style="border:0;margin:16px 0 0;padding:0;min-width:0"><legend style="font-weight:600;margin-bottom:8px;padding:0">Minutos por dia</legend>
           <ul class="chips">${cada(pl.minutos.opcoes, m => h`<li class="chip"><label><input type="radio" name="minutos" value="${m}" ${p.minutos === m ? cru('checked') : ''}><span>${m} min</span></label></li>`)}</ul></fieldset>
         <fieldset style="border:0;margin:16px 0 0;padding:0;min-width:0"><legend style="font-weight:600;margin-bottom:8px;padding:0">Matérias</legend>
@@ -59,6 +60,18 @@ export function telaPerfil(ctx) {
 
       ${secoesAjustes(ctx)}`,
   };
+}
+
+/** Troféus: o da Prova do caderno vencida (o mesmo carimbo do resultado e do Caderno). Sem troféu, nada aparece. */
+function trofeus(n) {
+  let p = null;
+  try { p = n.sumario().prova; } catch (e) { /* sem caderno: sem troféu */ }
+  if (!p || !p.trofeu || !p.trofeu.ganho) return '';
+  return h`<section class="secao" aria-labelledby="pf-trofeus-t">
+    <h2 class="titulo-pequeno" id="pf-trofeus-t">Troféus</h2>
+    ${trofeu(p.trofeu)}
+    <p class="pequeno texto-2">Prova do caderno de ${p.trofeu.nome}. ${p.texto}${p.selos && p.selos.length ? ` Selo de ${p.selos.map(x => x.nome).join(' e ')}.` : ''}</p>
+  </section>`;
 }
 
 /** Coleção de vistos: o calendário do mês com o carimbo nos dias com visto. */

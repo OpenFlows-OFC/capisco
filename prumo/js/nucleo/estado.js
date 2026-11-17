@@ -26,6 +26,7 @@ export function vazio() {
     conjuntosAtivos: [],
     praticas: {},          // tópicos de prática começados: { id: { desde, pre: { alt, dia, revelado } | null } }
     pausa: { desde: null, ate: null },
+    hojeNao: {},           // dias em que o aluno marcou "Hoje não": para as revisões, contam como folga (não viram atraso)
     topicos: {},
     pre: {},
     vistos: {},
@@ -43,7 +44,8 @@ export function vazio() {
     historico: [],
     refazer: null,
     seq: { erro: 0, nota: 0 },
-    config: { som: false, nivelMaximo: 3, ultimaCopia: null, simboloConstancia: 'risquinhos', alarme: null,
+    // nivelMaximo: 5 para todo aluno; só o estado de exemplo (demo.exemplo) usa o teto do pack (nivelMaximoDemo)
+    config: { som: false, nivelMaximo: 5, ultimaCopia: null, simboloConstancia: 'risquinhos', alarme: null,
       demo: { ativo: false, offset: 0, exemplo: false, guardado: null } },
   };
 }
@@ -144,6 +146,7 @@ export function normalizar(s) {
   }
   const pz = obj(s.pausa);
   v.pausa = { desde: data(pz.desde), ate: data(pz.ate) };
+  for (const k of Object.keys(obj(s.hojeNao)).filter(x => R.ehData(x)).sort().slice(-120)) v.hojeNao[k] = true;
   for (const [k, t] of Object.entries(obj(s.topicos)).slice(0, 200)) if (ehId(k)) v.topicos[k] = topico(t);
   for (const [k, x] of Object.entries(obj(s.pre)).slice(0, 500)) if (ehId(k) && LETRA(obj(x).alt)) v.pre[k] = { alt: x.alt, dia: data(x.dia, R.hoje()), cap: ehId(x.cap) ? x.cap : null, revelado: data(x.revelado) };
   for (const [k, d] of Object.entries(obj(s.vistos)).slice(0, 2000)) if (ehId(k) && R.ehData(d)) v.vistos[k] = d;
@@ -170,7 +173,8 @@ export function normalizar(s) {
   v.seq = { erro: int(sq.erro, 0, 1e6, v.erros.length), nota: int(sq.nota, 0, 1e6, v.notas.length) };
   const c = obj(s.config), dm = obj(c.demo);
   v.config = {
-    som: c.som === true, nivelMaximo: int(c.nivelMaximo, 1, 5, 3), ultimaCopia: data(c.ultimaCopia),
+    // o teto de nível só vale no estado de exemplo; perfil real (inclusive o salvo antes com 3) vai até o 5 de 5
+    som: c.som === true, nivelMaximo: dm.ativo && dm.exemplo ? int(c.nivelMaximo, 1, 5, 5) : 5, ultimaCopia: data(c.ultimaCopia),
     simboloConstancia: 'risquinhos',   // único símbolo da constância (design system); 'chama' e 'regua' salvos antes viram risquinhos
     alarme: ['criado', 'agora-nao'].includes(c.alarme) ? c.alarme : null,
     demo: { ativo: !!dm.ativo, offset: int(dm.offset, -3650, 3650, 0), exemplo: !!dm.exemplo, guardado: typeof dm.guardado === 'string' ? dm.guardado : null },

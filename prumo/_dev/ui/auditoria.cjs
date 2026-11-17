@@ -41,7 +41,8 @@ const AUDITAR = () => {
       const c = rgba(cs[prop]);
       if (c && c[3] > 0.2 && c[0] - Math.max(c[1], c[2]) > 70 && c[0] > 150) res.vermelho.push(`${prop} ${cs[prop]} em ${el.className || el.tagName}`);
     }
-    if (cs.position === 'fixed' && !el.closest('#folha-raiz') && !el.classList.contains('folha-fundo') && !el.closest('.folha-fundo')) res.fixas++;
+    // o bilhete (aviso passageiro, com "Fechar") não é barra: só aparece depois de uma ação
+    if (cs.position === 'fixed' && !el.closest('#folha-raiz') && !el.classList.contains('folha-fundo') && !el.closest('.folha-fundo') && !el.classList.contains('bilhete')) res.fixas++;
     const interativo = el.matches('button, a[href], input:not([type="radio"]):not([type="checkbox"]), summary, label.alt, label.escolha, .chip span, [role="button"]');
     if (interativo && !el.closest('.rodape-licenca') && !el.closest('.par-texto') && !el.closest('.enunciado p')) {
       const r = el.getBoundingClientRect();

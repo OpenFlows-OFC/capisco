@@ -99,7 +99,7 @@ for (const pk of await packs()) {
     assert.equal(t.vm.tipo, 'revela');
     assert.match(t.vm.titulo, /^Antes de ler, você marcou [A-E]\. A certa é [A-E]\.$/);
     rel.avancarMs(4000); n.despachar('CONTINUAR');
-    // 1ª questão errada: "o que faltou" e "Rever a teoria"; depois acerta duas seguidas
+    // 1ª questão errada: "o que faltou" e "Rever a apostila"; depois acerta duas seguidas
     assert.equal(n.estado(), 'pergunta');
     assert.equal(n.tela().vm.tipo, 'enem');
     assert.match(n.tela().vm.topo.regra.texto, /Acerte 2 questões seguidas/);
@@ -108,7 +108,7 @@ for (const pk of await packs()) {
     t = n.tela();
     assert.equal(t.vm.certa, false);
     assert.ok(t.vm.falta, 'o que faltou');
-    assert.equal(t.vm.trecho.rotulo, 'Rever a teoria');
+    assert.equal(t.vm.trecho.rotulo, 'Rever a apostila');
     assert.ok(n.despachar('VOLTAR_AO_TRECHO'));
     assert.equal(n.tela().vm.teoria, true);
     n.despachar('VOLTAR');
@@ -130,7 +130,10 @@ for (const pk of await packs()) {
     const outro = n.prat.ids().find(x => x !== PRIMEIRO);
     const pg2 = n.topicoPagina(outro);
     assert.equal(pg2.acao.disponivel, true); assert.match(pg2.acao.nota, /por conta própria/);
-    assert.equal(n.topicoPagina(n.pack.id).acao.disponivel, false, 'o caderno fica para a próxima missão');
+    // o caderno também aceita estudo por conta própria (sem capítulo aberto, o próximo capítulo; sem visto extra)
+    const fa = n.topicoPagina(n.pack.id).acao;
+    assert.equal(fa.disponivel, true); assert.match(fa.nota, /^Missão de hoje cumprida\. Por conta própria: .+ Sem um segundo visto\.$/);
+    assert.ok(!/Conta como dia estudado/.test(fa.nota), 'o dia já contou: não promete de novo');
     const tent = Object.values(n.st.topicos).reduce((s, t) => s + t.tentativas.length, 0);
     assert.ok(n.despachar({ tipo: 'ESTUDAR_TOPICO', id: outro }));
     assert.equal(n.st.missao.livre, true);
@@ -273,7 +276,7 @@ for (const pk of await packs()) {
     const { n, rel } = novo(pk.dados);
     const s = n.semana();
     assert.equal(s.dias.length, 7); assert.equal(s.n, 0); assert.equal(s.meta, 3);
-    assert.equal(s.texto, '0 de 3 dias nesta semana');
+    assert.equal(s.texto, '0 de 3 dias', 'o rótulo "Meta da semana" vem na frente: o texto não o repete');
     assert.ok(!/perd/i.test(JSON.stringify(s)));
     assert.equal(n.hoje().venceHoje, null, 'sem revisão vencendo, sem destaque');
     n.despachar({ tipo: 'ESTUDAR_TOPICO', id: PRIMEIRO });

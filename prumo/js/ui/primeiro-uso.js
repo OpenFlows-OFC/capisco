@@ -18,6 +18,7 @@ function estadoInicial(vm) {
   };
 }
 const SEM_DATA = new Set(['enem', 'naosei']);
+const ajudaData = v => (v ? 'Dá para mudar depois, no Plano.' : 'Sem data, o Prumo usa um horizonte de 90 dias. Dá para marcar depois, no Plano.');
 
 function marca() {
   return h`<div class="linha-topo">${marcaPrumo()}<span class="descritor">App de Estudos</span></div>`;
@@ -47,8 +48,8 @@ function passoPerguntas(ctx, vm, pu) {
       </li>`)}</ul>
       ${SEM_DATA.has(pu.provaTipo) ? '' : h`<div class="secao-pu" style="margin-top:16px">
         <label for="pu-data" style="display:block;font-weight:600;margin-bottom:8px">Data da prova</label>
-        <input id="pu-data" class="campo campo-data" type="date" name="prova" min="${amanha}" value="${pu.prova}" data-mudar="puCampo">
-        <p class="ajuda-campo">${pu.prova ? 'Dá para mudar depois, no Plano.' : 'Sem data, o Prumo usa um horizonte de 90 dias. Dá para marcar depois, no Plano.'}</p>
+        <input id="pu-data" class="campo campo-data" type="date" name="prova" min="${amanha}" value="${pu.prova}" data-mudar="puCampo" data-digitar="puCampo" aria-describedby="pu-data-ajuda">
+        <p class="ajuda-campo" id="pu-data-ajuda">${ajudaData(pu.prova)}</p>
       </div>`}
 
       <div class="secao-pu">
@@ -61,7 +62,7 @@ function passoPerguntas(ctx, vm, pu) {
         <h2 class="pergunta-pu" id="q-dias">3. Em quais dias e por quanto tempo?</h2>
         <fieldset style="border:0;margin:0;padding:0;min-width:0">
           <legend style="font-weight:600;margin-bottom:8px;padding:0">Dias de estudo (de ${vm.dias.min} a ${vm.dias.max})</legend>
-          <ul class="chips">${cada(vm.dias.opcoes, d => {
+          <ul class="chips chips-dias">${cada(vm.dias.opcoes, d => {
             const marcado = pu.dias.includes(d.valor);
             const travado = (!marcado && nDias >= vm.dias.max);
             return h`<li class="chip"><label><input type="checkbox" name="dias" value="${d.valor}" data-mudar="puDia" ${marcado ? cru('checked') : ''} ${travado ? cru('disabled') : ''}><span>${d.rotulo}</span></label></li>`;
@@ -111,12 +112,12 @@ function passoFecho(ctx, vm) {
 function onboarding(ctx, vm, pu) {
   const o = vm.onboarding[pu.onb], total = vm.onboarding.length;
   return h`<section class="onb" aria-labelledby="onb-t">
-    <p class="onb-n">${pu.onb + 1}/${total}</p>
+    <p class="so-leitor">Tela ${pu.onb + 1} de ${total}</p>
     <div class="onb-pontos" aria-hidden="true">${cada(vm.onboarding, (x, i) => h`<span class="${i === pu.onb ? 'atual' : ''}"></span>`)}</div>
     <h1 class="onb-titulo" id="onb-t" tabindex="-1" data-foco-inicial>${o.titulo}</h1>
     <p class="onb-texto">${o.texto}</p>
     <div class="onb-acoes">
-      <button type="button" class="link" data-acao="puPular">Pular</button>
+      ${pu.onb + 1 < total ? h`<button type="button" class="link" data-acao="puPular">Pular</button>` : h`<span></span>`}
       <button type="button" class="botao" data-acao="puProximo">${pu.onb + 1 < total ? 'Próximo' : 'Montar meu plano'}</button>
     </div>
     <p style="margin-top:24px"><button type="button" class="link" data-acao="puExemplo">${vm.exemplo.rotulo}</button></p>
@@ -151,7 +152,8 @@ registrar({
       const pu = ctx.ui.pu;
       if (!pu) return;
       if (el.name === 'provaTipo') { pu.provaTipo = el.value; if (SEM_DATA.has(el.value)) pu.prova = ''; ctx.render(); return; }
-      if (el.name === 'prova') { pu.prova = el.value; return; }
+      // a data muda só a ajuda abaixo do campo (sem redesenhar a tela, para o foco não sair do campo de data)
+      if (el.name === 'prova') { pu.prova = el.value; const a = document.getElementById('pu-data-ajuda'); if (a) a.textContent = ajudaData(el.value); return; }
       if (el.name === 'minutos') pu.minutos = Number(el.value);
       if (el.name === 'horario') { pu.horario = el.value; ctx.render(); return; }
       if (el.name === 'nome') { pu.nome = el.value; return; }

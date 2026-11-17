@@ -1,13 +1,12 @@
 /* =========================================================
-   PRUMO · Ajustes e dados (c.10)                        [A COMPLETAR]
-   Versão simples, funcional, deixada pela equipe das telas do núcleo para o
-   agente de Ajustes completar (créditos item a item com mais detalhe,
-   confirmação de "Apagar tudo" em folha, "Copiar dados" com retorno etc.).
-   Rota: #/ajustes (link "Ajustes" no topo das três abas). Ver js/ui/LEIA.md.
+   PRUMO · Ajustes e dados (c.10), dentro da aba Perfil
+   Som, dados (cópia, CSV, restaurar, copiar, apagar), as ferramentas do modo
+   demonstração (recolhidas; abertas só com a demonstração ligada), "O que o
+   Prumo não tem" (recolhido) e os créditos. Não há tela própria: #/ajustes
+   abre o Perfil (casca.js). Ver js/ui/LEIA.md.
    ========================================================= */
 import { h, cru, cada, escolherArquivo } from './dom.js';
 import { registrar } from './registro.js';
-import { marca } from './componentes.js';
 
 /** As seções de som, dados, demonstração, "o que o Prumo não tem" e créditos (hoje dentro do Perfil). */
 export function secoesAjustes(ctx) {
@@ -31,31 +30,31 @@ export function secoesAjustes(ctx) {
         </ul>
       </section>
 
-      <section class="secao" aria-labelledby="aj-demo">
+      ${a.demo.ativo ? h`<section class="secao" aria-labelledby="aj-demo">
         <h2 class="titulo-pequeno" id="aj-demo">Modo demonstração</h2>
         ${a.demo.explica ? h`<p class="pequeno texto-2">${a.demo.explica}</p>` : ''}
-        ${a.demo.ativo ? h`<p class="pequeno">Data simulada: ${a.demo.data}</p>` : ''}
+        <p class="pequeno">Data simulada: ${a.demo.data}</p>
         <ul class="links">
           <li><button type="button" class="link" data-acao="ajAvancar" data-arg="1">Avançar 1 dia</button></li>
           <li><button type="button" class="link" data-acao="ajAvancar" data-arg="7">Avançar 7 dias</button></li>
           <li><button type="button" class="link" data-acao="ajExemplo">Carregar o estado de exemplo</button></li>
-          ${a.demo.ativo ? h`<li><button type="button" class="link" data-acao="sairDemo">Sair da demonstração</button></li>` : ''}
+          <li><button type="button" class="link" data-acao="sairDemo">Sair da demonstração</button></li>
         </ul>
-      </section>
+      </section>` : h`<details class="secao recolhida">
+        <summary class="titulo-pequeno">Ferramentas de demonstração</summary>
+        ${a.demo.explica ? h`<p class="pequeno texto-2">${a.demo.explica}</p>` : ''}
+        <ul class="links"><li><button type="button" class="link" data-acao="ajExemplo">Carregar o estado de exemplo</button></li></ul>
+      </details>`}
 
-      <section class="secao" aria-labelledby="aj-nt">
-        <h2 class="titulo-pequeno" id="aj-nt">${nt.titulo}</h2>
+      <details class="secao recolhida">
+        <summary class="titulo-pequeno">${nt.titulo}</summary>
         <ul class="lista-fios">${cada(nt.itens, x => h`<li><strong>${x.item}</strong><p class="pequeno texto-2" style="margin:4px 0 0">${x.motivo}</p></li>`)}</ul>
-      </section>
+      </details>
 
       <section class="secao" aria-labelledby="aj-cr">
         <h2 class="titulo-pequeno" id="aj-cr">Créditos e licenças</h2>
         <ul class="lista-fios">${cada(cr.app || [], x => h`<li class="pequeno">${x.item}: ${x.licenca}, ${x.fonte}.</li>`)}</ul>
       </section>`;
-}
-
-export function telaAjustes(ctx) {
-  return { chave: 'ajustes', titulo: 'Ajustes e dados', html: h`<div class="linha-topo">${marca()}<a class="link" href="#/perfil">Voltar</a></div><h1 class="titulo" tabindex="-1" data-foco-inicial>Ajustes e dados</h1>${secoesAjustes(ctx)}` };
 }
 
 registrar({

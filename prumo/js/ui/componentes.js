@@ -7,15 +7,13 @@
    Catálogo e convenções: js/ui/LEIA.md.
    ========================================================= */
 import { h, cru, cada, esc, reduzido } from './dom.js';
-import { NIVEL } from '../nucleo/motor.js';   // só os nomes dos níveis (rótulos), nenhuma regra
+import { registrar } from './registro.js';
 
 /* ---------------- marca ---------------- */
 /** Símbolo do Prumo (Cadeado-P), sem alteração: anel em marinho (branco no escuro), esquadro azul, fechadura em latão. */
 export const simbolo = (classe = '') => cru(`<svg class="simbolo ${classe}" viewBox="-3 -8 55.2 79.2" aria-hidden="true" focusable="false"><path class="anel" fill="none" stroke-width="11.2" d="M6.80 18.80A18.4 18.4 0 1 1 22.00 36.92"/><rect class="haste" x="1.20" y="17.30" width="11.2" height="15.5"/><path class="esquadro" d="M0 26V68L37.2 61.2Z"/><circle class="fechadura" cx="10.4" cy="50" r="3.6"/><rect class="fechadura" x="9" y="50" width="2.8" height="8" rx="0.6"/></svg>`);
-/** Símbolo + a palavra "prumo" em minúsculas (Gabarito 700, tinta). */
+/** Símbolo + a palavra "prumo" em minúsculas (Gabarito 700, tinta). No computador, a do topo das abas some (o trilho já tem a marca). */
 export const marca = () => h`<span class="marca-prumo">${simbolo()}<span>prumo</span></span>`;
-/** Link para Ajustes, escrito (o Prumo quase não tem ícones). */
-export const linkAjustes = () => h`<a class="link" href="#/ajustes">Ajustes</a>`;
 
 /* ---------------- Risquinhos: dias estudados de cinco em cinco ---------------- */
 // o desenho sai do número e é sempre igual para o mesmo número; dois "jeitos de mão" que se alternam por grupo
@@ -79,10 +77,26 @@ export function visto(v, { novo = false } = {}) {
   </div></div>`;
 }
 
+/* ---------------- Troféu da Prova do caderno ---------------- */
+// taça em traço (24 px, como os ícones das abas): copo, alças, haste e base
+const TACA = '<svg class="pr-trofeu-taca" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h10v5a5 5 0 0 1-10 0z"/><path d="M7 5.5H4.5v1.2a3.3 3.3 0 0 0 3 3.3M17 5.5h2.5v1.2a3.3 3.3 0 0 1-3 3.3"/><path d="M12 13.5v3.5M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg>';
+/** Troféu: o mesmo carimbo do visto (roxo, com falhas de tinta; a única cor de conquista), com a taça,
+ *  o nome do caderno e o dia em que a Prova foi vencida. t = { nome, dia: 'aaaa-mm-dd' } do núcleo. */
+export function trofeu(t, { novo = false } = {}) {
+  if (!t || !t.dia) return '';
+  const data = String(t.dia).split('-').reverse().join('/');
+  return h`<div class="pr-visto-lugar"><div class="pr-visto pr-trofeu ${novo && !reduzido() ? 'is-novo' : ''}" role="img" aria-label="${`Troféu da Prova do caderno: ${t.nome}, ${data}`}">
+    ${cru(TACA)}
+    <span class="pr-trofeu-palavra" aria-hidden="true">Troféu</span>
+    <span class="pr-visto-obs" aria-hidden="true">${t.nome}</span>
+    <span class="pr-visto-data" aria-hidden="true">${data}</span>
+  </div></div>`;
+}
+
 /* ---------------- nível do capítulo: régua curta de 5 passos com o nome ao lado ---------------- */
 /** cheios: 0 a 5; de: quantos já estavam cheios (os novos enchem em 180 ms se animar; nunca anima perda). */
 export function nivel({ cheios = 0, de = cheios, animar = false, nome } = {}) {
-  const n = nome || (cheios ? (cheios >= 5 ? 'nível 5 de 5: dominado' : `nível ${cheios} de 5`) : null);   // o núcleo manda o rótulo; isto é só a reserva
+  const n = nome || (cheios ? `nível ${Math.min(5, cheios)} de 5` : null);   // o núcleo manda o rótulo; isto é só a reserva
   const segs = [0, 1, 2, 3, 4].map(i => `<i class="${i < cheios ? 'cheio' : ''}${animar && !reduzido() && i >= de && i < cheios ? ' novo' : ''}"></i>`).join('');
   return h`<span class="linha-nivel"><span class="nivel" role="img" aria-label="${n ? n.charAt(0).toUpperCase() + n.slice(1) : 'Ainda não começou'}">${cru(segs)}</span>${n ? h`<span class="nivel-nome">${n}</span>` : ''}</span>`;
 }
@@ -98,25 +112,30 @@ const TRACOS = (() => {
   }
   return l.join('');
 })();
-/** Régua da missão: anda pelo que foi feito, nunca por tempo. t = topo do núcleo (passo, progresso, legenda). */
-export function regua(t) {
+/**
+ * Régua da missão: anda pelo que foi feito, nunca por tempo. t = topo do núcleo (passo, progresso, legenda).
+ * semPasso: no tópico de prática a trilha já diz onde o aluno está; a legenda fica só com o que falta.
+ */
+export function regua(t, { semPasso = false } = {}) {
   if (!t || !t.passo) return '';
   const total = Math.max(1, t.passo.total), feitos = Math.max(0, Math.min(total, Math.round((t.progresso || 0) * total)));
   const pct = ((feitos / total) * 100).toFixed(2);
   const lg = t.legenda || {};
   const marcas = total <= 20 ? cru(Array.from({ length: total }, () => '<span></span>').join('')) : '';
+  const legenda = semPasso ? (lg.falta ? h`<div class="pr-regua-legenda"><span>${lg.falta}</span></div>` : '')
+    : lg.passo ? h`<div class="pr-regua-legenda"><span>${lg.passo}</span>${lg.falta ? h`<span>${lg.falta}</span>` : ''}</div>` : '';
   return h`<div class="pr-regua">
-    <div class="pr-regua-barra" style="--feito:${pct}%;--passos:${total <= 20 ? total : 1}" role="progressbar" aria-label="Passos da missão" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${feitos}" aria-valuetext="${lg.passo || ''}">
+    <div class="pr-regua-barra" style="--feito:${pct}%;--passos:${total <= 20 ? total : 1}" role="progressbar" aria-label="Passos da missão" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${feitos}" aria-valuetext="${[lg.passo, lg.falta].filter(Boolean).join(', ')}">
       <span class="pr-regua-cheio"></span>
       <span class="pr-regua-tracos" aria-hidden="true"><svg preserveAspectRatio="none">${cru(TRACOS)}</svg></span>
       <span class="pr-regua-marcas" aria-hidden="true">${marcas}</span>
     </div>
-    ${lg.passo ? h`<div class="pr-regua-legenda"><span>${lg.passo}</span>${lg.falta ? h`<span>${lg.falta}</span>` : ''}</div>` : ''}
+    ${legenda}
   </div>`;
 }
 
 /* ---------------- missão: topo e medidor ---------------- */
-/** Medidor de duas casas (c.3): 1ª = um acerto seguido; 2ª = acerto em questão de aplicar. */
+/** Medidor de duas casas (c.3): o que cada casa conta vem do núcleo (md.descricoes). */
 export function medidor(md) {
   if (!md) return '';
   const desc = md.descricoes || ['um acerto seguido', 'acerto em questão de aplicar'];
@@ -126,15 +145,19 @@ export function medidor(md) {
   </div>`;
 }
 /**
- * Topo da missão: a etapa e "Encerrar"; a Régua (passo N de M e o que falta); o medidor nos passos que contam.
- * A regra da rodada aparece uma vez, no início.
+ * Topo da missão: a etapa e "Encerrar"; no tópico de prática, a trilha logo abaixo (sempre no mesmo lugar);
+ * a Régua (passo N de M e o que falta) e o medidor nos passos que contam. No tópico, a régua só aparece
+ * na etapa Questões. A regra da rodada aparece uma vez, no início.
+ * trilha: { fase, livre } (ver trilha()); rotuloDaTela: o título da tela (a etapa some se ele já a diz).
  */
-export function topo(t, { medidor: md, encerrar = 'encerrar', semRegra = false, rotuloDaTela = null } = {}) {
+export function topo(t, { medidor: md, encerrar = 'encerrar', semRegra = false, rotuloDaTela = null, trilha: tr = null } = {}) {
   if (!t) return '';
   const m = md === undefined ? t.medidor : md;
   const verRegra = t.regra && !t.regra.mostrarAgora && !semRegra;
-  const etapa = rotuloDaTela && String(t.etapa).toLowerCase() === String(rotuloDaTela).toLowerCase() ? '' : t.etapa;
-  return h`<header class="topo">
+  const etapa = rotuloDaTela && t.etapa && String(rotuloDaTela).toLowerCase().startsWith(String(t.etapa).toLowerCase()) ? '' : t.etapa;
+  const comTrilha = !!(tr && tr.fase);
+  const comRegua = !comTrilha || tr.fase === 'questoes';
+  return h`<header class="topo ${comTrilha ? 'topo-topico' : ''}">
     <div class="topo-linha">
       <p class="topo-etapa">${etapa}</p>
       <div class="topo-acoes">
@@ -142,8 +165,11 @@ export function topo(t, { medidor: md, encerrar = 'encerrar', semRegra = false, 
         ${encerrar ? h`<button type="button" class="link" data-folha="${encerrar}">${t.encerrar || 'Encerrar'}</button>` : ''}
       </div>
     </div>
-    ${regua(t)}
-    ${m ? h`<div class="topo-medidor">${medidor(m)}</div>` : ''}
+    ${comTrilha ? trilha(tr.fase, { livre: tr.livre }) : ''}
+    ${comRegua || m ? h`<div class="topo-progresso">
+      ${comRegua ? regua(t, { semPasso: comTrilha }) : ''}
+      ${m ? h`<div class="topo-medidor">${medidor(m)}</div>` : ''}
+    </div>` : ''}
   </header>
   ${t.regra && t.regra.mostrarAgora && !semRegra ? h`<p class="regra-linha">${t.regra.texto}</p>` : ''}`;
 }
@@ -266,9 +292,12 @@ export function animarContinuar(raiz) {
  */
 export function prepararFiguras(raiz, { aoAmpliar, textoFalha = 'A imagem não carregou; a descrição está abaixo.' } = {}) {
   const alvos = raiz.querySelectorAll('.teoria-figura svg, .enunciado img, .alt-texto img, .par-texto figure.grafico-equipe, .enunciado figure.grafico-equipe, .par-texto img');
-  alvos.forEach(el => {
+  // com mouse, "clique"; no toque, "toque"
+  const comMouse = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+  alvos.forEach((el, i) => {
     if (el.dataset.preparado) return;
     el.dataset.preparado = '1';
+    el.dataset.fig = String(i);   // a casca devolve o foco à figura quando a folha do zoom fecha
     if (el.tagName === 'IMG') {
       const falhou = () => {
         const p = document.createElement('div');
@@ -286,7 +315,7 @@ export function prepararFiguras(raiz, { aoAmpliar, textoFalha = 'A imagem não c
     if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Ampliar a figura');
     const dica = document.createElement('span');
     dica.className = 'ampliavel-dica';
-    dica.textContent = 'Toque para ampliar';
+    dica.textContent = comMouse ? 'Clique para ampliar' : 'Toque para ampliar';
     dica.setAttribute('aria-hidden', 'true');
     (el.tagName === 'IMG' && el.parentElement && el.parentElement.tagName === 'FIGURE' ? el.parentElement : el).insertAdjacentElement('afterend', dica);
     const abrir = e => { e.preventDefault(); aoAmpliar && aoAmpliar(el); };
@@ -294,37 +323,86 @@ export function prepararFiguras(raiz, { aoAmpliar, textoFalha = 'A imagem não c
     el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') abrir(e); });
   });
 }
+/** Zoom inicial da figura ampliada (1 = a largura da folha). No celular, a folha ocupa a tela inteira e a
+ *  figura abre com 1,5 vez a largura que tinha na página (no mínimo, a largura da tela), com rolagem;
+ *  no tablet e no computador, a largura da folha. */
+export function zoomInicial(el) {
+  const celular = !!(window.matchMedia && window.matchMedia('(max-width: 719.98px)').matches);
+  const w = el && el.getBoundingClientRect ? el.getBoundingClientRect().width : 0;
+  if (!celular || !w || !window.innerWidth) return 1;
+  return Math.round(Math.min(4, Math.max(1, (1.5 * w) / window.innerWidth)) * 100) / 100;
+}
+/** "Toque para ampliar": abre a folha do zoom com uma cópia limpa da figura (sem papel de botão nem dica). */
+export function ampliarFigura(ctx, el) {
+  const c = el.cloneNode(true);
+  ['role', 'tabindex', 'data-fig', 'data-preparado'].forEach(a => c.removeAttribute(a));
+  if (c.getAttribute('aria-label') === 'Ampliar a figura') c.removeAttribute('aria-label');
+  else if (c.tagName.toLowerCase() === 'svg' && c.getAttribute('aria-label')) c.setAttribute('role', 'img');   // a descrição da figura continua
+  c.classList.remove('ampliavel');
+  ctx.abrirFolha('zoom', { html: c.outerHTML, zoom: zoomInicial(el) }, el);
+}
+
 
 /* ---------------- Teoria de um tópico de prática: a apostila impressa ----------------
    A apostila tem cara própria (folha branca impressa, capa, sumário, caixas), diferente
-   do caderno pautado (o que é do aluno) e do caderno de prova (a questão do Enem). */
+   do caderno pautado (o que é do aluno) e do caderno de prova (a questão do Enem).
+   Cada seção tem id ("secao-N", o mesmo da âncora que o núcleo manda; "secao-cuidado" e
+   "secao-resumo" nos quadros do fim): o sumário leva até ela e "Rever a apostila" abre nela. */
 function livroDe(fontes) {
   const f = (fontes || []).find(x => /^Wikilivros, /.test(x.titulo));
   if (!f) return null;
   return f.titulo.replace(/^Wikilivros, /, '').split('/')[0];
 }
-/** t = teoria do núcleo: seções (parágrafos, figura, tabela, quadro "No Enem", exemplos), armadilhas e resumo. */
-export function teoria(t, { tituloComoH1 = true } = {}) {
+const idSecao = n => `secao-${n}`;
+/** Âncora de seção vinda do núcleo (3, "3" ou "secao-3") → id do elemento na apostila. */
+export function idDaAncora(a) {
+  if (a == null || a === '') return null;
+  if (typeof a === 'object') return idDaAncora(a.id != null ? a.id : a.n);
+  return /^\d+$/.test(String(a)) ? idSecao(a) : String(a);
+}
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+
+/**
+ * t = teoria do núcleo: seções (parágrafos, figura, tabela, quadro "No Enem", exemplos), armadilhas e resumo.
+ * naFolha: dentro da folha "Rever a apostila" (sem capa: o título já está na folha; uma coluna em qualquer tela).
+ * ancora/grifar: a seção que a questão cobrou ganha o marca-texto no título.
+ */
+export function teoria(t, { tituloComoH1 = true, naFolha = false, ancora = null, grifar = false } = {}) {
   if (!t) return '';
-  const T = tituloComoH1 ? h`<h1 class="pagina-titulo apostila-titulo" id="pg-titulo" tabindex="-1" data-foco-inicial>${t.titulo}</h1>` : h`<h2 class="pagina-titulo apostila-titulo" id="pg-titulo">${t.titulo}</h2>`;
+  const secoes = t.secoes || [];
+  const alvo = idDaAncora(ancora);
   const livro = livroDe(t.fontes);
-  const nEx = (t.secoes || []).reduce((s, x) => s + (x.exemplos || []).length, 0);
-  const palavras = (t.secoes || []).reduce((s, x) => s + (x.paragrafos || []).join(' ').split(/\s+/).length, 0);
-  const min = Math.max(5, Math.round(palavras / 140 + nEx * 1.5));
+  const nEx = secoes.reduce((s, x) => s + (x.exemplos || []).length, 0);
+  // o núcleo manda o tempo (o mesmo da missão); a conta daqui é só a reserva, com a mesma regra
+  const min = Number.isFinite(t.minutos) ? t.minutos
+    : Math.max(5, Math.round(secoes.reduce((s, x) => s + (x.paragrafos || []).join(' ').split(/\s+/).length, 0) / 140 + nEx * 1.5));
   const materia = String(t.cabeco || '').replace(/: teoria$/, '');
-  return h`<article class="pagina-livro teoria apostila" aria-labelledby="pg-titulo">
-    <header class="apostila-capa">
-      <p class="apostila-selo"><span>Apostila</span>${materia ? h` · ${materia}` : ''}</p>
+  const temCuidado = !!(t.armadilhas && t.armadilhas.length), temResumo = !!(t.resumo && t.resumo.length);
+  const itens = [
+    ...secoes.map(sc => ({ id: idSecao(sc.n), n: sc.n, titulo: sc.titulo })),
+    ...(temCuidado ? [{ id: 'secao-cuidado', titulo: 'Cuidado: erros comuns' }] : []),
+    ...(temResumo ? [{ id: 'secao-resumo', titulo: 'Resumo do tópico' }] : []),
+  ];
+  const T = tituloComoH1 ? h`<h1 class="pagina-titulo apostila-titulo" id="pg-titulo" tabindex="-1" data-foco-inicial>${t.titulo}</h1>` : h`<h2 class="pagina-titulo apostila-titulo" id="pg-titulo">${t.titulo}</h2>`;
+  const tituloSecao = (id, conteudo) => (grifar && alvo === id ? h`<span class="marca-texto">${conteudo}</span>` : conteudo);
+  // o número da seção fica à parte do título (no sumário e na seção), em Mono
+  const sumario = itens.length > 1 ? h`<nav class="apostila-sumario" aria-label="Sumário da apostila">
+      <button type="button" class="sumario-abrir" data-acao="sumarioAbrir" aria-expanded="false" aria-controls="sumario-lista">Sumário: ${plural(secoes.length, 'seção', 'seções')}</button>
+      <p class="rotulo sumario-rotulo">Neste tópico</p>
+      <ol class="sumario-lista" id="sumario-lista">${cada(itens, it => h`<li><button type="button" class="sumario-item" data-acao="irSecao" data-arg="${it.id}">${it.n ? h`<span class="sumario-n" aria-hidden="true">${it.n}</span>` : h`<span class="sumario-n" aria-hidden="true"></span>`}<span>${it.titulo}</span></button></li>`)}</ol>
+    </nav>` : '';
+  return h`<article class="pagina-livro teoria apostila ${naFolha ? 'apostila-folha' : 'apostila-larga'}" ${naFolha ? cru(`aria-label="${esc(t.titulo)}"`) : cru('aria-labelledby="pg-titulo"')}>
+    ${naFolha ? '' : h`<header class="apostila-capa">
+      <p class="apostila-selo">Apostila${materia ? h` de ${materia}` : ''}</p>
       ${T}
       ${livro ? h`<p class="apostila-base">Adaptada do livro <cite>${livro}</cite>, do Wikilivros</p>` : ''}
-      <p class="apostila-dados">${(t.secoes || []).length} seções · ${nEx} exemplos resolvidos · cerca de ${min} min</p>
-    </header>
-    ${(t.secoes || []).length > 1 ? h`<nav class="apostila-sumario" aria-label="Sumário"><p class="rotulo">Neste capítulo</p>
-      <ol>${cada(t.secoes, sc => h`<li>${sc.titulo}</li>`)}</ol></nav>` : ''}
+      <p class="apostila-dados">${plural(secoes.length, 'seção', 'seções')}, ${plural(nEx, 'exemplo resolvido', 'exemplos resolvidos')}, cerca de ${min}${cru('&nbsp;')}min</p>
+    </header>`}
+    ${sumario}
     <div class="apostila-corpo">
       ${t.porQueCai ? h`<p class="apostila-abre"><strong>Por que cai no Enem.</strong> ${t.porQueCai}</p>` : ''}
-      ${cada(t.secoes, sc => h`<section class="teoria-secao">
-        <h2 class="teoria-sub"><span class="teoria-n" aria-hidden="true">${sc.n}</span><span>${sc.titulo}</span></h2>
+      ${cada(secoes, sc => h`<section class="teoria-secao ${alvo === idSecao(sc.n) ? 'ancora' : ''}" id="${idSecao(sc.n)}" aria-labelledby="${idSecao(sc.n)}-t">
+        <h2 class="teoria-sub" id="${idSecao(sc.n)}-t" tabindex="-1"><span class="teoria-n" aria-hidden="true">${sc.n}</span><span>${tituloSecao(idSecao(sc.n), sc.titulo)}</span></h2>
         ${cada(sc.paragrafos, p => h`<p>${p}</p>`)}
         ${sc.figura ? h`<figure class="teoria-figura" role="group" aria-label="${sc.figura.alt}">${cru(sc.figura.svg)}${sc.figura.legenda ? h`<figcaption>${sc.figura.legenda}</figcaption>` : ''}</figure>` : ''}
         ${sc.tabela ? h`<div class="teoria-tabela-rolagem"><table class="teoria-tabela">${sc.tabela.legenda ? h`<caption>${sc.tabela.legenda}</caption>` : ''}
@@ -336,10 +414,10 @@ export function teoria(t, { tituloComoH1 = true } = {}) {
           <p class="exemplo-res">Resolução</p>
           <ol class="exemplo-passos">${cada(ex.resolucao, r => h`<li>${r}</li>`)}</ol>
         </div>`)}
-        ${sc.atencao ? h`<aside class="apostila-quadro quadro-enem teoria-enem"><p class="quadro-rotulo">${sc.atencao.rotulo}</p><p>${sc.atencao.texto}</p></aside>` : ''}
+        ${sc.atencao ? h`<aside class="apostila-quadro quadro-enem teoria-enem"><p class="quadro-rotulo"><span class="grifo">${sc.atencao.rotulo}</span></p><p>${sc.atencao.texto}</p></aside>` : ''}
       </section>`)}
-      ${t.armadilhas && t.armadilhas.length ? h`<aside class="apostila-quadro quadro-cuidado teoria-secao"><h2 class="quadro-rotulo">Cuidado: erros comuns</h2><ul class="teoria-lista">${cada(t.armadilhas, a => h`<li>${a}</li>`)}</ul></aside>` : ''}
-      ${t.resumo && t.resumo.length ? h`<section class="apostila-quadro quadro-resumo teoria-secao teoria-resumo"><h2 class="quadro-rotulo">Resumo do capítulo</h2><ul class="teoria-lista">${cada(t.resumo, a => h`<li>${a}</li>`)}</ul></section>` : ''}
+      ${temCuidado ? h`<aside class="apostila-quadro quadro-cuidado teoria-secao ${alvo === 'secao-cuidado' ? 'ancora' : ''}" id="secao-cuidado" aria-labelledby="secao-cuidado-t"><h2 class="quadro-rotulo" id="secao-cuidado-t" tabindex="-1"><span class="grifo">${tituloSecao('secao-cuidado', 'Cuidado: erros comuns')}</span></h2><ul class="teoria-lista">${cada(t.armadilhas, a => h`<li>${a}</li>`)}</ul></aside>` : ''}
+      ${temResumo ? h`<section class="apostila-quadro quadro-resumo teoria-secao teoria-resumo ${alvo === 'secao-resumo' ? 'ancora' : ''}" id="secao-resumo" aria-labelledby="secao-resumo-t"><h2 class="quadro-rotulo" id="secao-resumo-t" tabindex="-1">${tituloSecao('secao-resumo', 'Resumo do tópico')}</h2><ul class="teoria-lista">${cada(t.resumo, a => h`<li>${a}</li>`)}</ul></section>` : ''}
     </div>
     ${t.habilidades && t.habilidades.length ? h`<section class="teoria-rodape"><p class="rotulo">Habilidades do Enem</p><ul class="teoria-lista pequeno">${cada(t.habilidades, x => h`<li>${x.codigo}: ${x.descricao}</li>`)}</ul></section>` : ''}
     ${t.fontes && t.fontes.length ? h`<section class="teoria-rodape"><p class="rotulo">Fontes</p>
@@ -349,23 +427,87 @@ export function teoria(t, { tituloComoH1 = true } = {}) {
   </article>`;
 }
 
-/* ---------------- Trilha do tópico: onde o aluno está (Aquecer → Apostila → Questões → Visto) ---------------- */
-const ETAPAS = [['aquecer', 'Aquecer'], ['apostila', 'Apostila'], ['questoes', 'Questões'], ['visto', 'Visto']];
-export function trilha(fase) {
-  if (!fase) return '';
-  const i = ETAPAS.findIndex(e => e[0] === fase);
-  return h`<ol class="trilha" aria-label="Etapas do tópico">${cada(ETAPAS, (e, k) => h`<li class="${k < i ? 'feita' : k === i ? 'atual' : ''}" aria-current="${k === i ? 'step' : 'false'}"><span class="trilha-n">${k < i ? '✓' : k + 1}</span>${e[1]}</li>`)}</ol>`;
+/**
+ * Acompanha a leitura: o item do sumário da seção que está no alto da tela ganha aria-current.
+ * Devolve a limpeza (desliga o observador). Na folha, o rolamento é o da folha.
+ */
+export function acompanharSumario(raiz) {
+  const nav = raiz && raiz.querySelector('.apostila-sumario');
+  if (!nav) return () => {};
+  const botoes = new Map([...nav.querySelectorAll('[data-acao="irSecao"]')].map(b => [b.dataset.arg, b]));
+  const secoes = [...botoes.keys()].map(id => document.getElementById(id)).filter(Boolean);
+  const caixa = nav.closest('.folha-corpo'), alvo = caixa || window;
+  let pendente = false;
+  // a seção atual é a última cujo começo já passou do primeiro terço da tela (ou da folha)
+  const marcar = () => {
+    pendente = false;
+    const topo = caixa ? caixa.getBoundingClientRect().top : 0, alt = caixa ? caixa.clientHeight : window.innerHeight;
+    let atual = null;
+    for (const s of secoes) { if (s.getBoundingClientRect().top - topo <= alt * 0.3) atual = s; else break; }
+    botoes.forEach((b, id) => { if (atual && id === atual.id) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+  };
+  const aoRolar = () => { if (!pendente) { pendente = true; requestAnimationFrame(marcar); } };
+  alvo.addEventListener('scroll', aoRolar, { passive: true });
+  marcar();
+  return () => alvo.removeEventListener('scroll', aoRolar);
 }
-/** Explicação do tópico (primeira vez em destaque; depois, recolhida). */
-export const COMO_FUNCIONA = [
-  ['Aquecer', 'Uma questão antes de ler. Chute se não souber: a ideia é ler a apostila já com a dúvida na cabeça. A resposta aparece depois da leitura.'],
-  ['Apostila', 'A teoria do tópico, com exemplos resolvidos, figuras e tabelas. Se você já domina, pode pular.'],
-  ['Questões do Enem', 'Questões de provas reais. Acertou 2 seguidas, o tópico sobe de nível. Errou, ele desce um nível e a explicação mostra o que faltou.'],
-  ['Visto do dia', 'Terminou, ganhou o visto e o dia conta. O Prumo marca as revisões nas datas certas até a prova.'],
+/** Leva a vista até uma seção da apostila (na página ou dentro da folha) e põe o foco no título dela. */
+export function irParaSecao(id, { suave = true } = {}) {
+  const alvo = id && document.getElementById(id);
+  if (!alvo) return false;
+  alvo.scrollIntoView({ block: 'start', behavior: suave && !reduzido() ? 'smooth' : 'auto' });
+  const t = alvo.querySelector('h2');
+  if (t) t.focus({ preventScroll: true });
+  return true;
+}
+
+/* ---------------- Trilha do tópico: onde o aluno está (Aquecer → Apostila → Questões → Visto) ----------------
+   Não é botão nem aba: número e rótulo, a etapa atual sublinhada em tinta, as feitas com ✓.
+   No estudo por conta própria não há visto: a última etapa é "Registro". fase 'fim' = tudo feito (Pronto). */
+const ETAPAS = [['aquecer', 'Aquecer'], ['apostila', 'Apostila'], ['questoes', 'Questões'], ['visto', 'Visto']];
+export function trilha(fase, { livre = false } = {}) {
+  if (!fase) return '';
+  const etapas = livre ? [...ETAPAS.slice(0, 3), ['visto', 'Registro']] : ETAPAS;
+  // o núcleo chama a última etapa do estudo livre de 'registro': é a mesma casa do 'visto'
+  const chave = fase === 'registro' ? 'visto' : fase;
+  const i = chave === 'fim' ? etapas.length : etapas.findIndex(e => e[0] === chave);
+  const estado = k => (k < i ? 'feita' : k === i ? 'atual' : 'depois');
+  return h`<ol class="trilha" aria-label="Etapas do tópico">${cada(etapas, (e, k) => h`<li class="${estado(k)}" ${k === i ? cru('aria-current="step"') : ''}><span class="trilha-passo"><span class="trilha-n" aria-hidden="true">${k < i ? '✓' : k + 1}</span><span class="trilha-rotulo">${e[1]}</span></span>${k < i ? h`<span class="so-leitor"> (feita)</span>` : ''}</li>`)}</ol>`;
+}
+/**
+ * "Como funciona um tópico" (primeira vez aberta, logo depois do botão; depois, recolhida).
+ * itens: [{ titulo, texto }] do núcleo (topicoPagina().comoFunciona, com a regra do nível fiel ao motor).
+ * A lista daqui é só a reserva, com o mesmo texto, para um núcleo que ainda não a mande.
+ */
+const COMO_FUNCIONA = [
+  { titulo: 'Aquecer', texto: 'Uma questão antes de ler. Chute se não souber: a ideia é ler a apostila já com a dúvida na cabeça. A resposta aparece depois da leitura.' },
+  { titulo: 'Apostila', texto: 'A teoria do tópico, com exemplos resolvidos, figuras e tabelas. Se você já domina, pode pular.' },
+  { titulo: 'Questões do Enem', texto: 'Questões de provas reais. Acerte 2 seguidas e o tópico entra no nível 1 de 5. Errou? A contagem recomeça e a explicação mostra o que faltou.' },
+  { titulo: 'Visto do dia', texto: 'Terminou, ganhou o visto e o dia conta. Depois, o Prumo marca as revisões até a prova: cada revisão certa sobe um nível, e errar uma revisão desce um.' },
 ];
-export function comoFunciona({ aberto = false } = {}) {
-  const lista = h`<ol class="como-funciona">${cada(COMO_FUNCIONA, (x, k) => h`<li><span class="trilha-n">${k + 1}</span><div><strong>${x[0]}</strong><p>${x[1]}</p></div></li>`)}</ol>`;
+export function comoFunciona({ aberto = false, itens = COMO_FUNCIONA } = {}) {
+  if (!itens || !itens.length) return '';
+  const lista = h`<ol class="como-funciona">${cada(itens, (x, k) => h`<li><span class="cf-n" aria-hidden="true">${k + 1}</span><div><strong>${x.titulo}</strong><p>${x.texto}</p></div></li>`)}</ol>`;
   return aberto
     ? h`<section class="secao como-funciona-caixa" aria-labelledby="cf-t"><h2 class="titulo-pequeno" id="cf-t">Como funciona um tópico</h2>${lista}</section>`
     : h`<details class="secao como-funciona-caixa"><summary class="titulo-pequeno">Como funciona um tópico</summary>${lista}</details>`;
 }
+
+/* ---------------- ações da apostila (sumário) ---------------- */
+registrar({
+  acoes: {
+    /** Item do sumário: leva até a seção (não usa href="#…": o roteador usa o hash). */
+    irSecao(ctx, el) {
+      const nav = el.closest('.apostila-sumario');
+      if (nav && nav.classList.contains('aberto')) { nav.classList.remove('aberto'); const b = nav.querySelector('.sumario-abrir'); if (b) b.setAttribute('aria-expanded', 'false'); }
+      irParaSecao(el.dataset.arg);
+    },
+    /** No celular, o sumário fica recolhido atrás de "Sumário: N seções". */
+    sumarioAbrir(ctx, el) {
+      const nav = el.closest('.apostila-sumario');
+      if (!nav) return;
+      const aberto = nav.classList.toggle('aberto');
+      el.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    },
+  },
+});

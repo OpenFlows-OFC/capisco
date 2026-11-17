@@ -1,6 +1,6 @@
 // Teoria do tópico de prática mat-estatistica.
 // Adaptação da equipe Prumo (CC BY-SA 4.0) a partir do Wikilivros: "Matemática elementar/Estatística" e
-// "Matemática elementar/Médias" (CC BY-SA 3.0). Seções 4, 5 e 6 (tabelas de frequência e gráficos) são texto original da equipe.
+// "Matemática elementar/Médias" (CC BY-SA 3.0). Seções 4 a 7 (tabelas de frequência e gráficos) são texto original da equipe.
 export const teoria = {
   id: 'mat-estatistica',
   titulo: 'Estatística: média, mediana, moda e gráficos',
@@ -37,13 +37,13 @@ export const teoria = {
           ],
         },
         {
-          enunciado: 'Um time de vôlei tem 12 jogadoras com altura média de 1,78 m. A técnica quer média de pelo menos 1,82 m. Ela vai trocar as três mais baixas (1,68 m, 1,70 m e 1,72 m) e já contratou uma jogadora de 1,90 m. Qual deve ser a altura média mínima das outras duas contratadas?',
+          enunciado: 'Um time de vôlei tem 12 jogadoras com altura média de 1,78 m. A técnica quer média de pelo menos 1,82 m. Ela vai trocar as três mais baixas (1,68 m, 1,70 m e 1,72 m) e já contratou uma jogadora de 1,90 m. Qual deve ser a altura média mínima das outras duas contratadas?',
           resolucao: [
-            'Soma de hoje: 12 · 1,78 = 21,36 m. Soma desejada: 12 · 1,82 = 21,84 m.',
-            'Saem 1,68 + 1,70 + 1,72 = 5,10 m. Ficam 21,36 − 5,10 = 16,26 m para 9 jogadoras.',
-            'Com a nova jogadora: 16,26 + 1,90 = 18,16 m.',
-            'As outras duas precisam somar 21,84 − 18,16 = 3,68 m, ou seja, média de 3,68 ÷ 2 = 1,84 m.',
-            'Resposta: 1,84 m.',
+            'Soma de hoje: 12 · 1,78 = 21,36 m. Soma desejada: 12 · 1,82 = 21,84 m.',
+            'Saem 1,68 + 1,70 + 1,72 = 5,10 m. Ficam 21,36 − 5,10 = 16,26 m para 9 jogadoras.',
+            'Com a nova jogadora: 16,26 + 1,90 = 18,16 m.',
+            'As outras duas precisam somar 21,84 − 18,16 = 3,68 m, ou seja, média de 3,68 ÷ 2 = 1,84 m.',
+            'Resposta: 1,84 m.',
           ],
         },
       ],
@@ -98,26 +98,26 @@ export const teoria = {
       ],
       exemplos: [
         {
-          enunciado: 'As temperaturas máximas de 10 dias em Cuiabá foram 31, 28, 33, 29, 35, 28, 30, 32, 27 e 34 °C. Calcule a mediana, a moda e a média.',
+          enunciado: 'As temperaturas máximas de 10 dias em Cuiabá foram 31, 28, 33, 29, 35, 28, 30, 32, 27 e 34 °C. Calcule a mediana, a moda e a média.',
           resolucao: [
             'Em ordem: 27, 28, 28, 29, 30, 31, 32, 33, 34, 35.',
             'São 10 dados, quantidade par: os centrais são o 5º (30) e o 6º (31). Mediana: (30 + 31) ÷ 2 = 30,5.',
             'Moda: 28, o único valor que aparece duas vezes.',
             'Média: soma 307 ÷ 10 = 30,7.',
-            'Resposta: mediana 30,5 °C; moda 28 °C; média 30,7 °C.',
+            'Resposta: mediana 30,5 °C; moda 28 °C; média 30,7 °C.',
           ],
         },
         {
-          enunciado: 'Os 5 funcionários de uma pequena empresa ganham R$ 1.500, R$ 1.600, R$ 1.700, R$ 1.800 e R$ 12.000. Qual medida representa melhor o salário típico?',
+          enunciado: 'Os 5 funcionários de uma pequena empresa ganham R$ 1 500, R$ 1 600, R$ 1 700, R$ 1 800 e R$ 12 000. Qual medida representa melhor o salário típico?',
           resolucao: [
-            'Média: 18.600 ÷ 5 = 3.720 reais.',
-            'Mediana: os dados já estão em ordem, e o 3º termo é 1.700 reais.',
-            'Quatro dos cinco ganham menos que a média, que foi puxada pelo salário de 12.000.',
-            'Resposta: a mediana, R$ 1.700.',
+            'Média: 18 600 ÷ 5 = 3 720 reais.',
+            'Mediana: os dados já estão em ordem, e o 3º termo é 1 700 reais.',
+            'Quatro dos cinco ganham menos que a média, que foi puxada pelo salário de 12 000.',
+            'Resposta: a mediana, R$ 1 700.',
           ],
         },
       ],
-      atencao: 'Como o Enem cobra isso: o enunciado pode dizer que "a mediana representa o valor típico". As alternativas trazem o termo do meio sem ordenar e a média no lugar da mediana.',
+      atencao: 'Como o Enem cobra isso: o enunciado pode dizer que “a mediana representa o valor típico”. As alternativas trazem o termo do meio sem ordenar e a média no lugar da mediana.',
     },
     {
       titulo: 'Mediana em tabelas de frequência',
@@ -251,6 +251,6 @@ export const teoria = {
     { titulo: 'Wikilivros, Matemática elementar/Médias', url: 'https://pt.wikibooks.org/w/index.php?oldid=212833', revisao: '212833 (07/03/2011)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
     { titulo: 'INEP, Matriz de Referência do Enem (habilidades H27, H29 e H30)', url: 'https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/matriz-de-referencia', licenca: 'reprodução permitida com citação da fonte', adaptado: false },
   ],
-  adaptacao: 'Seções 1 a 3 adaptadas do Wikilivros: Matemática elementar/Estatística e Matemática elementar/Médias (autores: ver o histórico de cada página), CC BY-SA 3.0. Adaptação da equipe Prumo em CC BY-SA 4.0. Alterações: linguagem simplificada, regra da mediana para quantidade par acrescentada, exemplos e tabelas novos. As seções sobre tabelas de frequência e gráficos são texto original da equipe, pois o capítulo do Wikilivros não trata desses assuntos.',
+  adaptacao: 'Seções 1 a 3 adaptadas do Wikilivros: Matemática elementar/Estatística e Matemática elementar/Médias (autores: ver o histórico de cada página), CC BY-SA 3.0. Adaptação da equipe Prumo em CC BY-SA 4.0. Alterações: linguagem simplificada, regra da mediana para quantidade par acrescentada, exemplos e tabelas novos. As seções 4 a 7 (tabelas de frequência e gráficos) são texto original da equipe Prumo.',
   autoria: { equipe: 'Prumo', ia: 'Claude Opus 5.5 (Anthropic), via Claude Code', revisao: 'pendente' },
 };

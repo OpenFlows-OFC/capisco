@@ -10,7 +10,7 @@
      não (mão finita, fim mostrado); ganho de quem? do aluno.
    ========================================================= */
 import * as R from './relogio.js';
-import { intervalos, NIVEL } from './motor.js';
+import { intervalos, NIVEL, dataEfetiva, revisaoAtrasada } from './motor.js';
 
 export const MAO_MAX = 8;
 export const MIN_POR_CARD = 0.4; // estimativa da equipe: 5 cards ≈ 2 min
@@ -78,7 +78,8 @@ export function resumoMao(st, mao, d) {
   const ids = Object.keys(mao.respostas);
   const lembrados = ids.filter(id => mao.respostas[id] === 'lembrei').length;
   const voltam = ids.filter(id => mao.respostas[id] === 'ainda');
-  const datas = [...new Set(voltam.map(id => st.cards[id] && st.cards[id].proxima).filter(Boolean))].sort();
+  // a data em que o cartão volta de fato: o primeiro dia de estudo igual ou depois da marcada
+  const datas = [...new Set(voltam.map(id => st.cards[id] && st.cards[id].proxima).filter(Boolean).map(x => dataEfetiva(st, x)))].sort();
   const n = ids.length;
   let txt = `Você marcou 'lembrei' em ${lembrados} de ${n} ${n === 1 ? 'cartão' : 'cartões'} (não muda o nível).`;
   if (voltam.length) txt += ` ${voltam.length === 1 ? 'O outro volta' : `Os outros ${voltam.length} voltam`} em ${datas.map(x => R.fmtCurta(x)).join(' e ')}.`;
@@ -98,7 +99,7 @@ export function cardsDoCaderno(st, pack, d) {
         noBaralho: !!e,
         caixa: e ? e.caixa : null, caixaNome: e ? `revisão ${Math.max(1, e.caixa || 1)} de 5` : null, caixaRotulo: e ? `revisão ${Math.max(1, e.caixa || 1)} de 5` : null,
         proxima: e ? e.proxima : null,
-        proximaTexto: e ? (e.proxima <= d ? (e.proxima < d ? `atrasado desde ${R.fmtCurta(e.proxima)}` : 'hoje') : R.fmtCurta(e.proxima)) : null,
+        proximaTexto: e ? (revisaoAtrasada(st, e.proxima, d) ? `atrasado desde ${R.fmtCurta(dataEfetiva(st, e.proxima))}` : dataEfetiva(st, e.proxima) <= d ? 'hoje' : R.fmtCurta(dataEfetiva(st, e.proxima))) : null,
       };
     });
     return {

@@ -22,7 +22,7 @@ test('prova já passada também usa 90 dias', () => {
 });
 test('níveis com os nomes do motor e pesos 2/3/4 com critério 6', () => {
   assert.equal(NIVEL.length, 6, 'NIVEL é só chave interna (0 a 5)');
-  assert.deepEqual([0, 1, 2, 3, 4, 5].map(rotuloNivel), ['ainda não começou', 'nível 1 de 5', 'nível 2 de 5', 'nível 3 de 5', 'nível 4 de 5', 'nível 5 de 5: dominado']);
+  assert.deepEqual([0, 1, 2, 3, 4, 5].map(rotuloNivel), ['ainda não começou', 'nível 1 de 5', 'nível 2 de 5', 'nível 3 de 5', 'nível 4 de 5', 'nível 5 de 5'], 'nível não tem nome, nem o 5');
   assert.deepEqual(P.pesos, { lembrar: 2, compreender: 3, aplicar: 4 });
   assert.equal(P.criterio, 6);
   assert.equal(P.teto, 8);

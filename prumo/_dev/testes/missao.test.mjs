@@ -26,12 +26,13 @@ for (const pk of await packs()) {
     n.despachar('TERMINEI_TRECHO');
     t = n.tela();
     assert.equal(t.vm.rotulo, 'Confira a p. 1');
-    assert.equal(t.vm.avisoPrimeiraChecagem, 'Isso fica só no seu celular. Ninguém da escola vê.');
+    assert.equal(t.vm.avisoPrimeiraChecagem, 'Isso fica só neste aparelho. Ninguém da escola vê.');
     responder(n, 'certa');
     t = n.tela();
     assert.equal(t.vm.titulo, 'Certa.');
     assert.deepEqual(t.vm.medidor.casas.map(c => c.cheia), [true, false]);
-    assert.equal(t.vm.medidor.texto, 'Para fechar: 2 certas seguidas, falta 1');
+    // R2-20: com a casa do acerto seguido cheia, o que falta é a questão do Enem (não "2 certas seguidas, falta 1")
+    assert.equal(t.vm.medidor.texto, 'Falta acertar uma questão do Enem');
     assert.equal(n.despachar('CONTINUAR'), false, 'intervalo deliberativo: Continuar só depois da pausa');
     continuar(n, rel);
     assert.equal(n.tela().vm.rotulo, 'Antes de ler a p. 2');
@@ -44,7 +45,9 @@ for (const pk of await packs()) {
     responder(n, 'certa');
     n.despachar('TERMINEI_TRECHO');
     assert.equal(n.tela().vm.rotulo, 'Confira a p. 2');
-    responder(n, 'certa'); continuar(n, rel);
+    responder(n, 'certa');
+    assert.equal(n.tela().vm.medidor.texto, 'Falta acertar uma questão do Enem', 'depois de 2 checagens certas seguidas, o medidor não diz "2 certas seguidas, falta 1"');
+    continuar(n, rel);
     t = n.tela();
     assert.equal(t.vm.rotulo, 'Questão do Enem');
     const q162 = passo(n).id;
@@ -89,12 +92,14 @@ for (const pk of await packs()) {
     assert.ok(t.vm.mudancas.every(x => !/ · /.test(x.texto)), 'resumo em frases, sem cadeia de pontos');
     assert.ok(t.vm.mudancas.some(x => x.texto === 'Você tentou antes de ler em todos os trechos cobrados.'));
     assert.equal(t.vm.nivelAnimado.para, 1);
-    assert.equal(t.vm.proxima.gancho, 'Amanhã você vê se acertou a pergunta de entrada da p. 2.');
+    assert.equal(t.vm.proxima.gancho, 'Amanhã você vê se acertou a pergunta antes da p. 2.');
     assert.ok(!('enem-2019-168' in n.st.vistos), 'a questão que sobrou fica inédita');
     n.despachar('FECHAR');
     t = n.tela();
     assert.equal(t.vm.estado, 'feito');
-    assert.equal(t.vm.feito.previa, 'Quinta, 19/11: você vê se acertou a pergunta de entrada da p. 2.');
+    // R2-19: "Próxima missão:" é a missão; o aviso da pergunta de antes vem como segunda frase dela
+    assert.match(t.vm.feito.previa, /^Quinta, 19\/11: capítulo .+ \(novo\) e revisão do capítulo Parte fixa e parte que varia\. Nela você vê se acertou a pergunta antes da p\. 2\.$/);
+    assert.equal(t.vm.feito.proxima.texto, t.vm.feito.previa, 'a tela não repete a missão na linha cinza');
   });
 
   test(`[${P}] g.8 · recarregar em cada estado da missão volta ao mesmo passo, sem registrar tentativa duas vezes`, () => {
@@ -207,7 +212,7 @@ for (const pk of await packs()) {
     assert.equal(n.conferirData(), true);
     const t = n.tela();
     assert.equal(t.nome, 'hoje');
-    assert.equal(t.vm.faixa, `Ontem ficou registrado até o passo ${passoN}.`);
+    assert.equal(t.vm.faixa, `Ontem você parou no passo ${passoN} de ${total}. O que fez ficou registrado; hoje a missão é nova.`);
     assert.equal(n.st.missao.dia, '2026-11-19');
     assert.equal(n.st.missao.iniciada, false);
     assert.ok(n.st.historico.some(h => h.dia === '2026-11-18' && h.parcial && h.viradaDeData));
@@ -275,25 +280,31 @@ for (const pk of await packs()) {
     jogar(n, rel, { parar: x => x.estado() === 'pergunta' && passo(x).t === 'revisao' && passo(x).cap === 'mat-fa.c1' });
     responder(n, 'errada');
     t = n.tela();
-    assert.equal(t.vm.revisao.texto, 'A revisão de Parte fixa e parte que varia volta para amanhã. Seus dias estudados e seu histórico continuam.');
+    // R2-18: a data é a do dia de estudo em que a revisão entra ("amanhã, qua 18/11" ou, na véspera da folga, "na segunda, 23/11")
+    const volta = t.vm.revisao.texto;
+    assert.match(volta, /^A revisão de Parte fixa e parte que varia volta (amanhã, \S+ \d\d\/\d\d|n[ao] \S+, \d\d\/\d\d)\. Seus dias estudados e seu histórico continuam\. O capítulo Parte fixa e parte que varia desceu para o nível 1 de 5\.$/);
     assert.equal(t.vm.revisao.nivel.animar, false); assert.equal(t.vm.som, null);
     assert.equal(n.st.topicos['mat-fa.c1'].caixa, 1);
     jogar(n, rel);
     const pronto = n.prontoPorHoje();
-    assert.ok(pronto.mudancas.some(x => x.texto === 'A revisão de Parte fixa e parte que varia volta para amanhã. Seus dias estudados e seu histórico continuam.'));
+    assert.ok(pronto.mudancas.some(x => x.texto === volta));
+    // R2-17: o "Por quê?" da próxima missão diz que a revisão volta pelo erro (não "vence em N dias" do nível novo)
+    assert.match(pronto.proxima.porque, /^Você errou a revisão de Parte fixa e parte que varia, e revisão errada volta no próximo dia de estudo: na \S+\.$/);
+    assert.ok(!/vence em \d+ dias?/.test(pronto.proxima.porque));
+    assert.match(n.sumario().capitulos[0].verARegra, /Você errou a última revisão, e ela volta no próximo dia de estudo/);
     n.despachar('FECHAR');
     assert.match(n.sumario().capitulos[0].estado, /^Voltou para o nível 1 de 5\. Próxima revisão: amanhã\.$/);
     for (const s of [...textos(pronto), ...textos(n.sumario()), ...textos(n.hoje())]) assert.ok(!/perdeu/i.test(s), s);
   });
 
-  test(`[${P}] só a pré-pergunta não conta como dia estudado ("Hoje ficou só a pergunta de entrada")`, () => {
+  test(`[${P}] só a pré-pergunta não conta como dia estudado ("Hoje ficou só a pergunta antes de ler")`, () => {
     const { n } = novo(pk.dados);
     n.despachar('COMECAR');
     responder(n, 'certa');
     n.despachar('CONFIRMAR_ENCERRAR');
     const v = n.prontoPorHoje();
-    assert.equal(v.vazio, 'Hoje ficou só a pergunta de entrada. Ela volta no próximo dia de estudo.');
-    assert.equal(v.naoContou, 'O dia não conta como estudado.');
+    assert.equal(v.vazio, 'Hoje ficou só a pergunta antes de ler. Ela volta no próximo dia de estudo.');
+    assert.equal(v.naoContou, 'O dia não conta como estudado: ele conta quando você responde uma checagem, questão ou revisão.');
     assert.deepEqual(n.st.dias, {});
   });
 
@@ -319,7 +330,8 @@ for (const pk of await packs()) {
     assert.equal(fim, 'fimDaRodada');
     const t = n.tela();
     assert.equal(t.vm.variante, 'venceu');
-    assert.match(t.vm.texto, /entrou no nível 1 de 5\. A primeira revisão fica para amanhã, sex 20\/11\.$/);
+    // a revisão marcada para sex 20/11 (folga no plano seg a qui) entra na segunda: o anúncio diz o dia real
+    assert.match(t.vm.texto, /entrou no nível 1 de 5\. A primeira revisão fica para segunda, 23\/11\.$/);
     assert.equal(t.vm.nivel.animar, true);
     assert.match(t.vm.cards, /^Os \d+ cartões do capítulo Ler o gráfico entraram no seu baralho\.$/);
     n.despachar('SEGUIR');
