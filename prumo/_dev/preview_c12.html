@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prévia do conteúdo · Caps. 1 e 2</title>
+<style>
+  :root { --fundo:#fff; --texto:#0B1B33; --foco:#2348C9; --fio:rgba(11,27,51,.12); }
+  @media (prefers-color-scheme: dark) { :root { --fundo:#14284A; --texto:#E6ECF7; --foco:#8FA8F5; --fio:rgba(230,236,247,.16); } }
+  body { margin:0; padding:16px; background:var(--fundo); color:var(--texto); font:16px/1.5 system-ui, sans-serif; max-width:720px; }
+  h2 { font-size:18px; margin:32px 0 8px; border-top:1px solid var(--fio); padding-top:16px; }
+  .v { border-top:1px solid var(--fio); padding:12px 0; }
+  .alt { margin:2px 0; } .certa { font-weight:700; color:var(--foco); }
+  .meta { font-size:12px; opacity:.7; }
+  table { border-collapse:collapse; } td, th { border-bottom:1px solid var(--fio); padding:4px 10px; }
+  figure { margin:12px 0; }
+</style>
+</head>
+<body>
+<p class="meta">Prévia de desenvolvimento (fora do app e do precache). Mostra o texto, as figuras e todas as variantes dos modelos da equipe.</p>
+<div id="saida"></div>
+<script type="module">
+  import { capitulos12 } from '../conteudo/mat-fa-c12.js';
+  import { materializar } from '../conteudo/gerador.js';
+  const out = [];
+  for (const c of capitulos12) {
+    out.push(`<h1>Cap. ${c.n} · ${c.titulo}</h1>`);
+    for (const pg of c.paginas) {
+      out.push(`<h2>p. ${pg.n} · ${pg.titulo}</h2>`);
+      for (const b of pg.blocos) for (const p of b.paragrafos)
+        out.push(`<p id="${p.id}"><b>§ ${p.n}</b> ${p.html}</p>${p.figura ? p.figura.html + `<p class="meta">${p.figura.legenda || ''}</p>` : ''}`);
+    }
+    for (const m of c.modelos) {
+      out.push(`<h2>${m.id}</h2>`);
+      for (const v of materializar(m))
+        out.push(`<div class="v" data-id="${v.id}"><div class="meta">${v.id} · ${v.uso} · gabarito ${v.gabarito}</div>${v.enunciado}`
+          + v.alternativas.map(a => `<div class="alt ${a.certa ? 'certa' : ''}">${a.letra}) ${a.texto}</div>`).join('') + `</div>`);
+    }
+  }
+  document.getElementById('saida').innerHTML = out.join('');
+  document.body.dataset.pronto = '1';
+</script>
+</body>
+</html>

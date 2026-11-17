@@ -1,5 +1,5 @@
 /* CAPISCO · service worker: guarda o jogo no aparelho para funcionar offline (persistência local, TCC 5.6) */
-const VERSAO = 'capisco-v4';
+const VERSAO = 'capisco-v5';
 const ARQUIVOS = [
  "./",
  "index.html",
@@ -87,7 +87,7 @@ self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSAO).then(c => Promise.all(ARQUIVOS.map(u => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSAO).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('capisco-') && k !== VERSAO).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 // só guarda respostas válidas (um 404 ou erro do servidor nunca vira a versão offline)
 const guardar = (r, res) => { if (res && (res.ok || (res.type === 'opaque' && r.url.includes('fonts.g')))) { const cp = res.clone(); caches.open(VERSAO).then(c => c.put(r, cp)); } return res; };

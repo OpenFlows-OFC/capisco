@@ -1,0 +1,99 @@
+/* =========================================================
+   PRUMO · Prova do caderno (c.3i)                       [A COMPLETAR]
+   Versão simples, funcional, deixada pela equipe das telas do núcleo para o
+   agente da Prova completar (troféu em contorno e em latão com a animação
+   de 600 ms, selo, revisão visual). Reaproveita os componentes da missão.
+   Estados: prova (abertura) · provaPergunta · provaFeedback · provaTrecho ·
+   provaResultado. Ver js/ui/LEIA.md.
+   ========================================================= */
+import { h, cru, cada } from './dom.js';
+import { registrar } from './registro.js';
+import { enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, botaoContinuar, animarContinuar, prepararFiguras } from './componentes.js';
+
+function topoProva(t) {
+  return h`<header class="topo">
+    <div class="topo-linha"><p class="rotulo topo-etapa">${t.etapa}</p>
+      <div class="topo-acoes"><button type="button" class="link" data-folha="encerrarProva">${t.encerrar}</button></div></div>
+    <div class="topo-medidor"><div class="medidor">
+      <span class="casas">${cada(t.casas, c => h`<span class="casa ${c.cheia ? 'cheia' : ''}" aria-label="${`${c.rotulo}: ${c.cheia ? 'acerto' : 'falta'}`}"><span aria-hidden="true">${c.rotulo}</span></span>`)}</span>
+      <span class="medidor-texto num">${t.tentativa}</span>
+    </div></div>
+  </header>`;
+}
+
+export function telaProva(ctx, t) {
+  const { nome, vm } = t;
+  if (!vm) return { chave: `prova:${nome}`, html: h`<main class="missao"></main>` };
+  if (nome === 'prova') {
+    return {
+      chave: 'prova:abertura', titulo: 'Prova do caderno',
+      html: h`<main class="missao" style="padding-top:32px">
+        <p class="rotulo">Prova do caderno</p>
+        <h1 class="titulo" tabindex="-1" data-foco-inicial style="margin:8px 0 12px">${vm.titulo}</h1>
+        <p style="font-size:18px;line-height:28px">${vm.regra}</p>
+        <p class="num">${vm.tamanho}</p>
+        <p class="texto-2">${vm.aviso}</p>
+        <hr class="fio">
+        <p>${vm.trofeu}</p>
+        ${vm.reaproveita ? h`<p class="texto-2 pequeno">${vm.reaproveita}</p>` : ''}
+      </main>`,
+      barra: cada(vm.acoes, (a, i) => h`<button type="button" class="${i ? 'botao-sec' : 'botao'} botao-largo" data-ev="${a.evento}">${a.rotulo}</button>`),
+    };
+  }
+  if (nome === 'provaPergunta') {
+    const k = `${vm.item.id}@prova@${vm.topo.tentativa}`;
+    const marcada = ctx.ui.selecao && ctx.ui.selecao.chave === k ? ctx.ui.selecao.alt : null;
+    return {
+      chave: `provaPergunta:${k}`, titulo: 'Prova do caderno',
+      html: h`<main class="missao">${topoProva(vm.topo)}
+        <section class="pergunta"><header class="pergunta-cabeca"><h1 class="rotulo" tabindex="-1" data-foco-inicial>${vm.rotulo}</h1>${vm.subrotulo && vm.subrotulo !== vm.item.rodape ? h`<p class="sub">${vm.subrotulo}</p>` : ''}</header>
+        ${enunciado(vm.item)}
+        <form data-enviar="responder" data-chave="${k}" novalidate>${alternativasPergunta(vm.item.alternativas, marcada)}</form>
+        ${rodape(vm.item.rodape, vm.item.licencaUrl)}</section></main>`,
+      barra: h`<button type="button" class="botao botao-largo" data-acao="responder" data-chave="${k}" aria-disabled="${marcada ? 'false' : 'true'}">${vm.acao.rotulo}</button>`,
+      depois(raiz) { prepararFiguras(raiz.querySelector('#principal') || raiz, { aoAmpliar: el => ctx.abrirFolha('zoom', { html: el.outerHTML, zoom: 1 }, el) }); },
+    };
+  }
+  if (nome === 'provaFeedback' || nome === 'provaTrecho') {
+    const fb = nome === 'provaTrecho' ? vm.feedback : vm;
+    const corpo = h`<main class="missao">${topoProva(fb.topo)}
+      <section class="pergunta"><p class="rotulo">${fb.rotulo}</p>${enunciado(fb.item)}${alternativasFeedback(fb.alternativas)}${rodape(fb.item.rodape, fb.item.licencaUrl)}
+      <section class="feedback" id="feedback"><h1 class="feedback-titulo" ${nome === 'provaFeedback' ? cru('tabindex="-1" data-foco-inicial') : ''}>${fb.titulo}</h1>
+        ${fb.porque ? h`<p>${fb.porque}</p>` : ''}${fb.falta ? h`<p class="falta"><strong>O que faltou:</strong> ${fb.falta}</p>` : ''}
+        <div class="acoes-fb">${fb.trecho ? h`<button type="button" class="link" data-ev="${fb.trecho.evento}">${fb.trecho.rotulo}</button>` : ''}</div>
+      </section></section></main>`;
+    if (nome === 'provaFeedback') return { chave: `provaFeedback:${fb.item.id}:${fb.topo.tentativa}`, titulo: 'Prova do caderno', html: corpo, barra: botaoContinuar(fb.continuar), depois: raiz => animarContinuar(raiz) };
+    return {
+      chave: `provaTrecho:${vm.ancora}`, titulo: 'Trecho',
+      html: h`<div inert aria-hidden="true">${corpo}</div><div class="folha-fundo"><div class="folha folha-alta" role="dialog" aria-modal="true" aria-labelledby="trecho-titulo">
+        <div class="folha-cabeca"><h1 class="rotulo" id="trecho-titulo" tabindex="-1" data-foco-inicial>Trecho · ${vm.rotulo}</h1></div>
+        <div class="folha-corpo" id="trecho-corpo"><article class="pagina-livro"><p class="rotulo cabeco">${vm.cabeco}</p><h2 class="pagina-titulo">${vm.pagina.titulo}</h2>${blocos(vm.blocos, vm.ancora)}</article></div>
+        <div class="folha-pe"><button type="button" class="botao" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div></div></div>`,
+      depois(raiz) { const c = raiz.querySelector('#trecho-corpo'), a = document.getElementById(vm.ancora); if (c && a) c.scrollTop = a.offsetTop - 24; },
+    };
+  }
+  // provaResultado
+  return {
+    chave: 'provaResultado', titulo: 'Prova do caderno',
+    html: h`<main class="colofao">
+      <h1 class="colofao-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>
+      <p style="text-align:center;margin-top:16px">${vm.texto}</p>
+      ${vm.linhaRevisar ? h`<p style="text-align:center">${vm.linhaRevisar}</p>` : ''}
+      ${vm.volta ? h`<p class="texto-2" style="text-align:center">${vm.volta}</p>` : ''}
+      <div class="fechar"><button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>
+    </main>`,
+  };
+}
+
+registrar({
+  folhas: {
+    encerrarProva(ctx, dados, t) {
+      const tp = t.vm && (t.vm.topo || (t.vm.feedback && t.vm.feedback.topo));
+      return {
+        rotulo: 'Encerrar a prova',
+        corpo: h`<p class="feedback-titulo">Parar a prova agora?</p><p>${tp ? tp.avisoEncerrar : 'Encerrar a prova no meio não muda nada.'}</p>`,
+        pe: h`<button type="button" class="botao-sec" data-ev="ENCERRAR_PROVA">Encerrar a prova</button><button type="button" class="link" data-acao="fecharFolha" style="width:100%;justify-content:center">Voltar à prova</button>`,
+      };
+    },
+  },
+});

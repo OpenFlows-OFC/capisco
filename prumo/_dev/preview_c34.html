@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prévia · Caps. 3 e 4</title>
+<style>
+  :root { --fundo:#fff; --texto:#0B1B33; --foco:#2348C9; --fio:rgba(11,27,51,.12); }
+  @media (prefers-color-scheme: dark) { :root { --fundo:#14284A; --texto:#E6ECF7; --foco:#8FA8F5; --fio:rgba(230,236,247,.16); } }
+  body { margin:0; padding:16px; background:var(--fundo); color:var(--texto); font:16px/1.5 system-ui, sans-serif; max-width:720px; }
+  h2 { font-size:18px; margin:32px 0 8px; border-top:1px solid var(--fio); padding-top:16px; }
+  .v, .q, .k { border-top:1px solid var(--fio); padding:12px 0; }
+  .alt { margin:4px 0; } .certa { font-weight:700; color:var(--foco); }
+  .falta { font-size:14px; margin:0 0 6px 18px; opacity:.85; }
+  .meta { font-size:12px; opacity:.7; }
+  table { border-collapse:collapse; display:block; overflow-x:auto; max-width:100%; }
+  td, th { border-bottom:1px solid var(--fio); padding:4px 8px; text-align:right; white-space:nowrap; }
+  th { text-align:left; font-weight:600; } caption { text-align:left; font-size:13px; opacity:.75; padding-bottom:4px; }
+  figure { margin:12px 0; } img { max-width:100%; height:auto; display:block; background:#fff; }
+  .alt img { max-width:220px; }
+</style>
+</head>
+<body>
+<p class="meta">Prévia de desenvolvimento (fora do app e do precache): texto das págs. 5–8, questões do Enem dos Caps. 3 e 4 com "o que faltou", modelos da equipe e cards.</p>
+<div id="saida"></div>
+<script type="module">
+  import { capitulos34, modelos34, questoes34 } from '../conteudo/mat-fa-c34.js';
+  const out = [];
+  const qPorId = Object.fromEntries(questoes34.map(q => [q.id, q]));
+  for (const c of capitulos34) {
+    out.push(`<h1>Cap. ${c.n} · ${c.titulo}</h1><p class="meta">${c.habilidades.join(', ')} · rodada: ${c.rodada.join(' · ')}</p>`);
+    for (const pg of c.paginas) {
+      out.push(`<h2>p. ${pg.n} · ${pg.titulo}</h2>`);
+      for (const b of pg.blocos) for (const p of b.paragrafos)
+        out.push(`<p id="${p.id}"><b>§ ${p.n}</b> ${p.html} <span class="meta">(${b.papel})</span></p>`);
+    }
+    for (const id of c.rodada.filter(i => qPorId[i])) {
+      const q = qPorId[id];
+      out.push(`<div class="q" data-id="${q.id}"><div class="meta">${q.atribuicao} · ${q.habilidade} · b ${q.inep.b}</div>${q.contexto}<p>${q.introducao}</p>`
+        + q.alternativas.map(a => `<div class="alt ${a.letra === q.gabarito ? 'certa' : ''}">${a.letra}) ${a.texto}${a.imagem ? `<img src="../${a.imagem.src}" alt="${a.imagem.alt}">` : ''}</div>${a.falta ? `<p class="falta">${a.falta}</p>` : ''}`).join('')
+        + `<p class="meta">Resolução da equipe: ${q.explicacao}</p></div>`);
+    }
+    for (const k of c.cards) out.push(`<div class="k"><div class="meta">${k.id} · ${k.tipo}</div><b>${k.frente}</b><br>${k.verso}</div>`);
+  }
+  for (const m of modelos34) {
+    out.push(`<h2>${m.id}</h2>`);
+    m.linhas.forEach((l, k) => out.push(`<div class="v" data-id="${m.id}#${k}"><div class="meta">${m.id}#${k} · gabarito ${l.pronto.gabarito}</div>${l.pronto.enunciado}`
+      + l.pronto.alternativas.map(a => `<div class="alt ${a.certa ? 'certa' : ''}">${a.letra}) ${a.texto}</div>`).join('') + `</div>`));
+  }
+  document.getElementById('saida').innerHTML = out.join('').replaceAll('src="conteudo/', 'src="../conteudo/').replaceAll(' loading="lazy"', '');
+  document.body.dataset.pronto = '1';
+</script>
+</body>
+</html>

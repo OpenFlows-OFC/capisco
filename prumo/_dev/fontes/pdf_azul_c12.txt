@@ -1,0 +1,176 @@
+# Trechos dos PDFs oficiais do INEP (Enem, 2º dia, Caderno 7 Azul) usados na conferência das 7 questões dos Caps. 1 e 2.
+# Texto extraído com PyMuPDF em 17/11/2026, sem edição (as quebras de linha são as da diagramação).
+# Lido por _dev/valida_pack.mjs: o texto de cada questão no pack tem de aparecer no trecho, com espaços normalizados.
+# Arquivos (baixados em 17/11/2026):
+#   2019: https://download.inep.gov.br/educacao_basica/enem/provas/2019/caderno_de_questoes_2_dia_caderno_7_azul_aplicacao_regular.pdf  SHA-256 a476882608be2bf1353af8b26c60838ac187f2d1a3653524c90de62b0372efa6
+#   2020: https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD7.pdf  SHA-256 f9970a82e0ee67a31ec16e2f14c99e620738b88dfe7c68484128964a5d5d69bc
+#   2021: https://download.inep.gov.br/enem/provas_e_gabaritos/2021_PV_impresso_D2_CD7.pdf  SHA-256 887b2a10ebb163f0c40db2ab4f67a5a4b5959ceb74ce7273466a755b8e55f540
+#   2023: https://download.inep.gov.br/enem/provas_e_gabaritos/2023_PV_impresso_D2_CD7.pdf  SHA-256 49e7ad9d0ab25710f6e5c4c3296fc40b63d86a3a87d5f25d83e8ecc81b98415b
+
+=== enem-2023-162 · Enem 2023, 2º dia, Caderno Azul, questão 162 · página 24 do PDF
+Para concretar a laje de sua residência, uma pessoa 
+contratou uma construtora. Tal empresa informa que o 
+preço y do concreto bombeado é composto de duas 
+partes: uma fixa, chamada de taxa de bombeamento, 
+e uma variável, que depende do volume x de concreto 
+utilizado. Sabe-se que a taxa de bombeamento custa 
+R$ 500,00 e que o metro cúbico do concreto bombeado 
+é de R$ 250,00.
+A expressão que representa o preço y em função do 
+volume x, em metro cúbico, é
+A 
+A  y = 250x
+B 
+B  y = 500x
+C 
+C  y = 750x
+D 
+D  y = 250x + 500
+E 
+E  y = 500x + 250
+
+=== enem-2023-150 · Enem 2023, 2º dia, Caderno Azul, questão 150 · página 21 do PDF
+Dirigir após ingerir bebidas alcoólicas é uma atitude 
+extremamente perigosa, uma vez que, a partir da primeira 
+dose, a pessoa já começa a ter perda de sensibilidade 
+de movimentos e de reflexos. Apesar de a eliminação e 
+absorção do álcool depender de cada pessoa e de como 
+o organismo consegue metabolizar a substância, ao final 
+da primeira hora após a ingestão, a concentração de álcool 
+(C) no sangue corresponde a aproximadamente 90% da 
+quantidade (q) de álcool ingerida, e a eliminação total 
+dessa concentração pode demorar até 12 horas.
+Disponível em: http://g1.globo.com. Acesso em: 1 dez. 2018 (adaptado).
+Nessas condições, ao final da primeira hora após a ingestão 
+da quantidade q de álcool, a concentração C dessa 
+substância no sangue é expressa algebricamente por
+A 
+A  C = 0,9q
+B 
+B  C = 0,1q
+C 
+C  C = 1 − 0,1q
+D 
+D  C = 1 − 0,9q
+E 
+E  C = q − 10
+
+=== enem-2019-168 · Enem 2019, 2º dia, Caderno Azul, questão 168 · página 26 do PDF
+Uma empresa tem diversos funcionários. Um deles 
+é o gerente, que recebe R$ 1 000,00 por semana. 
+Os outros funcionários são diaristas. Cada um deles 
+trabalha 2 dias por semana, recebendo R$ 80,00 por 
+dia trabalhado.
+Chamando de X a quantidade total de funcionários 
+da empresa, a quantia Y, em reais, que esta empresa 
+gasta semanalmente para pagar seus funcionários é 
+expressa por
+A  Y = 80X + 920.
+B  Y = 80X + 1 000.
+C  Y = 80X + 1 080.
+D  Y = 160X + 840.
+E  Y = 160X + 1 000.
+
+=== enem-2021-141 · Enem 2021, 2º dia, Caderno Azul, questão 141 · página 19 do PDF
+[texto extraído em parte ilegível: o PDF de 2021 usa, em alguns trechos, fonte sem mapa Unicode; ficam só as linhas legíveis]
+Aplicativos que gerenciam serviços de hospedagem
+de hospedagem. Em um desses aplicativos, o preço P a
+ser pago  pela hospedagem é calculado considerando um
+preço por diária d$
+e de uma taxa de serviço. Essa taxa de serviço é um valor
+percentual s calculado sobre o valor pago pelo total das
+hospedagem de n? %
+A  P = dn + L + dns
+B  P = dn + L + ds
+C  P = d + L + s
+D  P = dns + L
+E  P = dn + L + s
+--- leitura da página renderizada (o PDF de 2021 usa fonte sem mapa Unicode em parte do texto; as letras das variáveis estão em itálico e a multiplicação é um ponto a meia altura):
+Aplicativos que gerenciam serviços de hospedagem têm ganhado espaço no Brasil e no mundo por oferecer opções diferenciadas em termos de localização e valores de hospedagem. Em um desses aplicativos, o preço P a ser pago pela hospedagem é calculado considerando um preço por diária d, acrescido de uma taxa fixa de limpeza L e de uma taxa de serviço. Essa taxa de serviço é um valor percentual s calculado sobre o valor pago pelo total das diárias.
+Nessa situação, o preço a ser pago ao aplicativo para uma hospedagem de n diárias pode ser obtido pela expressão
+A P = d·n + L + d·n·s
+B P = d·n + L + d·s
+C P = d + L + s
+D P = d·n·s + L
+E P = d·n + L + s
+
+=== enem-2023-156 · Enem 2023, 2º dia, Caderno Azul, questão 156 · página 22 do PDF
+Uma pessoa caminha por 30 minutos e utiliza um 
+aplicativo instalado em seu celular para monitorar a 
+variação da intensidade do sinal de internet recebido 
+pelo aparelho durante o deslocamento. Chegando ao seu 
+destino, o aplicativo forneceu este gráfico:
+Intensidade do sinal de internet
+Tempo (min)
+0
+2
+4
+6
+8
+10 12 14
+16
+18 20
+22 24
+26 28 30
+Por quantos minutos, durante essa caminhada, o celular 
+dessa pessoa ficou sem receber sinal de internet?
+A 
+A  6
+B 
+B  8
+C 
+C  10
+D 
+D  14
+E 
+E  24
+
+=== enem-2020-164 · Enem 2020, 2º dia, Caderno Azul, questão 164 · página 24 do PDF
+A exposição a barulhos excessivos, como os que 
+percebemos em geral em trânsitos intensos, casas 
+noturnas e espetáculos musicais, podem provocar 
+insônia, estresse, infarto, perda de audição, entre outras 
+enfermidades. De acordo com a Organização Mundial 
+da Saúde, todo e qualquer som que ultrapasse os 55 
+decibéis (unidade de intensidade do som) já pode ser 
+considerado nocivo para a saúde. O gráfico foi elaborado 
+a partir da medição do ruído produzido, durante um dia, 
+em um canteiro de obras. 
+Decibel
+Hora
+55
+0
+0  1  2  3  4  5  6  7  8  9 10 11 12  13  14  15  16 17  18 19 20  21  22  23 24  
+Disponível em: www.revistaencontro.com.br. Acesso em: 12 ago. 2020 (adaptado).
+Nesse dia, durante quantas horas o ruído esteve acima 
+de 55 decibéis?
+A  5
+B   8
+C   10
+D   11
+E  13
+MT - 2° dia | Caderno 7 - AZUL - Página 24
+
+=== enem-2023-151 · Enem 2023, 2º dia, Caderno Azul, questão 151 · página 21 do PDF
+Um investidor iniciante observou o gráfico que 
+apresenta a evolução dos valores de duas criptomoedas 
+A e B em relação ao tempo.
+Criptomoeda B
+(milhar de real)
+Criptomoeda A
+(milhar de real)
+Durante horas consecutivas, esses valores foram 
+observados em nove instantes, representados por horas 
+exatas.
+Em quantos desses instantes a criptomoeda A estava 
+mais valorizada do que a criptomoeda B?
+A 
+A  3
+B 
+B  4
+C 
+C  6
+D 
+D  7
+E 
+E  9
