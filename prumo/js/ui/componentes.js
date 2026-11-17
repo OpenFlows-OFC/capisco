@@ -326,7 +326,7 @@ export function teoria(t, { tituloComoH1 = true } = {}) {
       ${cada(t.secoes, sc => h`<section class="teoria-secao">
         <h2 class="teoria-sub"><span class="teoria-n" aria-hidden="true">${sc.n}</span><span>${sc.titulo}</span></h2>
         ${cada(sc.paragrafos, p => h`<p>${p}</p>`)}
-        ${sc.figura ? h`<figure class="teoria-figura" role="group" aria-label="${sc.figura.alt}">${cru(sc.figura.svg)}${sc.figura.legenda ? h`<figcaption><strong>Figura ${sc.figura.n}.</strong> ${sc.figura.legenda}</figcaption>` : ''}</figure>` : ''}
+        ${sc.figura ? h`<figure class="teoria-figura" role="group" aria-label="${sc.figura.alt}">${cru(sc.figura.svg)}${sc.figura.legenda ? h`<figcaption>${sc.figura.legenda}</figcaption>` : ''}</figure>` : ''}
         ${sc.tabela ? h`<div class="teoria-tabela-rolagem"><table class="teoria-tabela">${sc.tabela.legenda ? h`<caption>${sc.tabela.legenda}</caption>` : ''}
           ${sc.tabela.cabecalho.length ? h`<thead><tr>${cada(sc.tabela.cabecalho, c => h`<th scope="col">${c}</th>`)}</tr></thead>` : ''}
           <tbody>${cada(sc.tabela.linhas, l => h`<tr>${cada(l, c => h`<td>${c}</td>`)}</tr>`)}</tbody></table></div>` : ''}

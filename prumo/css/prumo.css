@@ -619,7 +619,7 @@ figure { margin: 12px 0 16px; }
 /* ---------------- Apostila do tópico: material impresso, não o caderno ----------------
    Três superfícies, três papéis: o caderno pautado é do aluno; a prova é o caderno do Enem;
    a apostila é folha branca impressa, com capa, sumário, exemplos e quadros. */
-.apostila { margin: 0 0 var(--space-4); background: var(--ficha); border: 1px solid var(--pauta-forte); border-radius: var(--radius-ficha); overflow: hidden; box-shadow: 0 1px 0 var(--pauta), 0 8px 20px rgba(20, 30, 60, .07); }
+.apostila { margin: 0 0 var(--space-4); background: var(--ficha); border: 1px solid var(--pauta-forte); border-radius: var(--radius-ficha); overflow: clip; box-shadow: 0 1px 0 var(--pauta), 0 8px 20px rgba(20, 30, 60, .07); }
 .apostila .cabeco { display: none; }
 .apostila-capa { background: var(--tinta); color: var(--on-tinta); padding: 18px 20px 16px; }
 .apostila-selo { margin: 0 0 8px; font: 700 13px/18px var(--font-texto); letter-spacing: .06em; text-transform: uppercase; }
@@ -760,3 +760,42 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
 .amanha-enunciado img { max-width: 100%; height: auto; }
 
 .vence-hoje .grifo { background: var(--marca-texto); border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+
+/* ---------------- Apostila no computador: página de apostila impressa ----------------
+   Capa larga, sumário fixo à esquerda, texto em coluna de leitura,
+   figuras ao lado do texto (como na página impressa) e exemplos em caixas. */
+@media (min-width: 720px) {
+  .apostila-capa { padding: 24px 32px 22px; }
+  .apostila .apostila-titulo { font-size: 34px; line-height: 40px; }
+  .apostila-sumario { padding: 18px 32px 14px; }
+  .apostila-corpo { padding: 24px 32px 28px; }
+  .apostila .teoria-rodape { padding: 14px 32px 0; }
+  .teoria .rodape-licenca { padding: 0 32px 20px; }
+}
+@media (min-width: 1100px) {
+  main.missao-leitura:has(.apostila) { max-width: 1120px; }
+  .com-abas .conteudo:has(.apostila) { max-width: 1120px; }
+  .apostila { display: grid; grid-template-columns: 260px minmax(0, 1fr); }
+  .apostila > * { grid-column: 2; }
+  .apostila > .apostila-capa { grid-column: 1 / -1; display: grid; grid-template-columns: 260px minmax(0, 1fr); column-gap: 0; padding: 36px 0 30px; }
+  .apostila-capa > * { grid-column: 2; padding: 0 56px; }
+  .apostila-capa .apostila-selo { grid-column: 1; grid-row: 1 / span 3; padding: 6px 0 0 32px; }
+  .apostila .apostila-titulo { font-size: 44px; line-height: 50px; }
+  .apostila > .apostila-sumario { grid-column: 1; grid-row: 2 / span 4; align-self: start; position: sticky; top: 24px; border-bottom: 0; padding: 28px 24px 28px 32px; }
+  .apostila-sumario ol { font-size: 15px; line-height: 22px; }
+  .apostila-sumario li + li { margin-top: 8px; }
+  .apostila-corpo { padding: 32px 56px 40px; border-left: 1px solid var(--pauta); font-size: 19px; line-height: 1.65; }
+  .apostila-corpo p { max-width: 68ch; }
+  .teoria-secao { display: flow-root; }
+  .teoria-sub { font-size: 25px; line-height: 32px; margin-top: 36px; }
+  .teoria-n { width: 34px; height: 34px; font-size: 17px; }
+  .apostila-corpo .teoria-figura { width: min(100%, 620px); margin: 24px auto; padding: 16px 20px; }
+  .apostila-corpo .teoria-tabela-rolagem, .apostila-corpo .exemplo, .apostila-corpo .apostila-quadro { clear: both; }
+  .exemplo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; padding: 16px 20px; }
+  .exemplo .exemplo-rotulo { grid-column: 1 / -1; }
+  .exemplo .exemplo-enunciado { grid-column: 1; grid-row: 2 / span 2; padding-right: 4px; }
+  .exemplo .exemplo-res { grid-column: 2; grid-row: 2; margin-top: 0 !important; }
+  .exemplo .exemplo-passos { grid-column: 2; grid-row: 3; }
+  .apostila .teoria-rodape { padding: 16px 56px 0; border-left: 1px solid var(--pauta); }
+  .teoria .rodape-licenca { padding: 8px 56px 24px; border-left: 1px solid var(--pauta); }
+}
