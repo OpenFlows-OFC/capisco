@@ -12,7 +12,7 @@ for (const pk of await packs()) {
     let t = n.tela();
     assert.equal(t.nome, 'hoje');
     assert.equal(t.vm.estado, 'primeiroDia');
-    assert.equal(t.vm.bloco.ganho, 'Acerte duas seguidas, uma delas numa questão do Enem: o Cap. 1 entra em Aprendendo.');
+    assert.equal(t.vm.bloco.ganho, 'Acerte duas seguidas, uma delas numa questão do Enem: o capítulo Parte fixa e parte que varia entra no nível 1 de 5.');
     n.despachar('COMECAR');
     t = n.tela();
     assert.equal(t.vm.rotulo, 'Antes de ler a p. 1');
@@ -31,7 +31,7 @@ for (const pk of await packs()) {
     t = n.tela();
     assert.equal(t.vm.titulo, 'Certa.');
     assert.deepEqual(t.vm.medidor.casas.map(c => c.cheia), [true, false]);
-    assert.equal(t.vm.medidor.texto, 'Falta acertar uma questão do Enem');
+    assert.equal(t.vm.medidor.texto, 'Para fechar: 2 certas seguidas, falta 1');
     assert.equal(n.despachar('CONTINUAR'), false, 'intervalo deliberativo: Continuar só depois da pausa');
     continuar(n, rel);
     assert.equal(n.tela().vm.rotulo, 'Antes de ler a p. 2');
@@ -56,7 +56,7 @@ for (const pk of await packs()) {
     assert.ok(t.vm.falta);
     assert.match(t.vm.proxima, /^A próxima é uma questão da equipe sobre a p\. \d+, § \d+\.$/);
     assert.match(t.vm.trecho.rotulo, /^Voltar ao parágrafo \d+$/);
-    assert.equal(t.vm.medidor.texto, 'a contagem recomeça');
+    assert.equal(t.vm.medidor.texto, 'A próxima é sobre o trecho que faltou');
     assert.equal(n.st.missao.rodada.teto, teto0 + 1, 'a inserção soma 1 ao teto');
     n.despachar('VOLTAR_AO_TRECHO');
     t = n.tela();
@@ -67,7 +67,7 @@ for (const pk of await packs()) {
     continuar(n, rel);
     t = n.tela();
     assert.equal(t.vm.rotulo, 'Questão da equipe');
-    assert.equal(t.vm.subrotulo, 'Texto e números da equipe Prumo · CC BY-SA 4.0');
+    assert.equal(t.vm.subrotulo, 'Texto e números da equipe Prumo, licença CC BY-SA 4.0');
     assert.equal(passo(n).papel, 'compreender');
     responder(n, 'certa'); continuar(n, rel);
     assert.equal(passo(n).id, 'enem-2023-150');
@@ -85,7 +85,7 @@ for (const pk of await packs()) {
     assert.equal(t.vm.fecho, 'Por hoje é isso. Está tudo guardado neste aparelho.');
     assert.ok(!('chama' in t.vm.constancia));
     assert.equal(t.vm.constancia.rotulo, '1 dia estudado');
-    assert.ok(t.vm.mudancas.some(x => x.texto === 'O Cap. 1 entrou em Aprendendo. Próxima revisão: amanhã, qui 19/11.'));
+    assert.ok(t.vm.mudancas.some(x => x.texto === 'O capítulo Parte fixa e parte que varia entrou no nível 1 de 5. Próxima revisão: amanhã, qui 19/11.'));
     assert.ok(t.vm.mudancas.every(x => !/ · /.test(x.texto)), 'resumo em frases, sem cadeia de pontos');
     assert.ok(t.vm.mudancas.some(x => x.texto === 'Você tentou antes de ler em todos os trechos cobrados.'));
     assert.equal(t.vm.nivelAnimado.para, 1);
@@ -207,7 +207,7 @@ for (const pk of await packs()) {
     assert.equal(n.conferirData(), true);
     const t = n.tela();
     assert.equal(t.nome, 'hoje');
-    assert.equal(t.vm.faixa, `Ontem você parou no passo ${passoN} de ${total}. Ficou registrado.`);
+    assert.equal(t.vm.faixa, `Ontem ficou registrado até o passo ${passoN}.`);
     assert.equal(n.st.missao.dia, '2026-11-19');
     assert.equal(n.st.missao.iniciada, false);
     assert.ok(n.st.historico.some(h => h.dia === '2026-11-18' && h.parcial && h.viradaDeData));
@@ -225,7 +225,7 @@ for (const pk of await packs()) {
     assert.equal(n.despachar('FAZER_PROVA'), false);
     const e = n.erros().itens[0];
     assert.equal(e.refazer.disponivel, false);
-    assert.equal(e.refazer.motivo, 'Disponível amanhã. Hoje você já fechou o dia.');
+    assert.equal(e.refazer.motivo, 'Abre amanhã: hoje você já terminou o dia de estudo.');
     assert.equal(n.iniciarRefazer(e.id), false);
   });
 
@@ -237,7 +237,7 @@ for (const pk of await packs()) {
     irPara(n, rel, '2026-11-19');
     const e = n.erros().itens[0];
     assert.equal(e.refazer.disponivel, true);
-    assert.equal(e.refazer.rotulo, 'Refazer com outros números · 1 por dia · não muda nível');
+    assert.equal(e.refazer.rotulo, 'Refazer com outros números');
     const caixa = n.st.topicos['mat-fa.c1'].caixa, prox = n.st.topicos['mat-fa.c1'].proxima;
     assert.equal(n.iniciarRefazer(e.id), true);
     assert.match(n.st.refazer.item, /#8$/);
@@ -246,11 +246,11 @@ for (const pk of await packs()) {
     n.fecharRefazer();
     assert.equal(n.st.topicos['mat-fa.c1'].caixa, caixa); assert.equal(n.st.topicos['mat-fa.c1'].proxima, prox);
     assert.equal(n.st.dias['2026-11-19'], true);
-    assert.equal(n.erros().itens[0].refazer.motivo, 'Disponível amanhã. Você já refez esta hoje.');
+    assert.equal(n.erros().itens[0].refazer.motivo, 'Abre amanhã: você já refez esta hoje.');
     irPara(n, rel, '2026-11-20'); n.iniciarRefazer(e.id); assert.match(n.st.refazer.item, /#9$/); n.responderRefazer('A'); n.fecharRefazer();
     irPara(n, rel, '2026-11-23'); n.iniciarRefazer(e.id); assert.match(n.st.refazer.item, /#10$/); n.responderRefazer('A'); n.fecharRefazer();
     irPara(n, rel, '2026-11-24');
-    assert.equal(n.erros().itens[0].refazer.motivo, 'Sem novas versões deste modelo por enquanto.');
+    assert.equal(n.erros().itens[0].refazer.motivo, 'Por enquanto não há outra versão desta questão.');
   });
 
   test(`[${P}] g.8 · revisão: "antes x depois" na 1ª revisão e a revisão errada sem a palavra "perdeu" e sem animação`, () => {
@@ -260,13 +260,13 @@ for (const pk of await packs()) {
     irPara(n, rel, '2026-11-19');
     jogar(n, rel, { parar: x => x.estado() === 'pergunta' && passo(x).t === 'revisao' });
     let t = n.tela();
-    assert.equal(t.vm.rotulo, 'Revisão do Cap. 1'); assert.equal(t.vm.subrotulo, 'Vale a primeira resposta.');
+    assert.equal(t.vm.rotulo, 'Revisão do capítulo Parte fixa e parte que varia'); assert.equal(t.vm.subrotulo, 'Vale a primeira resposta.');
     const pid = passo(n).id, antes = n.st.pre[pid].alt;
     assert.ok(pid.endsWith('#0'), 'a 1ª revisão traz a pergunta de entrada da 2ª página');
     responder(n, 'certa');
     t = n.tela();
     assert.equal(t.vm.revisao.antesDepois, `Ontem, antes de ler, você marcou ${antes}. Hoje: ${gabarito(n, pid)}, certa.`);
-    assert.match(t.vm.revisao.texto, /^Certa\. O Cap\. 1 sobe para Firmando\. Próxima revisão: \S+ \d\d\/\d\d\.$/);
+    assert.match(t.vm.revisao.texto, /^Certa\. O capítulo Parte fixa e parte que varia subiu para o nível 2 de 5\. Próxima revisão: \S+ \d\d\/\d\d\.$/);
     jogar(n, rel); n.despachar('FECHAR');
     // revisão errada: volta para Aprendendo
     let prox = n.st.topicos['mat-fa.c1'].proxima;
@@ -275,14 +275,14 @@ for (const pk of await packs()) {
     jogar(n, rel, { parar: x => x.estado() === 'pergunta' && passo(x).t === 'revisao' && passo(x).cap === 'mat-fa.c1' });
     responder(n, 'errada');
     t = n.tela();
-    assert.match(t.vm.revisao.texto, /^O Cap\. 1 volta para Aprendendo: a próxima revisão fica para amanhã, \S+ \d\d\/\d\d\. Seu histórico continua\.$/);
+    assert.equal(t.vm.revisao.texto, 'A revisão de Parte fixa e parte que varia volta para amanhã. Seus dias estudados e seu histórico continuam.');
     assert.equal(t.vm.revisao.nivel.animar, false); assert.equal(t.vm.som, null);
     assert.equal(n.st.topicos['mat-fa.c1'].caixa, 1);
     jogar(n, rel);
     const pronto = n.prontoPorHoje();
-    assert.ok(pronto.mudancas.some(x => x.texto === 'A revisão do Cap. 1 ficou para amanhã.'));
+    assert.ok(pronto.mudancas.some(x => x.texto === 'A revisão de Parte fixa e parte que varia volta para amanhã. Seus dias estudados e seu histórico continuam.'));
     n.despachar('FECHAR');
-    assert.match(n.sumario().capitulos[0].estado, /^Aprendendo · revisar amanhã$/);
+    assert.match(n.sumario().capitulos[0].estado, /^Voltou para o nível 1 de 5\. Próxima revisão: amanhã\.$/);
     for (const s of [...textos(pronto), ...textos(n.sumario()), ...textos(n.hoje())]) assert.ok(!/perdeu/i.test(s), s);
   });
 
@@ -319,9 +319,9 @@ for (const pk of await packs()) {
     assert.equal(fim, 'fimDaRodada');
     const t = n.tela();
     assert.equal(t.vm.variante, 'venceu');
-    assert.match(t.vm.texto, /entrou em Aprendendo\. Revisão: amanhã, sex 20\/11\.$/);
+    assert.match(t.vm.texto, /entrou no nível 1 de 5\. A primeira revisão fica para amanhã, sex 20\/11\.$/);
     assert.equal(t.vm.nivel.animar, true);
-    assert.match(t.vm.cards, /^Os \d+ cards do Cap\. 2 entraram no seu baralho\.$/);
+    assert.match(t.vm.cards, /^Os \d+ cartões do capítulo Ler o gráfico entraram no seu baralho\.$/);
     n.despachar('SEGUIR');
     assert.equal(passo(n).t, 'revisao');
   });

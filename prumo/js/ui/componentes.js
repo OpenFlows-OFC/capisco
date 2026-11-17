@@ -82,9 +82,9 @@ export function visto(v, { novo = false } = {}) {
 /* ---------------- nível do capítulo: régua curta de 5 passos com o nome ao lado ---------------- */
 /** cheios: 0 a 5; de: quantos já estavam cheios (os novos enchem em 180 ms se animar; nunca anima perda). */
 export function nivel({ cheios = 0, de = cheios, animar = false, nome } = {}) {
-  const n = nome || (cheios ? NIVEL[cheios] : null);
+  const n = nome || (cheios ? (cheios >= 5 ? 'nível 5 de 5: dominado' : `nível ${cheios} de 5`) : null);   // o núcleo manda o rótulo; isto é só a reserva
   const segs = [0, 1, 2, 3, 4].map(i => `<i class="${i < cheios ? 'cheio' : ''}${animar && !reduzido() && i >= de && i < cheios ? ' novo' : ''}"></i>`).join('');
-  return h`<span class="linha-nivel"><span class="nivel" role="img" aria-label="${n ? `Nível: ${n}` : 'Nível: ainda sem nível'}">${cru(segs)}</span>${n ? h`<span class="nivel-nome">${n}</span>` : ''}</span>`;
+  return h`<span class="linha-nivel"><span class="nivel" role="img" aria-label="${n ? n.charAt(0).toUpperCase() + n.slice(1) : 'Ainda não começou'}">${cru(segs)}</span>${n ? h`<span class="nivel-nome">${n}</span>` : ''}</span>`;
 }
 
 /* ---------------- Régua: progresso da missão ---------------- */
@@ -119,7 +119,7 @@ export function regua(t) {
 /** Medidor de duas casas (c.3): 1ª = um acerto seguido; 2ª = acerto em questão de aplicar. */
 export function medidor(md) {
   if (!md) return '';
-  const desc = ['um acerto seguido', 'acerto em questão de aplicar'];
+  const desc = md.descricoes || ['um acerto seguido', 'acerto em questão de aplicar'];
   return h`<div class="medidor">
     <span class="casas">${cada(md.casas, (c, i) => h`<span class="casa ${c.cheia ? 'cheia' : ''}" aria-label="${`${i + 1}ª casa (${desc[i]}): ${c.cheia ? 'preenchida, ' + c.rotulo : 'vazia'}`}"><span aria-hidden="true">${c.rotulo}</span></span>`)}</span>
     ${md.texto ? h`<span class="medidor-texto">${md.texto}</span>` : ''}
@@ -170,6 +170,8 @@ export function rodape(texto, url) {
 export function enunciado(item) {
   return h`<div class="enunciado">${cru(item.enunciado || '')}${item.introducao ? h`<p class="comando">${item.introducao}</p>` : ''}</div>`;
 }
+// alternativa de questão do INEP em HTML (tópicos de prática): o texto vem do conteúdo, como o enunciado
+const textoAlt = a => (a.html ? cru(a.texto || '') : (a.texto || ''));
 const imagemAlt = a => (a.imagem ? h`<span class="alt-img"><img src="${a.imagem.src}" alt="${a.imagem.alt || ''}" loading="lazy"></span>` : '');
 /** Cartão-resposta para responder: rádio nativo, a linha inteira é o alvo, bolha oval A–E. */
 export function alternativasPergunta(alts, marcada, nome = 'alt') {
@@ -177,7 +179,7 @@ export function alternativasPergunta(alts, marcada, nome = 'alt') {
       <label class="alt ${marcada === a.letra ? 'marcada' : ''}">
         <input type="radio" name="${nome}" value="${a.letra}" data-mudar="escolherAlt" ${marcada === a.letra ? cru('checked') : ''}>
         <span class="letra" aria-hidden="true">${a.letra}</span>
-        <span class="alt-texto"><span class="so-leitor">${a.letra}) </span>${a.texto || ''}${imagemAlt(a)}</span>
+        <span class="alt-texto"><span class="so-leitor">${a.letra}) </span>${textoAlt(a)}${imagemAlt(a)}</span>
       </label></li>`)}</ol></fieldset>`;
 }
 /** Cartão-resposta corrigido: a certa ganha o círculo de caneta; a sua marcação fica em grafite. Sem vermelho. */
@@ -187,7 +189,7 @@ export function alternativasFeedback(alts) {
     const nota = a.marca === 'sua-certa' ? 'sua marcação, certa' : a.marca === 'sua' ? 'sua marcação' : a.marca === 'certa' ? 'certa' : '';
     return h`<li><div class="alt estatica ${certa ? 'certa' : sua ? 'sua' : ''}">
       <span class="letra" aria-hidden="true">${a.letra}</span>
-      <span class="alt-texto"><span class="so-leitor">${a.letra}) </span>${a.texto || ''}${imagemAlt(a)}${nota ? h`<span class="nota-alt">${nota}</span>` : ''}</span>
+      <span class="alt-texto"><span class="so-leitor">${a.letra}) </span>${textoAlt(a)}${imagemAlt(a)}${nota ? h`<span class="nota-alt">${nota}</span>` : ''}</span>
     </div></li>`;
   })}</ol>`;
 }
@@ -263,7 +265,7 @@ export function animarContinuar(raiz) {
  * se a imagem não carregou (offline), mostra o aviso e a descrição.
  */
 export function prepararFiguras(raiz, { aoAmpliar, textoFalha = 'A imagem não carregou; a descrição está abaixo.' } = {}) {
-  const alvos = raiz.querySelectorAll('.enunciado img, .alt-texto img, .par-texto figure.grafico-equipe, .enunciado figure.grafico-equipe, .par-texto img');
+  const alvos = raiz.querySelectorAll('.teoria-figura svg, .enunciado img, .alt-texto img, .par-texto figure.grafico-equipe, .enunciado figure.grafico-equipe, .par-texto img');
   alvos.forEach(el => {
     if (el.dataset.preparado) return;
     el.dataset.preparado = '1';
@@ -291,4 +293,39 @@ export function prepararFiguras(raiz, { aoAmpliar, textoFalha = 'A imagem não c
     el.addEventListener('click', abrir);
     el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') abrir(e); });
   });
+}
+
+/* ---------------- Teoria de um tópico de prática: a apostila na folha pautada ---------------- */
+/** t = teoria do núcleo: seções (parágrafos, figura, tabela, quadro "No Enem", exemplos), armadilhas e resumo. */
+export function teoria(t, { tituloComoH1 = true } = {}) {
+  if (!t) return '';
+  const T = tituloComoH1 ? h`<h1 class="pagina-titulo" id="pg-titulo" tabindex="-1" data-foco-inicial>${t.titulo}</h1>` : h`<h2 class="pagina-titulo" id="pg-titulo">${t.titulo}</h2>`;
+  return h`<article class="pagina-livro teoria" aria-labelledby="pg-titulo">
+    <p class="rotulo cabeco">${t.cabeco}</p>
+    ${T}
+    <div class="pagina">
+      ${t.porQueCai ? h`<p class="teoria-porque"><strong>Por que cai no Enem.</strong> ${t.porQueCai}</p>` : ''}
+      ${cada(t.secoes, sc => h`<section class="teoria-secao">
+        <h2 class="teoria-sub"><span class="teoria-n" aria-hidden="true">${sc.n}</span> ${sc.titulo}</h2>
+        ${cada(sc.paragrafos, p => h`<p>${p}</p>`)}
+        ${sc.figura ? h`<figure class="teoria-figura" role="group" aria-label="${sc.figura.alt}">${cru(sc.figura.svg)}${sc.figura.legenda ? h`<figcaption>${sc.figura.legenda}</figcaption>` : ''}</figure>` : ''}
+        ${sc.tabela ? h`<div class="teoria-tabela-rolagem"><table class="teoria-tabela">${sc.tabela.legenda ? h`<caption>${sc.tabela.legenda}</caption>` : ''}
+          ${sc.tabela.cabecalho.length ? h`<thead><tr>${cada(sc.tabela.cabecalho, c => h`<th scope="col">${c}</th>`)}</tr></thead>` : ''}
+          <tbody>${cada(sc.tabela.linhas, l => h`<tr>${cada(l, c => h`<td>${c}</td>`)}</tr>`)}</tbody></table></div>` : ''}
+        ${sc.atencao ? h`<p class="pr-recado teoria-enem"><strong class="pr-recado-rotulo"><span class="grifo">${sc.atencao.rotulo}:</span></strong> ${sc.atencao.texto}</p>` : ''}
+        ${cada(sc.exemplos, ex => h`<div class="exemplo">
+          <p class="exemplo-rotulo">Exemplo ${ex.n}</p>
+          <p>${ex.enunciado}</p>
+          <ol class="exemplo-passos">${cada(ex.resolucao, r => h`<li>${r}</li>`)}</ol>
+        </div>`)}
+      </section>`)}
+      ${t.armadilhas && t.armadilhas.length ? h`<section class="teoria-secao"><h2 class="teoria-sub">Armadilhas comuns</h2><ul class="teoria-lista">${cada(t.armadilhas, a => h`<li>${a}</li>`)}</ul></section>` : ''}
+      ${t.resumo && t.resumo.length ? h`<section class="teoria-secao teoria-resumo"><h2 class="teoria-sub">Resumo</h2><ul class="teoria-lista">${cada(t.resumo, a => h`<li>${a}</li>`)}</ul></section>` : ''}
+    </div>
+    ${t.habilidades && t.habilidades.length ? h`<section class="teoria-rodape"><p class="rotulo">Habilidades do Enem</p><ul class="teoria-lista pequeno">${cada(t.habilidades, x => h`<li>${x.codigo}: ${x.descricao}</li>`)}</ul></section>` : ''}
+    ${t.fontes && t.fontes.length ? h`<section class="teoria-rodape"><p class="rotulo">Fontes</p>
+      <ul class="teoria-lista pequeno">${cada(t.fontes, f => h`<li>${f.adaptado ? 'Adaptado de ' : ''}${f.url ? h`<a href="${f.url}" target="_blank" rel="noopener">${f.titulo}</a>` : f.titulo}${f.licenca ? h` (${f.licencaUrl ? h`<a href="${f.licencaUrl}" target="_blank" rel="noopener">${f.licenca}</a>` : f.licenca})` : ''}</li>`)}</ul>
+      ${t.adaptacao ? h`<p class="pequeno texto-2">${t.adaptacao}</p>` : ''}</section>` : ''}
+    ${t.credito ? h`<p class="rodape-licenca">${t.credito}</p>` : ''}
+  </article>`;
 }

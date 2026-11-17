@@ -13,7 +13,7 @@ import { marca as marcaPrumo } from './componentes.js';
 
 function estadoInicial(vm) {
   return {
-    passo: 0, provaTipo: 'escola', prova: '', dias: (vm.dias.padrao || [1, 2, 3, 4]).slice(),
+    onb: 0, passo: 0, nome: '', areas: (vm.areasPadrao || ['MT']).slice(), provaTipo: 'escola', prova: '', dias: (vm.dias.padrao || [1, 2, 3, 4]).slice(),
     minutos: vm.minutos.padrao || 25, horario: '19:00', som: !!vm.som.padrao, alarme: null, erro: null,
   };
 }
@@ -34,8 +34,13 @@ function passoPerguntas(ctx, vm, pu) {
     </div>
     <hr class="fio fio-0">
     <form class="pu-passo" data-enviar="puAvancar" novalidate>
-      <p class="rotulo">1 de 3</p>
-      <h1 class="pergunta-pu" tabindex="-1" data-foco-inicial id="q-prova">Qual prova vem primeiro?</h1>
+      <p class="rotulo">Passo 1 de 3</p>
+      <h1 class="titulo" tabindex="-1" data-foco-inicial style="margin:0">Vamos montar o seu plano</h1>
+      <p class="pu-frase">${vm.frase}</p>
+      <label for="pu-nome" class="pergunta-pu" style="display:block">Como você quer ser chamado?</label>
+      <input id="pu-nome" class="campo" type="text" name="nome" maxlength="40" autocomplete="given-name" value="${pu.nome}" data-mudar="puCampo">
+      <p class="ajuda-campo">Opcional. Fica só neste aparelho.</p>
+      <h2 class="pergunta-pu" id="q-prova" style="margin-top:24px">1. Qual prova vem primeiro? E quando?</h2>
       <ul class="escolhas" role="radiogroup" aria-labelledby="q-prova">${cada(vm.provas, p => h`<li>
         <label class="escolha"><input type="radio" name="provaTipo" value="${p.valor}" data-mudar="puCampo" ${pu.provaTipo === p.valor ? cru('checked') : ''}><span class="marcador" aria-hidden="true"></span><span>${p.rotulo}</span></label>
         ${pu.provaTipo === p.valor && (p.aviso || p.dica) ? h`<div class="aviso-escolha">${p.aviso ? h`<p style="margin:0 0 4px">${p.aviso}</p>` : ''}${p.dica ? h`<p style="margin:0">${p.dica}</p>` : ''}</div>` : ''}
@@ -47,7 +52,13 @@ function passoPerguntas(ctx, vm, pu) {
       </div>`}
 
       <div class="secao-pu">
-        <h2 class="pergunta-pu" id="q-dias">Em quais dias e por quanto tempo?</h2>
+        <h2 class="pergunta-pu" id="q-areas">2. Quais matérias você quer estudar?</h2>
+        <ul class="escolhas" aria-labelledby="q-areas">${cada(vm.areas, a => h`<li><label class="escolha"><input type="checkbox" name="areas" value="${a.valor}" data-mudar="puArea" ${pu.areas.includes(a.valor) ? cru('checked') : ''} ${a.disponivel ? '' : cru('disabled')}><span class="marcador" aria-hidden="true"></span><span>${a.rotulo}${a.disponivel ? '' : h` <span class="etiqueta">em breve</span>`}</span></label></li>`)}</ul>
+        <p class="ajuda-campo">As áreas marcadas "em breve" chegam nas próximas versões. Dá para mudar depois, no Perfil.</p>
+      </div>
+
+      <div class="secao-pu">
+        <h2 class="pergunta-pu" id="q-dias">3. Em quais dias e por quanto tempo?</h2>
         <fieldset style="border:0;margin:0;padding:0;min-width:0">
           <legend style="font-weight:600;margin-bottom:8px;padding:0">Dias de estudo (de ${vm.dias.min} a ${vm.dias.max})</legend>
           <ul class="chips">${cada(vm.dias.opcoes, d => {
@@ -62,19 +73,7 @@ function passoPerguntas(ctx, vm, pu) {
           <legend style="font-weight:600;margin-bottom:8px;padding:0">Minutos por dia</legend>
           <ul class="chips">${cada(vm.minutos.opcoes, m => h`<li class="chip"><label><input type="radio" name="minutos" value="${m}" data-mudar="puCampo" ${pu.minutos === m ? cru('checked') : ''}><span>${m} min</span></label></li>`)}</ul>
         </fieldset>
-        <div style="margin-top:20px">
-          <label for="pu-hora" style="display:block;font-weight:600;margin-bottom:8px">Horário (para o alarme)</label>
-          <input id="pu-hora" class="campo campo-data" type="time" name="horario" value="${pu.horario}" data-mudar="puCampo">
-        </div>
-      </div>
 
-      <div class="secao-pu">
-        <h2 class="pergunta-pu" id="q-som">${vm.som.pergunta}</h2>
-        <ul class="chips" role="radiogroup" aria-labelledby="q-som">
-          <li class="chip"><label><input type="radio" name="som" value="sim" data-mudar="puCampo" ${pu.som ? cru('checked') : ''}><span>Sim</span></label></li>
-          <li class="chip"><label><input type="radio" name="som" value="nao" data-mudar="puCampo" ${!pu.som ? cru('checked') : ''}><span>Não</span></label></li>
-        </ul>
-        <p class="ajuda-campo">Desligado por padrão. O que aparece na tela nunca depende do som.</p>
       </div>
 
       <div class="acoes-pu"><button type="submit" class="botao botao-largo" ${nDias < vm.dias.min ? cru('aria-disabled="true"') : ''}>Continuar</button></div>
@@ -84,8 +83,10 @@ function passoPerguntas(ctx, vm, pu) {
 function passoAlarme(ctx, vm, pu) {
   const al = vm.alarme(pu.dias, pu.horario);
   return h`<div class="pu-passo">
-    <p class="rotulo">2 de 3</p>
+    <p class="rotulo">Passo 2 de 3</p>
     <h1 class="pergunta-pu" tabindex="-1" data-foco-inicial>Quer um lembrete?</h1>
+    <label for="pu-hora" style="display:block;font-weight:600;margin-bottom:8px">Que horas?</label>
+    <input id="pu-hora" class="campo campo-data" type="time" name="horario" value="${pu.horario}" data-mudar="puCampo">
     <p>Crie um alarme no app Relógio:</p>
     <p class="alarme-texto">${al.rotulo}</p>
     <p>O Prumo não manda notificação.</p>
@@ -98,7 +99,7 @@ function passoAlarme(ctx, vm, pu) {
 
 function passoFecho(ctx, vm) {
   return h`<div class="pu-passo">
-    <p class="rotulo">3 de 3</p>
+    <p class="rotulo">Passo 3 de 3</p>
     <h1 class="pergunta-pu" tabindex="-1" data-foco-inicial>Seus dados, no seu aparelho</h1>
     <p style="font-size:18px;line-height:28px">${vm.fecho}</p>
     <button type="button" class="link" data-folha="instalar">Como instalar</button>
@@ -106,10 +107,29 @@ function passoFecho(ctx, vm) {
   </div>`;
 }
 
+/** Três telas curtas antes do primeiro uso, com Pular e Próximo (e o atalho dos dados de exemplo, para a banca). */
+function onboarding(ctx, vm, pu) {
+  const o = vm.onboarding[pu.onb], total = vm.onboarding.length;
+  return h`<section class="onb" aria-labelledby="onb-t">
+    <p class="onb-n">${pu.onb + 1}/${total}</p>
+    <div class="onb-pontos" aria-hidden="true">${cada(vm.onboarding, (x, i) => h`<span class="${i === pu.onb ? 'atual' : ''}"></span>`)}</div>
+    <h1 class="onb-titulo" id="onb-t" tabindex="-1" data-foco-inicial>${o.titulo}</h1>
+    <p class="onb-texto">${o.texto}</p>
+    <div class="onb-acoes">
+      <button type="button" class="link" data-acao="puPular">Pular</button>
+      <button type="button" class="botao" data-acao="puProximo">${pu.onb + 1 < total ? 'Próximo' : 'Montar meu plano'}</button>
+    </div>
+    <p style="margin-top:24px"><button type="button" class="link" data-acao="puExemplo">${vm.exemplo.rotulo}</button></p>
+  </section>`;
+}
+
 /** Tela do Primeiro uso. vm = nucleo.primeiroUso(). */
 export function telaPrimeiroUso(ctx, vm) {
   if (!ctx.ui.pu) ctx.ui.pu = estadoInicial(vm);
   const pu = ctx.ui.pu;
+  if (pu.onb != null && pu.onb < (vm.onboarding || []).length) {
+    return { chave: `onboarding:${pu.onb}`, titulo: 'Boas-vindas', html: h`<main class="pu">${marca()}${onboarding(ctx, vm, pu)}</main>` };
+  }
   const corpo = pu.passo === 0 ? passoPerguntas(ctx, vm, pu) : pu.passo === 1 ? passoAlarme(ctx, vm, pu) : passoFecho(ctx, vm);
   return {
     chave: `primeiroUso:${pu.passo}`,
@@ -133,8 +153,15 @@ registrar({
       if (el.name === 'provaTipo') { pu.provaTipo = el.value; if (SEM_DATA.has(el.value)) pu.prova = ''; ctx.render(); return; }
       if (el.name === 'prova') { pu.prova = el.value; return; }
       if (el.name === 'minutos') pu.minutos = Number(el.value);
-      if (el.name === 'horario') { pu.horario = el.value; return; }
+      if (el.name === 'horario') { pu.horario = el.value; ctx.render(); return; }
+      if (el.name === 'nome') { pu.nome = el.value; return; }
       if (el.name === 'som') { pu.som = el.value === 'sim'; if (pu.som) ctx.prepararSom(); }
+    },
+    puProximo(ctx) { const pu = ctx.ui.pu; pu.onb++; ctx.render(); },
+    puPular(ctx) { const pu = ctx.ui.pu; pu.onb = 99; ctx.render(); },
+    puArea(ctx, el) {
+      const pu = ctx.ui.pu;
+      if (el.checked) { if (!pu.areas.includes(el.value)) pu.areas.push(el.value); } else pu.areas = pu.areas.filter(x => x !== el.value);
     },
     puDia(ctx, el) {
       const pu = ctx.ui.pu, v = Number(el.value);
@@ -147,19 +174,19 @@ registrar({
       const pu = ctx.ui.pu;
       const campoData = document.getElementById('pu-data');
       if (campoData) pu.prova = campoData.value;
-      const hora = document.getElementById('pu-hora');
-      if (hora) pu.horario = hora.value;
+      const nome = document.getElementById('pu-nome');
+      if (nome) pu.nome = nome.value;
       if (pu.dias.length < 3) return;
       irPara(ctx, 1);
     },
-    puAlarme(ctx, el) { ctx.ui.pu.alarme = el.dataset.arg; irPara(ctx, 2); },
+    puAlarme(ctx, el) { const hora = document.getElementById('pu-hora'); if (hora) ctx.ui.pu.horario = hora.value; ctx.ui.pu.alarme = el.dataset.arg; irPara(ctx, 2); },
     puConcluir(ctx) {
       const pu = ctx.ui.pu;
       const perfil = {
         provaTipo: pu.provaTipo,
         prova: SEM_DATA.has(pu.provaTipo) || !pu.prova ? null : pu.prova,
         dias: pu.dias.slice(), minutos: pu.minutos, horario: pu.horario || null,
-        som: !!pu.som, alarme: pu.alarme || null,
+        som: !!pu.som, alarme: pu.alarme || null, nome: pu.nome || null, areas: pu.areas.length ? pu.areas.slice() : ['MT'],
       };
       ctx.ui.pu = null;
       ctx.nucleo.concluirPrimeiroUso(perfil);

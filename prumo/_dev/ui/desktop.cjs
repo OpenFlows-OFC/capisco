@@ -34,7 +34,7 @@ const U = require('./comum.cjs');
     const { falhas, confere, cap } = U.criarConferencia('movimento-reduzido');
     try {
       await pg.goto(U.BASE); await U.pronto(pg);
-      await pg.evaluate(() => { const n = window.__prumo.nucleo; n.carregarExemplo(); n.despachar('COMECAR'); const m = n.st.missao; n.despachar({ tipo: 'RESPONDER', alt: n.pack.item(m.passos[m.i].id).gabarito }); window.__prumo.app.render(); });
+      await pg.evaluate(() => { const n = window.__prumo.nucleo; n.carregarExemplo(); n.despachar('COMECAR'); const m = n.st.missao; n.despachar({ tipo: 'RESPONDER', alt: n.missao.itemDe(m.passos[m.i].id).gabarito }); window.__prumo.app.render(); });
       await pg.waitForSelector('[data-continuar]');
       const anims = await pg.evaluate(() => document.getAnimations().filter(a => a.playState === 'running').length);
       confere(anims === 0, `sem animação no "Continuar" (${anims})`);

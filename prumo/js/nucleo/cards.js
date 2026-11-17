@@ -80,7 +80,7 @@ export function resumoMao(st, mao, d) {
   const voltam = ids.filter(id => mao.respostas[id] === 'ainda');
   const datas = [...new Set(voltam.map(id => st.cards[id] && st.cards[id].proxima).filter(Boolean))].sort();
   const n = ids.length;
-  let txt = `Você lembrou ${lembrados} de ${n} ${n === 1 ? 'card' : 'cards'}.`;
+  let txt = `Você marcou 'lembrei' em ${lembrados} de ${n} ${n === 1 ? 'cartão' : 'cartões'} (não muda o nível).`;
   if (voltam.length) txt += ` ${voltam.length === 1 ? 'O outro volta' : `Os outros ${voltam.length} voltam`} em ${datas.map(x => R.fmtCurta(x)).join(' e ')}.`;
   return { total: n, lembrados, voltam: voltam.length, texto: txt };
 }
@@ -96,17 +96,17 @@ export function cardsDoCaderno(st, pack, d) {
         id: k.id, frente: k.frente, verso: k.verso, tipo: k.tipo || null,
         trecho: loc ? { rotulo: `Ver o parágrafo ${loc.n} da p. ${loc.paginaN}`, pagina: loc.pagina, paragrafo: loc.paragrafo } : null,
         noBaralho: !!e,
-        caixa: e ? e.caixa : null, caixaNome: e ? NIVEL[e.caixa] : null, caixaRotulo: e ? `revisão ${Math.max(1, e.caixa || 1)} de 5` : null,
+        caixa: e ? e.caixa : null, caixaNome: e ? `revisão ${Math.max(1, e.caixa || 1)} de 5` : null, caixaRotulo: e ? `revisão ${Math.max(1, e.caixa || 1)} de 5` : null,
         proxima: e ? e.proxima : null,
         proximaTexto: e ? (e.proxima <= d ? (e.proxima < d ? `atrasado desde ${R.fmtCurta(e.proxima)}` : 'hoje') : R.fmtCurta(e.proxima)) : null,
       };
     });
     return {
-      cap: c.id, n: c.n, titulo: `Cap. ${c.n} · ${c.titulo}`, recebidoEm,
+      cap: c.id, n: c.n, titulo: `Cap. ${c.n}: ${c.titulo}`, recebidoEm,
       cards: recebidoEm ? cards : [],
-      aviso: recebidoEm ? null : `Os cards deste capítulo entram no seu baralho quando a primeira rodada dele terminar.`,
+      aviso: recebidoEm ? null : `Os cartões deste capítulo entram no seu baralho quando a primeira rodada dele terminar.`,
       quantos: (c.cards || []).length,
     };
   });
 }
-export const REGRA_CARDS = 'Cada capítulo traz de 6 a 8 cards. Eles entram no seu baralho quando a primeira rodada do capítulo termina. Na missão, a mão tem no máximo 8 cards: os atrasados e os de caixa mais baixa primeiro. "Lembrei" sobe uma caixa; "Ainda não" recua uma e o card volta uma vez no fim da mesma mão. A próxima data segue os intervalos do seu plano. Sem pontos.';
+export const REGRA_CARDS = 'Cada capítulo traz de 6 a 8 cartões, fichas com uma pergunta na frente e a resposta no verso. Eles entram no seu baralho quando você termina as questões do capítulo pela primeira vez. Na missão aparecem no máximo 8 por dia, primeiro os atrasados e os que você mais esqueceu. Cada card tem 5 etapas de revisão: "Lembrei" passa para a etapa seguinte e o card demora mais para voltar; "Ainda não" volta uma etapa e o card aparece de novo no fim do mesmo dia. Não vale ponto.';

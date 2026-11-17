@@ -29,7 +29,7 @@ const U = require('./comum.cjs');
     confere(!(await pg.$('[data-ev="COMECAR"]')), 'encerrado antes: sem nova missão');
     await cap(pg, 'hoje-encerrado-antes', true);
     // resolução da equipe e "Por quê?" (estado de exemplo)
-    await pg.evaluate(() => { const n = window.__prumo.nucleo; n.carregarExemplo(); n.despachar('COMECAR'); const m = n.st.missao; const it = n.pack.item(m.passos[m.i].id); n.despachar({ tipo: 'RESPONDER', alt: it.alternativas.find(a => !a.certa).letra }); window.__prumo.app.render(); });
+    await pg.evaluate(() => { const n = window.__prumo.nucleo; n.carregarExemplo(); n.despachar('COMECAR'); const m = n.st.missao; const it = n.missao.itemDe(m.passos[m.i].id); n.despachar({ tipo: 'RESPONDER', alt: it.alternativas.find(a => !a.certa).letra }); window.__prumo.app.render(); });
     await pg.waitForSelector('[data-ev="VER_RESOLUCAO"]');
     await pg.click('[data-ev="VER_RESOLUCAO"]');
     await pg.waitForSelector('.resolucao');

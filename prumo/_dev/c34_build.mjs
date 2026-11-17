@@ -9,6 +9,7 @@ import { CAPITULOS, MODELOS, QUESTOES, AUTORIA } from './c34_fonte.mjs';
 import { contasJuntas, reaisJuntos } from '../conteudo/gerador.js';   // a quebra de linha não cai no meio de uma conta
 import { conferir } from './conferencia_c34.mjs';
 import { CONFERENCIA, PDF, corrigirRaw } from './correcoes_enem.mjs';
+import { soltarNbsp } from './enem_md.mjs';   // U+00A0 das quebras de linha do PDF vira espaço comum (e.1)
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 const PRUMO = resolve(aqui, '..');
@@ -49,7 +50,7 @@ function gramas(t, n = 6) { const p = palavras(t), s = new Set(); for (let i = 0
 // ------------------------------------------------------------------ markdown do enem.dev → HTML (só formato)
 function mdParaHtml(md, imagens, id) {
   const usadas = [];
-  const blocos = md.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+  const blocos = soltarNbsp(md).split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
   const html = blocos.map(b => {
     const img = b.match(/^!\[[^\]]*\]\((\S+)\)$/);
     if (img) {

@@ -110,7 +110,7 @@ const P2 = {
   blocos: [
     { id: 'mat-fa.p2.b1', paragrafos: [
       p('mat-fa.p2.b1.s1', 1, 'Todo preço com uma parte fixa e uma parte por unidade cabe num molde: <strong>y = ax + b</strong>. Isso é uma <strong>função afim</strong>. O número a é a taxa de variação: quanto y muda a cada unidade a mais de x. O número b é o valor de y quando x = 0, o ponto de partida. No táxi da página anterior, a = 3 (reais por km) e b = 6 (a bandeirada). Nos livros, a se chama coeficiente angular, e b, coeficiente linear.'),
-      p('mat-fa.p2.b1.s2', 2, 'No enunciado, algumas palavras mostram o lugar de cada número. “Fixo”, “só uma vez”, “de entrada” e “de instalação” apontam para o b, que fica somado. “Por”, “a cada”, “por unidade” e “por dia” apontam para o a, que multiplica o x. Cuidado com a palavra “taxa” sozinha: uma taxa de entrega ou de instalação costuma ser cobrada uma vez só. Quem decide é o “por”.'),
+      p('mat-fa.p2.b1.s2', 2, 'No enunciado, algumas palavras mostram o lugar de cada número. “Fixo”, “só uma vez”, “de entrada” e “de instalação” apontam para o b, que fica somado. “Por”, “a cada”, “por unidade” e “por dia” apontam para o a, que multiplica o x. Cuidado com a palavra “taxa” sozinha: uma taxa de entrega ou de instalação costuma ser cobrada uma vez só. Quem decide é o “por”, ou o preço de uma unidade (“o metro cúbico custa…”).'),
       p('mat-fa.p2.b1.s3', 3, 'Agora, confira quem entra na conta. Uma escola leva x pessoas a uma feira de ciências: a professora e os alunos. A escola paga R$ 150 fixos à professora pela viagem e R$ 20 de lanche por dia a cada aluno, durante 2 dias, ou seja, 2 × 20 = R$ 40 por aluno. Como x conta todo mundo, os alunos são <strong>x − 1</strong>. O gasto total da escola é y = 40(x − 1) + 150 = 40x + 110. Usar x no lugar de x − 1 é contar a professora como aluna.'),
     ] },
     { id: 'mat-fa.p2.b2', prePergunta: 'mat-fa.p2.b2.m', paragrafos: [
@@ -122,13 +122,13 @@ const P2 = {
 const P3 = {
   id: 'mat-fa.p3', n: 3, capitulo: 'mat-fa.c2', titulo: 'O que cada ponto diz',
   modelo: 'mat-fa.p3.m', nucleo: 'mat-fa.p3.b2',
-  notaPrompt: 'Com suas palavras: num gráfico de velocidade, qual a diferença entre trecho horizontal e trecho em zero?',
+  notaPrompt: 'Com suas palavras: num gráfico de velocidade, qual a diferença entre um trecho horizontal fora do zero e um trecho em zero?',
   // fonte (e.2): é dela que Pack.creditos() lê a autoria da página; sem ela, os créditos diriam "autoria não registrada".
   credito: CRED, fonte: CRED,
   blocos: [
     { id: 'mat-fa.p3.b1', paragrafos: [
       p('mat-fa.p3.b1.s1', 1, 'Antes de qualquer conta, leia os eixos. Em quase todo gráfico de linha, o eixo horizontal é o tempo, e o vertical é a grandeza que muda: temperatura, velocidade, preço. Confira a unidade de cada eixo (minuto ou hora? km/h ou m/s?) e de quanto em quanto a escala anda: de 1 em 1, de 2 em 2, de 5 em 5.'),
-      p('mat-fa.p3.b1.s2', 2, 'Cada ponto da linha é um par: um instante e um valor. Para ler um ponto, desça dele até o eixo do tempo e vá para o lado até o eixo vertical. Num gráfico da velocidade de um ônibus, o ponto (8; 40) quer dizer que, aos 8 minutos, o ônibus estava a 40 km/h.'),
+      p('mat-fa.p3.b1.s2', 2, 'Cada ponto da linha é um par: um instante e um valor. Para ler um ponto, desça dele até o eixo do tempo para achar o instante; depois, do mesmo ponto, vá para o lado até o eixo vertical para achar o valor. Num gráfico da velocidade de um ônibus, o ponto (8; 40) quer dizer que, aos 8 minutos, o ônibus estava a 40 km/h.'),
     ] },
     { id: 'mat-fa.p3.b2', paragrafos: [
       p('mat-fa.p3.b2.s3', 3, 'Muitas questões perguntam “por quanto tempo”. A resposta é uma duração: <strong>instante do fim menos instante do começo</strong>. Se a velocidade ficou em 40 km/h dos 6 aos 10 minutos, isso durou 10 − 6 = 4 minutos. Não conte as linhas da grade: de 6 a 10, de 2 em 2, há três marcas (6, 8 e 10), mas o trecho dura 4 minutos.'),
@@ -466,7 +466,7 @@ const CARDS_C1 = [
   card('mat-fa.c1.card4', 'palavra-pista', 'mat-fa.p2.b1', 'mat-fa.p2.b1.s2', 'Palavras que apontam a parte fixa',
     '“Fixo”, “só uma vez”, “de entrada”, “de instalação”. Esse número fica somado, sem x.'),
   card('mat-fa.c1.card5', 'palavra-pista', 'mat-fa.p2.b1', 'mat-fa.p2.b1.s2', 'Palavras que apontam o número que multiplica o x',
-    '“Por”, “a cada”, “por unidade”, “por dia”. Esse número é o a de y = ax + b, a taxa de variação.'),
+    '“Por”, “a cada”, “por dia” ou o preço de uma unidade (“o metro cúbico custa…”). É o a de y = ax + b.'),
   card('mat-fa.c1.card6', 'armadilha', 'mat-fa.p2.b1', 'mat-fa.p2.b1.s3', 'Grupo de x pessoas, uma com valor fixo: quantas entram na conta por dia?',
     'x − 1. Quem tem valor fixo faz parte do total, mas fica fora da conta por dia.'),
   card('mat-fa.c1.card7', 'procedimento', 'mat-fa.p2.b2', 'mat-fa.p2.b2.s4', 'Como escrever p% de uma quantidade q?',

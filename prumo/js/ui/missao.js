@@ -10,7 +10,7 @@ import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
 import {
   topo, enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, nivel,
-  botaoContinuar, animarContinuar, prepararFiguras, questaoCab,
+  botaoContinuar, animarContinuar, prepararFiguras, questaoCab, teoria,
 } from './componentes.js';
 
 const CADERNO = new Set(['enem', 'equipe']);   // aí o cabeçalho "QUESTÃO 162" já é o título da tela
@@ -78,7 +78,24 @@ function notaForm(n) {
   </form>`;
 }
 
+/** Teoria de um tópico de prática, dentro da missão (a apostila na folha pautada). */
+function leituraTeoria(ctx, vm) {
+  return {
+    chave: `teoria:${vm.topo.passo.n}:${vm.id}`,
+    titulo: `Teoria: ${vm.titulo}`,
+    html: h`<main class="missao missao-leitura">
+      ${topo(vm.topo)}
+      ${vm.faixa ? h`<p class="pr-recado" role="status">${vm.faixa}</p>` : ''}
+      ${vm.jaSei ? h`<p class="ja-sei"><button type="button" class="link link-discreto" data-ev="${vm.jaSei.evento}">${vm.jaSei.rotulo}</button></p>` : ''}
+      ${teoria(vm)}
+      <div class="fim-leitura"><button type="button" class="botao botao-largo" data-ev="${vm.botao.evento}">${vm.botao.rotulo}</button></div>
+    </main>`,
+    depois(raiz) { figuras(ctx, raiz); },
+  };
+}
+
 function leitura(ctx, vm) {
+  if (vm.teoria) return leituraTeoria(ctx, vm);
   return {
     chave: `leitura:${vm.topo.passo.n}:${vm.pagina.id}`,
     titulo: `Leitura da p. ${vm.pagina.n}`,
@@ -174,6 +191,23 @@ function rolarAteAncora(raiz, ancora) {
 }
 function trecho(ctx, vm) {
   const fb = vm.feedback;
+  if (vm.teoria) {
+    return {
+      chave: `trechoTeoria:${vm.id}`,
+      titulo: vm.titulo,
+      html: h`<div inert aria-hidden="true"><main class="missao">${topo(fb.topo, { medidor: fb.medidor })}${corpoFeedback(ctx, fb, { foco: false })}</main></div>
+        <div class="folha-fundo"><div class="folha folha-alta" role="dialog" aria-modal="true" aria-labelledby="trecho-titulo">
+          <div class="folha-cabeca"><h1 class="folha-titulo" id="trecho-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1></div>
+          <div class="folha-corpo" id="trecho-corpo">${teoria(vm, { tituloComoH1: false })}</div>
+          <div class="folha-pe"><button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>
+        </div></div>`,
+      depois(raiz) {
+        document.documentElement.style.overflow = 'hidden';
+        figuras(ctx, raiz);
+        return () => { document.documentElement.style.overflow = ''; };
+      },
+    };
+  }
   return {
     chave: `trecho:${vm.ancora}`,
     titulo: `Trecho, ${vm.titulo || vm.rotulo}`,
@@ -221,7 +255,7 @@ function cards(ctx, vm) {
   const classeGiro = vm.virado && !animarVirada ? 'virado' : '';
   return {
     chave: `cards:${vm.id}:${vm.repeticao ? 'volta' : 'ida'}`,
-    titulo: 'Cards',
+    titulo: 'Cartões',
     html: h`<main class="missao">
       ${topo(vm.topo, { medidor: null, semRegra: true })}
       <section class="mao" aria-labelledby="mao-rotulo">

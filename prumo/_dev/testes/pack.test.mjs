@@ -43,12 +43,12 @@ for (const pk of await packs()) {
       }
     }
   });
-  test(`[${pk.nome}] g.8 · créditos: cada item com a licença; "rascunho por IA, revisão pendente"; terceiros da Q150`, () => {
+  test(`[${pk.nome}] g.8 · créditos: cada item com a licença; "revisão em andamento", sem mencionar IA na tela; terceiros da Q150`, () => {
     const c = new Pack(pk.dados).creditos();
     assert.ok(c.itens.length > 0);
     for (const i of c.itens) assert.ok(i.licenca, `${i.id} sem licença`);
-    assert.ok(c.itens.some(i => /rascunho por IA.*revisão pendente/.test(i.autoria)));
-    assert.ok(!c.itens.some(i => /rascunho por IA \(true/.test(i.autoria)));
+    assert.ok(c.itens.some(i => /revisão em andamento/.test(i.autoria)));
+    assert.ok(!c.itens.some(i => /IA|Claude|intelig[eê]ncia artificial/i.test(`${i.autoria} ${i.fonte} ${i.detalhe}`)), 'nada de IA na tela');
     if (pk.nome === 'mat-fa.js') {
       const q150 = c.itens.find(i => i.id === 'enem-2023-150');
       assert.ok(q150 && q150.terceiros, 'a linha de terceiros da Q150 vai para os créditos');

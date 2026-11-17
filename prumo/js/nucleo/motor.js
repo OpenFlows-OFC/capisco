@@ -30,12 +30,17 @@ export const P = Object.freeze({
   horizontePadrao: 90,     // sem data de prova
 });
 export const NIVEIS = ['lembrar', 'compreender', 'aplicar'];
+const cap1 = s => s.charAt(0).toUpperCase() + s.slice(1);
 export const NIVEL = ['Novo', 'Aprendendo', 'Firmando', 'Firme', 'Forte', 'Dominado'];
 export const MATERIAS = { mat: 'Matemática', cn: 'Ciências da Natureza', ch: 'Ciências Humanas', lc: 'Linguagens' };
 export const CHEFE = 'chefe:';
 export const ehChefe = id => typeof id === 'string' && id.startsWith(CHEFE);
 export const chefeId = cjId => CHEFE + cjId;
-export const nomeNivel = k => NIVEL[k] || NIVEL[0];
+/** Rótulo do nível para a tela (os nomes de NIVEL são só chaves internas): "nível 2 de 5"; o topo, "nível 5 de 5: dominado". */
+export const rotuloNivel = k => (k >= 1 ? (k >= 5 ? 'nível 5 de 5: dominado' : `nível ${k} de 5`) : 'ainda não começou');
+/** "no nível 2 de 5" (para "entrou no", "continua no", "volta para o"). */
+export const noNivel = k => `no ${rotuloNivel(k)}`;
+export const nomeNivel = k => rotuloNivel(k);
 
 /* ---------------- Pilar VI · horizonte e intervalos (sem índice) ---------------- */
 export function prova(st, d = R.hoje()) {
@@ -112,7 +117,7 @@ export function criarMotor(indice) {
 
   function chefeEstado(st, cjId) {
     const cj = IDX.conjuntos[cjId];
-    if (!cj) return 'bloqueado';
+    if (!cj || cj.semProva) return 'bloqueado';   // os tópicos de prática não têm Prova do caderno
     if ((st.chefes || {})[cjId] && st.chefes[cjId].venceu !== false) return 'vencido';
     return cj.topicos.every(t => ((st.topicos[t.id] || {}).caixa || 0) >= P.limiarChefe) ? 'disponivel' : 'bloqueado';
   }
@@ -144,12 +149,12 @@ export function criarMotor(indice) {
     switch (e) {
       case 'bloqueado':
         if (t.travado && travadoAtivo(st, id, d)) return `Bateu no teto na primeira rodada. Antes de voltar, a prática vai para ${nomeCurto(t.travado.por)}, que é a base deste. Amanhã ele volta sozinho.`;
-        return `Libera quando ${(T.prereq || []).filter(p => ((st.topicos[p] || {}).caixa || 0) < P.limiarPrereq).map(p => `Cap. ${topico(p).n}`).join(' e ')} estiver${(T.prereq || []).length > 1 ? 'em' : ''} em Aprendendo.`;
+        return `Libera quando ${(T.prereq || []).filter(p => ((st.topicos[p] || {}).caixa || 0) < P.limiarPrereq).map(p => `Cap. ${topico(p).n}`).join(' e ')} estiver${(T.prereq || []).length > 1 ? 'em' : ''} no nível 1 de 5.`;
       case 'novo': return 'Pré-requisitos em dia. Pronto para a primeira rodada.';
       case 'pratica': return 'Já teve tentativas, mas ainda não venceu a primeira rodada.';
-      case 'consolidado': return `${nomeNivel(t.caixa)}. A revisão vence em ${R.fmtCurta(t.proxima)}, quando a lembrança estimada chega a 85%.${est}`;
-      case 'agendado': return `${nomeNivel(t.caixa)}. A revisão vence hoje: a lembrança estimada chegou a 85%.${est}`;
-      case 'vencido': return `${nomeNivel(t.caixa)}. A revisão venceu em ${R.fmtCurta(t.proxima)}; revisões atrasadas vêm primeiro.${est}`;
+      case 'consolidado': return `${cap1(nomeNivel(t.caixa))}. A revisão vence em ${R.fmtCurta(t.proxima)}, quando a lembrança estimada chega a 85%.${est}`;
+      case 'agendado': return `${cap1(nomeNivel(t.caixa))}. A revisão vence hoje: a lembrança estimada chegou a 85%.${est}`;
+      case 'vencido': return `${cap1(nomeNivel(t.caixa))}. A revisão venceu em ${R.fmtCurta(t.proxima)}; revisões atrasadas vêm primeiro.${est}`;
     }
     return '';
   }
@@ -265,12 +270,12 @@ export function criarMotor(indice) {
       t.ultimoOk = d;
       t.ultimoOkEm = R.agora();
       delete t.travado;
-      out.regra = `${T.nome} entrou em ${nomeNivel(t.caixa)}. Revisão: ${R.fmtRelativa(t.proxima, d)}.`;
+      out.regra = `${T.nome} entrou ${noNivel(t.caixa)}. Revisão: ${R.fmtRelativa(t.proxima, d)}.`;
     } else if (antes >= 1) {
       // não acontece no Prumo (revisão usa fecharRevisao), mantido do motor: o consolidado não zera
       t.caixa = 1;
       t.proxima = R.addDias(d, 1);
-      out.regra = `Rodada encerrada em ${rodada.tentativas} tentativas. O Cap. ${T.n} volta para Aprendendo e revisa amanhã. Seu histórico continua.`;
+      out.regra = `Rodada encerrada em ${rodada.tentativas} tentativas. O Cap. ${T.n} volta para o nível 1 de 5 e revisa amanhã. Seu histórico continua.`;
     } else {
       // teto na primeira vez: falta base; a prática vai para o pré-requisito
       t.caixa = 0;
@@ -303,8 +308,9 @@ export function criarMotor(indice) {
   function fecharRevisao(st, capId, res, d = R.hoje()) {
     const t = reg(st, capId), iv = intervalos(st, d), antes = t.caixa || 0;
     const max = (st.config && st.config.nivelMaximo) || P.caixas;
-    t.caixa = res === 'ok' ? Math.min(max, Math.max(1, antes + 1)) : 1;
-    t.proxima = R.addDias(d, iv[t.caixa]);
+    // certa sobe um nível; errada desce UM nível (nunca abaixo de 1) e a revisão volta para amanhã
+    t.caixa = res === 'ok' ? Math.min(max, Math.max(1, antes + 1)) : Math.max(1, antes - 1);
+    t.proxima = res === 'ok' ? R.addDias(d, iv[t.caixa]) : R.addDias(d, 1);
     if (res === 'ok') { t.ultimoOk = d; t.ultimoOkEm = R.agora(); delete t.travado; }
     t.rodadas.push({ dia: d, tipo: 'revisao', de: antes, para: t.caixa, venceu: res === 'ok', tentativas: 1 });
     const out = { id: capId, revisao: true, venceu: res === 'ok', caixaAntes: antes, caixaDepois: t.caixa, proxima: t.proxima, intervalo: iv[t.caixa] };

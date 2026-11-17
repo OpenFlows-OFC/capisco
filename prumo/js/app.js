@@ -7,11 +7,19 @@
 import { criarNucleo, relogio } from './nucleo/nucleo.js';
 import { pack } from '../conteudo/mat-fa.js';
 import { criarApp, telaCheia } from './ui/casca.js';
+import { IDS_PRATICA } from './nucleo/pratica.js';
+
+// tópicos de prática: carrega o que existir; arquivo ausente ou com erro → o tópico aparece "em preparação"
+const carregar = async arq => { try { return await import(arq); } catch (e) { return null; } };
+const praticas = await Promise.all(IDS_PRATICA.map(async id => {
+  const [t, te] = await Promise.all([carregar(`../conteudo/praticas/${id}.js`), carregar(`../conteudo/praticas/${id}.teoria.js`)]);
+  return { id, topico: t && t.topico, teoria: te && te.teoria };
+}));
 
 const raiz = document.getElementById('app');
 let app = null;
 try {
-  const nucleo = criarNucleo({ pack });
+  const nucleo = criarNucleo({ pack, praticas });
   app = criarApp(nucleo, raiz, { relogio });
   app.iniciar();
   window.__prumo = { nucleo, app, relogio };   // apoio aos testes de navegador (_dev/ui)

@@ -9,13 +9,10 @@ import { h, cru, cada, escolherArquivo } from './dom.js';
 import { registrar } from './registro.js';
 import { marca } from './componentes.js';
 
-export function telaAjustes(ctx) {
+/** As seções de som, dados, demonstração, "o que o Prumo não tem" e créditos (hoje dentro do Perfil). */
+export function secoesAjustes(ctx) {
   const n = ctx.nucleo, a = n.ajustes(), cr = n.creditos(), nt = n.naoTem();
-  return {
-    chave: 'ajustes',
-    titulo: 'Ajustes e dados',
-    html: h`<div class="linha-topo">${marca()}<a class="link" href="#/hoje">Voltar</a></div>
-      <h1 class="titulo" tabindex="-1" data-foco-inicial>Ajustes e dados</h1>
+  return h`
 
       <section class="secao" aria-labelledby="aj-som">
         <h2 class="titulo-pequeno" id="aj-som">${a.som.rotulo}</h2>
@@ -36,6 +33,7 @@ export function telaAjustes(ctx) {
 
       <section class="secao" aria-labelledby="aj-demo">
         <h2 class="titulo-pequeno" id="aj-demo">Modo demonstração</h2>
+        ${a.demo.explica ? h`<p class="pequeno texto-2">${a.demo.explica}</p>` : ''}
         ${a.demo.ativo ? h`<p class="pequeno">Data simulada: ${a.demo.data}</p>` : ''}
         <ul class="links">
           <li><button type="button" class="link" data-acao="ajAvancar" data-arg="1">Avançar 1 dia</button></li>
@@ -52,10 +50,12 @@ export function telaAjustes(ctx) {
 
       <section class="secao" aria-labelledby="aj-cr">
         <h2 class="titulo-pequeno" id="aj-cr">Créditos e licenças</h2>
-        <p class="pequeno">${cr.ia || ''}</p>
         <ul class="lista-fios">${cada(cr.app || [], x => h`<li class="pequeno">${x.item}: ${x.licenca}, ${x.fonte}.</li>`)}</ul>
-      </section>`,
-  };
+      </section>`;
+}
+
+export function telaAjustes(ctx) {
+  return { chave: 'ajustes', titulo: 'Ajustes e dados', html: h`<div class="linha-topo">${marca()}<a class="link" href="#/perfil">Voltar</a></div><h1 class="titulo" tabindex="-1" data-foco-inicial>Ajustes e dados</h1>${secoesAjustes(ctx)}` };
 }
 
 registrar({

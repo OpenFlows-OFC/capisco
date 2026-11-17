@@ -92,11 +92,11 @@ for (const pk of await packs()) {
     const c = mm(base({}, { prova: '2026-11-01' }));
     assert.equal(c.regra, 'R8'); assert.ok(c.passos.length > 0);
   });
-  test(`[${P}] f.1 · R5a (pré-requisito abaixo de Firmando), R5b (mesmo capítulo) e R7 (continuar)`, () => {
+  test(`[${P}] f.1 · R5a (pré-requisito abaixo do nível 2 de 5), R5b (mesmo capítulo) e R7 (continuar)`, () => {
     const teto = { caixa: 0, proxima: null, tentativas: [{ item: 'enem-2019-143', dia: '2026-11-17', em: 1, res: 'erro', alt: 'A' }], rodadas: [{ dia: '2026-11-17', venceu: false, tentativas: 5, de: 0, para: 0, tipo: 'novo' }] };
     const a = mm(base({ topicos: { 'mat-fa.c1': aberto(2, '2026-11-25'), 'mat-fa.c2': aberto(1, '2026-11-25'), 'mat-fa.c3': teto } }));
     assert.equal(a.regra, 'R5a'); assert.equal(a.cap, 'mat-fa.c2');
-    assert.match(a.frase, /^O Cap\. 3 bateu no teto na última rodada, e a base dele, o Cap\. 2, ainda está em Aprendendo\./);
+    assert.match(a.frase, /^O Cap\. 3 bateu no teto na última rodada, e a base dele, o Cap\. 2, ainda está no nível 1 de 5\./);
     const b = mm(base({ topicos: { 'mat-fa.c1': aberto(2, '2026-11-25'), 'mat-fa.c2': aberto(2, '2026-11-25'), 'mat-fa.c3': teto } }));
     assert.equal(b.regra, 'R5b'); assert.equal(b.cap, 'mat-fa.c3'); assert.equal(b.passos[0].t, 'pre');
     const pratica = { caixa: 0, proxima: null, tentativas: [{ item: 'mat-fa.p1.m#1', dia: '2026-11-17', em: 1, res: 'ok', alt: 'A' }], rodadas: [], parouEm: 'mat-fa.p2' };
@@ -125,17 +125,17 @@ for (const pk of await packs()) {
     assert.equal(n.st.missao.regra, 'R5b');
     const ap = n.st.missao.passos.filter(p => p.papel === 'aplicar' && p.t === 'questao');
     assert.ok(ap.length && ap.every(p => p.origem === 'equipe'));
-    assert.equal(n.hoje().bloco.ganho, 'Acerte duas seguidas, uma delas numa questão de aplicar (do Enem ou da equipe): o Cap. 1 entra em Aprendendo.');
+    assert.equal(n.hoje().bloco.ganho, 'Acerte duas seguidas, uma delas numa questão de aplicar (do Enem ou da equipe): o capítulo Parte fixa e parte que varia entra no nível 1 de 5.');
     // erra as checagens e vence com duas questões da equipe no papel de aplicar
     jogar(n, rel, { decidir: p => (p.t === 'checagem' ? 'errada' : 'certa'), parar: x => x.estado() === 'pergunta' && passo(x).papel === 'aplicar' && passo(x).t === 'questao' });
-    assert.equal(n.tela().vm.topo.medidor.texto, 'a contagem recomeça');
+    assert.equal(n.tela().vm.topo.medidor.texto, 'Para fechar: 2 certas seguidas, faltam 2');
     responder(n, 'certa'); continuar(n, rel);
-    assert.equal(n.tela().vm.topo.medidor.texto, 'Falta mais um acerto seguido');
+    assert.equal(n.tela().vm.topo.medidor.texto, 'Para fechar: 2 certas seguidas, falta 1');
     responder(n, 'certa');
     assert.equal(n.st.topicos['mat-fa.c1'].caixa, 1, '4 + 4 = 8: venceu com duas questões da equipe');
   });
 
-  test(`[${P}] g.8 · R5a pelo motor: o capítulo que bate no teto manda a prática para o pré-requisito em Aprendendo`, () => {
+  test(`[${P}] g.8 · R5a pelo motor: o capítulo que bate no teto manda a prática para o pré-requisito no nível 1 de 5`, () => {
     const { n, rel } = novo(pk.dados);
     jogar(n, rel); n.despachar('FECHAR');                                     // qua 18: Cap. 1
     irPara(n, rel, '2026-11-19'); jogar(n, rel); n.despachar('FECHAR');       // qui 19: Cap. 2 + revisão do Cap. 1

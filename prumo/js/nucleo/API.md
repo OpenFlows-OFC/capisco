@@ -14,7 +14,7 @@ nucleo.despachar({ tipo: 'COMECAR' });          // evento → true se houve tran
 ({ nome, vm, faixas } = nucleo.tela());        // depois de todo evento ou ação, desenhe de novo
 ```
 
-- `criarNucleo({ pack, storage })`: `storage` é opcional (padrão: `localStorage`; nos testes, `memoria()` de `estado.js`).
+- `criarNucleo({ pack, storage, praticas })`: `praticas` é a lista `[{ id, topico, teoria }]` dos tópicos de prática (o `app.js` importa `conteudo/praticas/<id>.js` e `<id>.teoria.js` dos ids de `IDS_PRATICA`; arquivo ausente ou inválido → o tópico aparece "em preparação"); `storage` é opcional (padrão: `localStorage`; nos testes, `memoria()` de `estado.js`).
 - `nucleo.tela()` devolve `{ nome, vm, faixas }`. `nome` é o estado da máquina (seção 3); `vm` é o view model dele; `faixas` traz as faixas fixas: `demo` (modo demonstração: `{ texto, dataSimulada, sair, rotulo: 'Modo demonstração', frase: 'dados de exemplo, data simulada 18/11.' }`; a tela usa `rotulo` + `frase`, no formato do Recado), `falhaSalvar` (`{ texto, acao }`, quando o `localStorage` falhou) e `carga`.
 - Todo efeito acontece dentro da transição e é salvo na hora. Recarregar a página volta ao mesmo passo: a tela não precisa guardar nada.
 - Ao voltar para o app (`visibilitychange`) e perto da meia-noite, chame `nucleo.conferirData()`: com a missão pela metade, ela fecha a de ontem, mostra a faixa "Ontem você parou no passo N de M. Ficou registrado." e monta a de hoje.
@@ -38,7 +38,7 @@ No app, o modo demonstração usa `nucleo.avancarDias(1)` ou `nucleo.avancarDias
 | `nome` | Tela | Eventos aceitos |
 |---|---|---|
 | `primeiroUso` | c.1 | `CONCLUIR {perfil}` (ou `nucleo.concluirPrimeiroUso(perfil)`), `RESTAURAR_COPIA {texto}`; "Ver com dados de exemplo" = `nucleo.carregarExemplo()` |
-| `hoje` | Hoje (c.2), inclusive folga, pausa, em curso, Hoje não | `COMECAR`, `CONTINUAR`, `HOJE_NAO`, `ESTUDAR_MESMO_ASSIM` (folga), `ENCERRAR_PAUSA`, `FAZER_PROVA` (só quando `vm.prova` existe) |
+| `hoje` | Hoje (c.2), inclusive folga, pausa, em curso, Hoje não | `COMECAR`, `CONTINUAR`, `HOJE_NAO`, `ESTUDAR_MESMO_ASSIM` (folga), `ENCERRAR_PAUSA`, `FAZER_PROVA` (só quando `vm.prova` existe), `ESTUDAR_TOPICO {id}` ("Estudar este tópico hoje": o tópico vira a missão do dia e começa; ignorado com a missão começada, fechada, em pausa ou com a Prova aberta; `id` do caderno = o fluxo do caderno) |
 | `pergunta` | pré-pergunta, checagem, questão do Enem, questão da equipe, revisão, Questão do dia, revisão antecipada (c.3) | `RESPONDER {alt: 'A'..'E'}` (sem `alt`, é ignorado: não há "não sei") |
 | `leitura` | trecho da página (c.3b) | `TERMINEI_TRECHO`, `JA_SEI`, `SALVAR_NOTA {texto}` |
 | `feedback` | resultado (c.3e, c.3h) | `CONTINUAR` (ignorado antes de `vm.continuar.liberaEm`), `VOLTAR_AO_TRECHO`, `VER_RESOLUCAO` |
@@ -48,7 +48,7 @@ No app, o modo demonstração usa `nucleo.avancarDias(1)` ou `nucleo.avancarDias
 | `trechoCard` | página ancorada no parágrafo do card | `VOLTAR` |
 | `fimDaMao` | resumo da mão quando ainda há passos depois | `SEGUIR` |
 | `encerramento` | Pronto por hoje (c.4) | `FECHAR` |
-| `feito` | Hoje no estado feito | (nenhum; `conferirData()` faz a virada) |
+| `feito` | Hoje no estado feito | `ESTUDAR_TOPICO {id}` (estudo livre; `conferirData()` faz a virada) |
 | `prova` | abertura da Prova (c.3i) | `COMECAR_PROVA`, `AGORA_NAO` |
 | `provaPergunta`, `provaFeedback`, `provaTrecho` | Prova em curso | `RESPONDER`, `CONTINUAR`, `VOLTAR_AO_TRECHO`, `VER_RESOLUCAO`, `VOLTAR`; em todos: `ENCERRAR_PROVA` (não muda nada) |
 | `provaResultado` | resultado da Prova | `FECHAR` |
@@ -86,29 +86,33 @@ Todos os textos já vêm prontos. Campos com `evento` são ações: mande `{ tip
 - `mao()` (cards): `{ id, frente, verso, virado, caixa: {n, nome, rotulo: 'revisão 2 de 5'}, cap ('Cap. 1'), repeticao, rotulo ('Card' | 'Card de volta'), posicao ("3 de 5"), acoes, pendente: { texto, trecho } | null, trecho: { rotulo: "Ver o parágrafo 2 da p. 1", evento: 'VER_TRECHO' }, animacaoMs: 180, regra }`. A virada é de ~180 ms; com `prefers-reduced-motion`, sem animação. Resumo da mão: "Você lembrou 4 de 5 cards. O outro volta em sex 20/11."
 
 ### `prontoPorHoje()` (estado `encerramento`)
-`{ titulo: 'Pronto por hoje', data, visto: { palavra: 'Visto', data: '17/11/2026', obs: 'Cap. 1 em Firme' | null, rotulo (para o leitor de tela) } | null (só quando o dia contou como estudado), fecho ('Por hoje é isso. Está tudo guardado neste aparelho.'), constancia: { simbolo: 'risquinhos', diasEstudados, rotulo, tracoDeHoje }, semanaPassada, mudancas: [{tipo, texto (frase, sem cadeia de pontos: "O Cap. 1 entrou em Aprendendo. Próxima revisão: amanhã, qui 19/11."), nivel?}], nivelAnimado, parcial, vazio, naoContou, proxima: { texto ("Quinta, 19/11: Cap. 2 (novo) e revisão do Cap. 1."), gancho, porque, rotuloPorque }, copia (linha semanal), som, acao: { evento: 'FECHAR' } }`. Não há oferta de nada (limite diário).
+`{ titulo: 'Pronto por hoje', data, visto: { palavra: 'Visto', data: '17/11/2026', obs: 'Cap. 1, nível 3 de 5' | null, rotulo (para o leitor de tela) } | null (só quando o dia contou como estudado), fecho ('Por hoje é isso. Está tudo guardado neste aparelho.'), constancia: { simbolo: 'risquinhos', diasEstudados, rotulo, tracoDeHoje }, semanaPassada, mudancas: [{tipo, texto (frase, sem cadeia de pontos: "O Cap. 1 entrou em Aprendendo. Próxima revisão: amanhã, qui 19/11."), nivel?}], nivelAnimado, parcial, vazio, naoContou, proxima: { texto ("Quinta, 19/11: Cap. 2 (novo) e revisão do Cap. 1."), gancho, porque, rotuloPorque }, copia (linha semanal), som, acao: { evento: 'FECHAR' } }`. Não há oferta de nada (limite diário).
 
 ### `prova()` (estados `prova*`)
 Abertura: `{ titulo, regra, tamanho, aviso, trofeu, reaproveita, acoes }`. Em curso: `topo: { casas: [{cap, rotulo, cheia}], tentativa: "tentativa 5 de 12", eventoEncerrar: 'ENCERRAR_PROVA', avisoEncerrar }`. Resultado: `{ venceu, titulo, texto, trofeu, selo }` ou `{ venceu: false, texto, linhaRevisar, volta }`.
 
 ### Caderno, Plano e Ajustes (abas; leitura livre)
-- `sumario()`: `{ titulo, avisoDemo ("Na demo, o nível vai até Firme."), capitulos: [{ n, titulo, paginas, paginaIds, nivel: {caixa, nome, segmentos: 5, cheios}, estado ("em dia · revisar sex 20/11", "revisar hoje", "atrasada há 2 dias", "Aprendendo · revisar amanhã", "não aberto", "em prática", "bloqueado"), bloqueado, regra, antesDepois, cards, verARegra }], prova: { regra, estado, texto, trofeu, selos }, marcos: [{ nome, condicao, dia, texto }], niveis, regraNivel }`. Capítulo bloqueado não usa cadeado: mostre o número em contorno e `regra`.
+- `sumario()`: `{ titulo, avisoDemo ("Na demo, o nível vai até 3 de 5."), capitulos: [{ n, titulo, paginas, paginaIds, nivel: {caixa, nome ('nível 2 de 5' | null), rotulo ('nível 2 de 5' | 'ainda não começou'), segmentos: 5, cheios}, estado (frase: "Em dia. Próxima revisão: sex 20/11.", "Revisão marcada para hoje.", "Revisão atrasada há 2 dias.", "Voltou para Aprendendo. Próxima revisão: amanhã.", "Ainda não começou.", "Começado. Falta acertar duas seguidas…", "bloqueado"), bloqueado, regra, antesDepois, cards, verARegra }], prova: { regra, estado, texto, trofeu, selos }, marcos: [{ nome, condicao, dia, texto }], niveis, regraNivel }`. Capítulo bloqueado não usa cadeado: mostre o número em contorno e `regra`.
 - `pagina(id)`: leitor (c.6) `{ cabeco, n, titulo, blocos, notaPrompt, irAlem, credito, anterior, seguinte }`. Ler não conta como dia estudado.
-- `erros(filtroCap?)`: `{ filtros, itens: [{ id, capRotulo, dia, questao: {rotulo, enunciado, alternativas (com marca)}, linha ("você marcou E / certa D"), falta, anotacao, foiIsso: {valor, pergunta, opcoes}, trecho, situacao, estado, refazer: { disponivel, rotulo, motivo }, irAlem }], vazio }`.
+- `erros(filtroCap?)`: `{ filtros, itens: [{ id, capRotulo, dia, questao: {rotulo, enunciado, alternativas (com marca)}, linha ("Você marcou E. A certa é D."), falta, anotacao, foiIsso: {valor, pergunta, opcoes}, trecho, situacao, estado, refazer: { disponivel, rotulo: "Refazer com outros números", nota: "Uma vez por dia. Não muda o nível.", motivo }, irAlem }], vazio }`.
 - `notas()`: `{ capitulos: [{ titulo, notas: [{id, texto, dia, trecho}] }], vazio }`.
 - `cardsDoCaderno()` (aba "Cards"): `{ capitulos: [{ titulo, recebidoEm, cards: [{ frente, verso, caixaNome, proxima, proximaTexto, trecho }], aviso }], regra, aviso }`. Consultar é livre; jogar, só na missão.
-- `plano()`: `{ prova: {texto, faltam, horizonte, retaFinal}, tiposProva, dias: {valor, texto}, minutos, meta: {valor, texto, regra}, pausa, lembrete: {texto: "Prumo · seg, ter, qua, qui · 19:00", como}, agenda: agenda(), constancia: constancia(), intervalos: { porNivel, verARegra } }` (o texto de `verARegra` vai só em "ver a regra").
-- `agenda()`: 14 dias `[{ dia, rotulo, tipo: 'estudo'|'folga'|'pausa', itens, texto: "qui 19/11 · Cap. 2 (novo) + revisão do Cap. 1" }]`, `tudoFirme`, `porQueEstaOrdem`.
+- `plano()`: `{ prova: {texto (frase: "Prova da escola (bimestral) em 15/12/2026. Faltam 27 dias."), cabecalho ([{rotulo: 'Data da prova', valor: '15/12/2026'}, {rotulo: 'Faltam', valor: '27', unidade: 'dias'}], `null` sem data; o Plano desenha com `cabecalhoProva`), nome, faltam, horizonte, retaFinal}, tiposProva, dias: {valor, texto: "Segunda, terça, quarta e quinta, 25 minutos por dia."}, minutos, meta: {valor, texto, regra}, pausa, lembrete: {texto (nome do alarme: '"Prumo", às 19:00, segunda, terça, quarta e quinta'), como}, agenda: agenda(), constancia: constancia(), intervalos: { porNivel, verARegra } }` (o texto de `verARegra` vai só em "ver a regra").
+- `agenda()`: 14 dias `[{ dia, rotulo, tipo: 'estudo'|'folga'|'pausa', itens, status?, texto: "Qui 19/11: Cap. 2 (novo) e revisão do Cap. 1." }]` (inclui as revisões dos tópicos de prática), `tudoFirme`, `porQueEstaOrdem`.
 - `constancia()`: `{ simbolo: 'risquinhos', diasEstudados, rotulo, regua: [{dia, n, longo, latao}], miniRegua (últimas 4 semanas), semanasComMeta, linhaMeta ("semanas com a meta: 3"), vazio, regra }`. Os risquinhos (grupos de 5) saem de `diasEstudados` e só crescem; a chama saiu (decisão do dono).
-- `ajustes()`: som, dados (cópia, CSV, restaurar, copiar dados, apagar com confirmação), demo. Não há mais "Símbolo da constância".
+- `ajustes()`: som, dados (cópia, CSV, restaurar, copiar dados, apagar com confirmação), demo (com `explica`, a frase do que é o modo demonstração). Não há mais "Símbolo da constância".
 - `creditos()`: créditos do pack item a item (licença, autoria, "rascunho por IA, revisão pendente", terceiros) mais fontes do app e a nota de IA. `naoTem()`: "O que o Prumo não tem".
 - `primeiroUso()`: opções e textos de c.1, `alarme(dias, horario)` com o texto pronto do alarme.
+
+### Níveis na tela (decisão do dono)
+Os nomes internos de `NIVEL` (motor.js) nunca chegam à tela. O núcleo usa `rotuloNivel(k)` (motor.js): `'ainda não começou'` (0), `'nível 1 de 5'` … `'nível 4 de 5'`, `'nível 5 de 5: dominado'`, e `noNivel(k)` ("no nível 3 de 5") nas frases: "entrou no nível 1 de 5", "subiu para o nível 2 de 5", "continua no nível 3 de 5", "volta para o nível 1 de 5", "a próxima revisão fica para 20/11". Todo `nivel` de view model traz `cheios` (0–5, para a régua de 5 segmentos), `nome` (o rótulo, ou `null` em 0) e `rotulo` (sempre preenchido).
 
 ## 5. Ações (fora da máquina; cada uma salva)
 
 | Ação | Efeito |
 |---|---|
-| `concluirPrimeiroUso({ provaTipo, prova, dias, minutos, metaSemana?, horario?, som?, alarme? })` | cria o plano e monta a missão de hoje |
+| `concluirPrimeiroUso({ provaTipo, prova, dias, minutos, metaSemana?, horario?, som?, alarme?, nome?, areas? })` | cria o plano e monta a missão de hoje (`areas`: 'MT' 'LC' 'CN' 'CH'; padrão `['MT']`) |
+| `definirNome(texto)`, `definirFoto(dataURL|null)` | Perfil: nome (até 40 letras) e foto (data URL png/jpeg/webp de até 200 kB; a tela reduz para ~160 px) |
 | `mudarPlano({ provaTipo?, prova?, dias?, minutos?, metaSemana?, horario? })` | muda o plano; a missão de hoje é remontada se não começou |
 | `marcarPausa(dias)` / `encerrarPausa()` | pausa de 1 a 14 dias; ao encerrar, as revisões e os cards andam os dias da pausa ("nada vence por isso") |
 | `salvarNota({ paragrafo, texto, id? })`, `apagarNota(id)` | notas do leitor; na missão, use `SALVAR_NOTA` |
@@ -132,8 +136,9 @@ Esquema de e.4, com os acréscimos das decisões do dono:
 ```js
 {
   app: 'prumo', versao: 2,
-  perfil: { provaTipo, prova /* 'AAAA-MM-DD' ou null */, dias: [1,2,3,4], metaSemana, minutos: 15|25|40, horario, porque, seEntao, criadoEm },
+  perfil: { provaTipo, prova /* 'AAAA-MM-DD' ou null */, dias: [1,2,3,4], metaSemana, minutos: 15|25|40, horario, porque, seEntao, criadoEm, nome, foto, areas },
   conjuntosAtivos: ['mat-fa'], pausa: { desde, ate },
+  praticas: { 'mat-porcentagem': { desde, pre: { alt, dia, revelado } | null } },   // tópicos de prática começados (a pré-pergunta mora aqui, não em `pre`)
   topicos: { 'mat-fa.c1': { caixa: 0..5, proxima, tentativas: [{ item, dia, em, res: 'ok'|'erro', alt, tipo, primeiraVez }], rodadas: [{ dia, tipo, de, para, venceu, tentativas }], ultimoOk, ultimoOkEm, travado?, parouEm? } },
   pre: { 'mat-fa.p2.m#0': { alt, dia, cap, revelado /* dia da 1ª revisão que mostrou */ } },   // nunca lido por tela antes da 1ª revisão
   vistos: { itemId: dia },                       // resposta já mostrada (regra dos 7 dias)
@@ -159,13 +164,14 @@ Sem campo de minutos, sessões, telemetria ou identificação pessoal. A cópia 
 - `CONTINUAR` no feedback só passa depois de `vm.continuar.liberaEm` (ms, no relógio do núcleo, `relogio.agora()`); antes disso o evento é ignorado. Use `vm.continuar.restanteMs` (calculado na hora em que o view model foi feito) para o preenchimento liso de "Leia a explicação" e libere o botão quando ele terminar.
 - Sons: `vm.som` diz qual tocar (se o som estiver ligado). `null` = silêncio. Nenhuma animação quando `nivel.animar` é `false`.
 - Cards: virada de ~180 ms (sem animação com `prefers-reduced-motion`).
-- Não há "mais uma" depois do Pronto por hoje: o núcleo não oferece nada, e os eventos de missão, Prova e Refazer são ignorados.
+- Depois do Pronto por hoje o app não oferece iscas ("só mais uma", recompensa surpresa): a missão do dia é uma só, e Prova e Refazer ficam para outro dia. O aluno pode continuar por conta própria: `prontoPorHoje().continuar` ("Missão cumprida. Se quiser, pode continuar estudando por conta própria." + link "Continuar estudando" → aba Estudar; também em Hoje feito e na folga). Em Estudar, `ESTUDAR_TOPICO` com a missão fechada abre um **estudo livre** do tópico (`missao.livre`, regra `L`, questões repetíveis): conta como dia estudado e muda o nível pelas mesmas regras, sem um segundo visto (`prontoPorHoje().visto` é null, título "Estudo registrado"); `FECHAR` devolve a missão do dia (já cumprida). O caderno de Funções afins fica para a próxima missão (as páginas seguem livres no Caderno).
 
 ## 8. Módulos
 
 | Arquivo | Conteúdo |
 |---|---|
 | `relogio.js` | relógio injetável e datas em português |
+| `pratica.js` | mapa (AREAS, CONHECIDOS), classe `Praticas` (tópicos carregados + segunda instância do motor, mesmas regras), `montarMissaoGeral` (árvore do caderno + P0–P3), `limparSvg` |
 | `motor.js` | regras do motor herdado do Capisco, adaptado (e.5): níveis, intervalos, `registrar`, `fecharRodada`, `fecharRevisao`, Prova (`fecharChefe`) |
 | `pack.js` | classe `Pack` (consultas, variantes, índice do motor, créditos) e `checar()` (testes do build) |
 | `estado.js` | esquema, normalização, migração, salvar, cópia JSON, restauração, CSV |
@@ -178,3 +184,21 @@ Sem campo de minutos, sessões, telemetria ou identificação pessoal. A cópia 
 | `nucleo.js` | fachada `Nucleo` com os view models e as ações |
 
 Testes: `node --test "_dev/testes/*.test.mjs"` (na pasta `prumo/`). Rodam contra o pack de teste (`_dev/testes/fixture-pack.mjs`) e contra `conteudo/mat-fa.js`; `PRUMO_TESTE_PACK=fixture` ou `PRUMO_TESTE_PACK=real` filtra (o nome `PRUMO_PACK` é do validador do conteúdo, `_dev/valida_pack.mjs`).
+
+
+## 9. Estudar e tópicos de prática (pratica.js)
+
+- `estudar()`: `{ titulo, intro, areas: [{ id, nome, disponivel, escolhida, frase ("Biologia, Física e Química: chega nas próximas versões." quando não há conteúdo), materias: [{ nome, topicos: [{ id, titulo, descricao, disponivel, emPreparacao, caderno, estado, nivel: { cheios, nome, rotulo }, estadoTexto, progresso: { feitas, total, texto } }] }] }], regraNivel }`. O caderno (Funções afins) é o 1º tópico de Matemática.
+- `topicoPagina(id)`: o resumo + `{ area, materia, porQueCai, ideias, composicao, capitulos (caderno), regraNivel, regraHoje, leitura: { rotulo, aba? , nota }, acao: { disponivel, evento: 'ESTUDAR_TOPICO'|'CONTINUAR', id, rotulo, nota } | { disponivel: false, rotulo, motivo } }`. Depois do Pronto por hoje: "abre amanhã" (a teoria segue livre).
+- `teoria(id)` / `teoriaLivre(id)`: `{ teoria: true, titulo, cabeco, porQueCai, secoes: [{ n, titulo, paragrafos, figura: { n, svg (já limpo), alt, legenda } | null, tabela: { cabecalho, linhas, legenda } | null, atencao: { rotulo: 'No Enem', texto } | null, exemplos: [{ n, enunciado, resolucao }] }], armadilhas, resumo, credito }`; a livre traz `livre` e `aviso` (não conta como dia estudado).
+- Partida do tópico (estados de sempre): `pergunta` (pré-pergunta, `tipo: 'pre'`, sem gabarito) → `leitura` com `vm.teoria` (TERMINEI_TRECHO/JA_SEI) → `feedback` com `tipo: 'revela'` (a resposta da pré-pergunta, só depois de ler) → `pergunta`/`feedback` das questões do Enem (o `trecho` de um erro é "Rever a teoria": `VOLTAR_AO_TRECHO` abre a teoria) → `fimDaRodada` → `encerramento`. O nível sai do mesmo motor (rodada: 2 certas seguidas; revisão: vale a primeira resposta; intervalos pela data da prova).
+- Recomendador: P0 tópico escolhido; P2 tópico começado e não vencido quando o caderno não tem capítulo em curso (R8/R9); P3 com o caderno em dia (R9 sem revisão), o próximo tópico das áreas escolhidas; P1 revisões vencidas de tópicos entram na missão do dia.
+- `perfil()`: `{ nome, foto, iniciais, titulo, fotoTexto, fotoNota, plano, ajustes, areas }`; `hoje()` traz `saudacao` ("Oi, Daniel") e `proximoRotulo` ("Seu próximo conteúdo"); `primeiroUso()` traz `frase`, `areas`, `onboarding` (3 telas).
+
+## 10. Retorno diário (sem culpa, sem perda)
+
+- `hoje()` traz também: `venceHoje` (`{ rotulo: 'Hoje vence', n, vence: "Hoje vence 1 revisão do Cap. 4.", porque: 'Revisando hoje, você guarda o conteúdo.', texto }`, só com revisão na missão de hoje), `semana` (= `semana()`), `recomeco` (`{ tipo: 'semana'|'retorno', titulo: 'Semana nova: começa limpa' | 'Bem-vindo de volta. Nada se perdeu.', prova ("Faltam 28 dias para a prova de 15/12."), visto, risquinhos }`; retorno = 3 ou mais dias de estudo sem estudar) e `intencao` (`{ texto: "Seu plano: amanhã, 18h, depois que eu chegar da escola." }`).
+- `semana(d?)`: meta da semana (segunda a domingo) `{ n, meta, cumprida, dias: [{ dia, rotulo, estudado, diaDeEstudo, hoje, futuro }] (7), texto: "2 de 3 dias nesta semana" | "Meta da semana cumprida: 3 de 3 dias.", rotulo, regra }`. A semana seguinte começa limpa; nada de "perdeu".
+- `colecao('AAAA-MM'?)`: Coleção de vistos (Perfil) `{ titulo, mes, rotuloMes, cabecalho (seg…dom), semanas: [[{ dia, n, fora, visto, hoje }]], texto, regra, anterior, seguinte }` a partir de `st.carimbos` (gravado no fim da missão quando o dia contou; estudo livre não carimba; só cresce).
+- `prontoPorHoje()` traz: `quando` ("quando e onde": `{ pergunta, dia, rotuloDia, horario, ancoras, ancora, salvo, lembrete }`), `amanha` (`{ rotulo: 'Amanhã começa por aqui', html (só o enunciado da 1ª pergunta da próxima missão), aviso }`), `continuar` e `visto.retorno` (o visto do dia de volta vem com a anotação "retorno").
+- Ação `definirIntencao({ dia, horario, ancora })`: grava `st.intencao` e o `perfil.horario` (o lembrete). Estado: `carimbos: { dia: true }`, `intencao: { dia, horario, ancora } | null`.

@@ -19,18 +19,18 @@ for (const pk of await packs()) {
     assert.match(cab[1].valor, /^\d+–\d+$/);
     assert.match(cab[2].valor, /^\d+$/); assert.equal(cab[2].unidade, 'min');
     assert.ok(cab.every(c => /^[\d,–\s]+$/.test(c.valor)), 'valor do cabeçalho só com dígitos (vai em Mono)');
-    assert.match(vm.bloco.regra, /^Acerte duas seguidas, uma delas numa questão do Enem: o Cap\. 1 entra em Aprendendo\. Aprendendo: você acertou duas seguidas, e a primeira revisão fica para \d\d\/\d\d\. No fim, o visto do dia\.$/);
+    assert.match(vm.bloco.regra, /^Acerte duas seguidas, uma delas numa questão do Enem: o capítulo Parte fixa e parte que varia entra no nível 1 de 5\. A primeira revisão fica para \d\d\/\d\d\. No fim, o visto do dia\.$/);
     assert.equal(vm.recado, null);
     assert.ok(!/·|≈/.test(vm.bloco.composicao));
   });
 
-  test(`[${P}] design · revisão de um capítulo: "Firme" explicado na primeira ocorrência, com a data exata`, () => {
+  test(`[${P}] design · revisão de um capítulo: "nível N de 5" com a data exata da próxima revisão, com a data exata`, () => {
     const { n } = novo(pk.dados);
     const cap = n.pack.capitulos[0].id;
     n.st.topicos[cap] = Object.assign(n.st.topicos[cap] || { tentativas: [], rodadas: [] }, { caixa: 2 });
     n.st.config.nivelMaximo = 5;
     const regra = n._regraHoje({ tipo: 'revisao', passos: [{ t: 'revisao', cap }] }, '2026-11-18');
-    assert.match(regra, /^Acerte a revisão na primeira resposta: o Cap\. 1 sobe para Firme\. Firme: você lembra, e a próxima revisão fica para \d\d\/\d\d\. No fim, o visto do dia\.$/);
+    assert.match(regra, /^Acerte a revisão na primeira resposta: o capítulo Parte fixa e parte que varia sobe para o nível 3 de 5\. A próxima revisão fica para \d\d\/\d\d\. No fim, o visto do dia\.$/);
   });
 
   test(`[${P}] design · Recado "Ontem:" (rótulo + frase) quando a missão de ontem ficou pela metade`, () => {
@@ -39,7 +39,7 @@ for (const pk of await packs()) {
     const passoN = n.st.missao.i + 1, total = n.st.missao.passos.length;
     n.despachar('PAUSAR');
     irPara(n, rel, '2026-11-19', '07:00');
-    assert.deepEqual(n.hoje().recado, { rotulo: 'Ontem', texto: `você parou no passo ${passoN} de ${total}. Ficou registrado.` });
+    assert.deepEqual(n.hoje().recado, { rotulo: null, texto: `Ontem ficou registrado até o passo ${passoN}.` });
   });
 
   test(`[${P}] design · Régua da missão: "passo N de M" e "faltam (até) N questões", nunca tempo`, () => {

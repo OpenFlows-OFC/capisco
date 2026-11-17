@@ -24,6 +24,7 @@ export function vazio() {
     app: APP, versao: VERSAO,
     perfil: null,
     conjuntosAtivos: [],
+    praticas: {},          // tópicos de prática começados: { id: { desde, pre: { alt, dia, revelado } | null } }
     pausa: { desde: null, ate: null },
     topicos: {},
     pre: {},
@@ -35,6 +36,8 @@ export function vazio() {
     erros: [],
     cards: {},
     baralho: {},
+    carimbos: {},
+    intencao: null,        // "quando e onde": { dia, horario, ancora } (escolhido no Pronto por hoje)          // dias com o visto da missão (Coleção de vistos; só cresce)
     marcos: {},
     chefes: {}, selos: [], chefeAvisado: {},
     historico: [],
@@ -66,10 +69,13 @@ function perfil(p) {
     dias: dias.length ? dias : [1, 2, 3, 4],
     metaSemana: p.metaSemana === null ? null : int(p.metaSemana, 0, 7, Math.max(1, (dias.length || 4) - 1)),
     minutos: [15, 25, 40].includes(+p.minutos) ? +p.minutos : 25,
+    areas: (() => { const a = [...new Set(arr(p.areas).filter(x => ['MT', 'LC', 'CN', 'CH'].includes(x)))]; return a.length ? a : ['MT']; })(),
     horario: /^\d{2}:\d{2}$/.test(p.horario) ? p.horario : null,
     porque: str(p.porque, 200) || null,
     seEntao: p.seEntao ? { quando: str(obj(p.seEntao).quando, 60), onde: str(obj(p.seEntao).onde, 60) } : null,
     criadoEm: data(p.criadoEm),
+    nome: str(p.nome, 40).replace(/\s+/g, ' ').trim() || null,
+    foto: typeof p.foto === 'string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(p.foto) && p.foto.length <= 200000 ? p.foto : null,
   };
 }
 /** Perfil do Primeiro uso e do Plano, conferido campo a campo. */
@@ -132,6 +138,10 @@ export function normalizar(s) {
   const v = vazio();
   if (s.perfil) v.perfil = perfil(s.perfil);
   v.conjuntosAtivos = [...new Set(arr(s.conjuntosAtivos).filter(ehId))];
+  for (const [k, x] of Object.entries(obj(s.praticas)).slice(0, 100)) if (ehId(k)) {
+    const pr = obj(obj(x).pre);
+    v.praticas[k] = { desde: data(obj(x).desde, R.hoje()), pre: LETRA(pr.alt) ? { alt: pr.alt, dia: data(pr.dia, R.hoje()), revelado: data(pr.revelado) } : null };
+  }
   const pz = obj(s.pausa);
   v.pausa = { desde: data(pz.desde), ate: data(pz.ate) };
   for (const [k, t] of Object.entries(obj(s.topicos)).slice(0, 200)) if (ehId(k)) v.topicos[k] = topico(t);
@@ -147,6 +157,8 @@ export function normalizar(s) {
     v.cards[k] = { caixa: int(c.caixa, 1, 5, 1), proxima: data(c.proxima, R.hoje()), recebido: data(c.recebido, R.hoje()),
       hist: arr(c.hist).slice(-60).map(h => (h = obj(h), { dia: data(h.dia, R.hoje()), res: h.res === 'lembrei' ? 'lembrei' : 'ainda', repeticao: !!h.repeticao, de: int(h.de, 1, 5, 1), para: int(h.para, 1, 5, 1) })) };
   }
+  { const it = obj(s.intencao); v.intencao = R.ehData(it.dia) && /^\d{2}:\d{2}$/.test(it.horario) ? { dia: it.dia, horario: it.horario, ancora: str(it.ancora, 80) || null } : null; }
+  for (const k of Object.keys(obj(s.carimbos)).slice(-2000)) if (R.ehData(k)) v.carimbos[k] = true;
   for (const [k, d] of Object.entries(obj(s.baralho))) if (ehId(k) && R.ehData(d)) v.baralho[k] = d;
   for (const [k, d] of Object.entries(obj(s.marcos))) if (/^m\.[\w]+$/.test(k) && R.ehData(d)) v.marcos[k] = d;
   for (let [k, c] of Object.entries(obj(s.chefes))) if (ehId(k)) { c = obj(c); v.chefes[k] = { dia: data(c.dia, R.hoje()), tentativas: int(c.tentativas, 0, 99, 0), venceu: c.venceu !== false, tentativasFeitas: int(c.tentativasFeitas, 0, 999, 0) }; }

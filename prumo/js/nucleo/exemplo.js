@@ -31,7 +31,7 @@ export function diasDoExemplo(hoje) {
  * Gera o estado de exemplo. `pack` é um Pack (ou o objeto do pack); `hoje` é a data real de hoje.
  * Devolve um objeto de estado (versão 2) pronto para salvar.
  */
-export function gerarExemplo(pack, hoje = R.hoje()) {
+export function gerarExemplo(pack, hoje = R.hoje(), praticas = null) {
   const fonteAntes = R.obterFonte(), offsetAntes = R.getOffset();
   try {
     R.setOffset(0);
@@ -40,7 +40,7 @@ export function gerarExemplo(pack, hoje = R.hoje()) {
     let escolhido = null;
     // cada opção: [quantos dias de estudo antes do fim fica a falta, quantos antes do fim fica o dia que para no meio]
     for (const [recuo, parada] of [[2, 1], [3, 1], [1, 2], [0, 1], [2, 3]]) {
-      const n = simular(pack, hoje, recuo, parada);
+      const n = simular(pack, hoje, recuo, parada, praticas);
       R.definirFonte(`${hoje}T08:00`);
       const mm = montarMissao(n.st, n.pack, n.M, hoje);
       if (!escolhido) escolhido = n;
@@ -55,11 +55,11 @@ export function gerarExemplo(pack, hoje = R.hoje()) {
   }
 }
 
-function simular(pack, hoje, recuoFalta, recuoParada) {
+function simular(pack, hoje, recuoFalta, recuoParada, praticas) {
   const inicio = R.addDias(hoje, -21);
   const rel = R.relogioFalso(`${inicio}T19:00`);
-  const n = new Nucleo({ pack, storage: E.memoria() });
-  n.concluirPrimeiroUso({ provaTipo: 'escola', prova: R.addDias(hoje, 28), dias: diasDoExemplo(hoje), minutos: 15, metaSemana: 3, horario: '19:00', som: false, alarme: 'criado' });
+  const n = new Nucleo({ pack, storage: E.memoria(), praticas: praticas || undefined });
+  n.concluirPrimeiroUso({ nome: 'Daniel', provaTipo: 'escola', prova: R.addDias(hoje, 28), dias: diasDoExemplo(hoje), minutos: 15, metaSemana: 3, horario: '19:00', som: false, alarme: 'criado' });
   const ctx = { diaDeEstudo: 0, errouRevisaoEnemC1: false, errouDia: false, provaFeita: false, maos: 0, notaFeita: false, jaSeiUsado: false, refeito: false };
   const diasDeEstudo = [];
   for (let k = 21; k >= 1; k--) { const x = R.addDias(hoje, -k); if (n.st.perfil.dias.includes(R.diaDaSemana(x))) diasDeEstudo.push(x); }
@@ -69,6 +69,12 @@ function simular(pack, hoje, recuoFalta, recuoParada) {
     rel.irPara(`${dia}T19:00`);
     n.conferirData();
     const m = n.st.missao;
+    // um tópico de prática começado (e vencido) numa folga da última semana: aparece em Estudar com nível
+    if (!ctx.topico && m.tipo === 'folga' && k <= 7 && n.prat.ids().length) {
+      const id = n.prat.ids()[0];
+      if (n.despachar({ tipo: 'ESTUDAR_TOPICO', id })) { jogarDia(n, rel, ctx, { ultimo: false, jaComecou: true }); ctx.topico = id; }
+      continue;
+    }
     if (dia === falta || dia > ultimoDia || m.tipo === 'folga' || m.tipo === 'pausa' || !m.passos.length) continue;
     jogarDia(n, rel, ctx, { ultimo: dia === ultimoDia });
     ctx.diaDeEstudo++;
@@ -82,10 +88,10 @@ function letraErrada(item, preferida = 'E') {
   return errada.includes(preferida) ? preferida : errada[0];
 }
 
-function jogarDia(n, rel, ctx, { ultimo }) {
+function jogarDia(n, rel, ctx, { ultimo, jaComecou = false }) {
   const pk = n.pack, st = n.st;
   // Prova do caderno: no primeiro dia em que é oferecida, antes da missão, vencida com 4 acertos
-  if (!ctx.provaFeita && n.hoje().prova) {
+  if (!jaComecou && !ctx.provaFeita && n.hoje().prova) {
     n.despachar('FAZER_PROVA');
     n.despachar('COMECAR_PROVA');
     for (let g = 0; g < 40 && n.estado() !== 'hoje'; g++) {
@@ -98,11 +104,11 @@ function jogarDia(n, rel, ctx, { ultimo }) {
     ctx.provaFeita = true;
   }
   // Refazer com outros números, uma vez, no cartão da questão do Enem errada na revisão (antes da missão)
-  if (!ctx.refeito && ctx.errouRevisaoEnemC1) {
+  if (!jaComecou && !ctx.refeito && ctx.errouRevisaoEnemC1) {
     const e = st.erros.find(x => x.tipo === 'revisao');
     if (e && n.iniciarRefazer(e.id)) { const it = pk.item(st.refazer.item); n.responderRefazer(it.gabarito); n.fecharRefazer(); n.foiIsso(e.id, 'sim'); ctx.refeito = true; }
   }
-  n.despachar('COMECAR');
+  if (!jaComecou) n.despachar('COMECAR');
   let respostasHoje = 0;
   for (let g = 0; g < LIMITE_EVENTOS; g++) {
     const e = n.estado(), m = st.missao;
@@ -111,11 +117,12 @@ function jogarDia(n, rel, ctx, { ultimo }) {
     if (e === 'pergunta') {
       // no último dia, para antes da última revisão da fila: hoje ela aparece como "1 revisão atrasada"
       if (ultimo && p.t === 'revisao' && !m.passos.slice(m.i + 1).some(x => x.t === 'revisao')) { n.despachar('PAUSAR'); break; }
-      const item = pk.item(p.id);
+      const item = n.missao.itemDe(p.id);
       let alt = item.gabarito;
       if (p.t === 'pre') {
         // a pergunta de entrada da 2ª página é chutada errada no 1º dia: o "antes x depois" mostra a diferença
-        const cap = pk.capitulo(p.cap), segunda = cap.paginas.findIndex(x => x.id === p.pagina) === 1 && p.alvo === 'nucleo';
+        const cap = pk.capitulo(p.cap);
+        const segunda = cap && cap.paginas.findIndex(x => x.id === p.pagina) === 1 && p.alvo === 'nucleo';
         alt = segunda ? letraErrada(item, 'C') : item.gabarito;
       } else if (p.t === 'revisao' && p.cap === pk.capitulos[0].id && item.origem === 'enem' && !ctx.errouRevisaoEnemC1
         && (item.id === 'enem-2019-168' || !pk.questoesDoCap(p.cap).includes('enem-2019-168'))) {

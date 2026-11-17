@@ -60,7 +60,7 @@ export const CAPITULOS = [
         blocos: [
           { id: 'mat-fa.p6.b1', papel: 'nucleo', paragrafos: [
             'Alguns gráficos e tabelas mostram um <strong>total acumulado</strong>: cada valor é tudo o que já foi somado desde o começo. O hodômetro do carro e o consumo do mês no aplicativo de internet funcionam assim. Quando só se soma, como no hodômetro, um total acumulado nunca desce. No máximo, fica parado.',
-            'O que aconteceu num trecho é a <strong>subida</strong> do trecho: valor no fim menos valor no começo. Se o trecho dura 1 minuto, essa subida já é a taxa daquele minuto. O 4º minuto vai de t = 3 a t = 4, e não de 0 a 4. Cada minuto tem a sua subida. Uma sequência cujo total confere com o fim do gráfico ainda pode errar minuto a minuto: confira um por um.',
+            'O que aconteceu num trecho é a <strong>subida</strong> do trecho: valor no fim menos valor no começo. Se o trecho dura 1 minuto, essa subida já é a taxa daquele minuto. O 4º minuto vai de t = 3 a t = 4, e não de 0 a 4. Cada minuto tem a sua subida. Uma lista de valores por minuto cuja soma confere com o fim do gráfico ainda pode errar minuto a minuto: confira um por um.',
           ] },
           { id: 'mat-fa.p6.b2', papel: 'cobrado', prePergunta: 'mat-fa.p6.b2.m', paragrafos: [
             'Às vezes a pergunta é a <strong>diferença</strong> entre duas curvas no mesmo ponto do eixo horizontal. Lucro é receita menos custo, nessa ordem. Em cada valor do eixo horizontal, pegue a altura da receita e tire a altura do custo. O resultado é uma terceira curva, diferente das duas.',
@@ -77,7 +77,7 @@ export const CAPITULOS = [
       { tipo: 'procedimento', frente: 'Como achar a maior taxa num gráfico de pontos?', verso: 'Se os dois eixos começam em 0, ligue (0; 0) a cada ponto: o segmento mais inclinado tem a maior taxa. Se não, divida.', bloco: 'mat-fa.p5.b2', paragrafo: 'mat-fa.p5.b2.s4' },
       { tipo: 'conceito', frente: 'O que mostra um total acumulado?', verso: 'Em cada ponto, tudo o que foi somado desde o começo. Se só se soma, ele nunca desce.', bloco: 'mat-fa.p6.b1', paragrafo: 'mat-fa.p6.b1.s1' },
       { tipo: 'procedimento', frente: 'Num total acumulado, como achar o que houve no 4º minuto?', verso: 'Valor em t = 4 menos valor em t = 3. O 4º minuto vai de 3 a 4.', bloco: 'mat-fa.p6.b1', paragrafo: 'mat-fa.p6.b1.s2' },
-      { tipo: 'armadilha', frente: 'A soma das potências deu o total do gráfico. Então a sequência está certa?', verso: 'Não basta. Confira a subida de cada trecho, um por um.', bloco: 'mat-fa.p6.b1', paragrafo: 'mat-fa.p6.b1.s2' },
+      { tipo: 'armadilha', frente: 'Os valores por minuto somam o total do fim. Então estão todos certos?', verso: 'Não basta. Compare cada valor com a subida do seu minuto, um por um.', bloco: 'mat-fa.p6.b1', paragrafo: 'mat-fa.p6.b1.s2' },
       { tipo: 'procedimento', frente: 'Como montar o lucro a partir das curvas de receita e custo?', verso: 'Ponto a ponto: receita − custo, nessa ordem. Onde o custo fica acima, o lucro é negativo.', bloco: 'mat-fa.p6.b2', paragrafo: 'mat-fa.p6.b2.s3' },
     ],
   },
@@ -287,7 +287,7 @@ export const MODELOS = [
     enunciado: 'Dois pedidos numa lanchonete custaram o mesmo valor, R$ {Tt}. O primeiro tinha {x1t}, {y1t} e {z1t}. O segundo tinha {x2t}, {y2t} e {z2t}. Um terceiro pedido, também de R$ {Tt}, terá {y3t} e {z3t}. Quantos pães de queijo ele terá?',
     certa: 'xb + sg*p',
     erros: [
-      { expr: 'xb + sg*(p - 2)', falta: 'Contou o total de itens, que muda {pm2} a cada troca. A troca é por tipo: {p} pães de queijo valem 1 suco e 1 fatia de bolo.', paragrafo: 'mat-fa.p8.b1.s2' },
+      { expr: 'xb + sg*(p - 2)', falta: '{erroTotalTexto} A troca é por tipo: {p} pães de queijo valem 1 suco e 1 fatia de bolo.', paragrafo: 'mat-fa.p8.b1.s2' },
       { expr: 'xb', falta: 'Parou no {nomeBase} pedido. Dele para o terceiro falta uma troca: {trocaTexto}.', paragrafo: 'mat-fa.p8.b1.s3' },
       { expr: 'xb + 2*sg*p', falta: 'Aplicou a troca uma vez a mais. Do {nomeBase} pedido para o terceiro é uma troca só.', paragrafo: 'mat-fa.p8.b1.s3' },
       { expr: 'xb + sg*p + y3 + z3', falta: 'Somou os sucos e as fatias aos pães de queijo. A pergunta é só de pães de queijo.', paragrafo: 'mat-fa.p8.b2.s4' },
@@ -301,6 +301,7 @@ export const MODELOS = [
       const pq = n => plural(n, 'pão de queijo', 'pães de queijo'), su = n => plural(n, 'suco', 'sucos'), fb = n => plural(n, 'fatia de bolo', 'fatias de bolo');
       return { p, sg: fr ? 1 : -1, xb: fr ? x2 : l.x1, x2, y2, z2, x3, y3, z3, pm2: p - 2, T, Tt: reais(T),
         nomeBase: fr ? 'segundo' : 'primeiro',
+        erroTotalTexto: fr ? `Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram ${p} pães e saem 2 itens, o total sobe ${p - 2}, e ${x2} + ${p - 2} = ${x2 + p - 2}.` : `Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem ${p} pães e entram 2 itens, o total cai ${p - 2}, e ${l.x1} − ${p - 2} = ${l.x1 - p + 2}.`,
         trocaTexto: fr ? `saem 1 suco e 1 fatia, entram ${p} pães de queijo` : `saem ${p} pães de queijo, entram 1 suco e 1 fatia`,
         passoTexto: fr ? `O terceiro tem 1 suco e 1 fatia a menos que o segundo: ${x2} + ${p} = ${x3} pães de queijo.` : `O terceiro tem 1 suco e 1 fatia a mais que o primeiro: ${l.x1} − ${p} = ${x3} pães de queijo.`,
         x1t: pq(l.x1), y1t: su(l.y1), z1t: fb(l.z1), x2t: pq(x2), y2t: su(y2), z2t: fb(z2), y3t: su(y3), z3t: fb(z3),
@@ -450,8 +451,8 @@ export const QUESTOES = {
     erradas: {
       A: { expr: '18 + ((18 + 3 + 2) - (12 + 4 + 3))', falta: 'Contou o total de peças: da viagem I para a II ele sobe 4 (de 19 para 23), e 18 + 4 = 22. A troca é por tipo: entram 6 camisetas no lugar de 1 calça e 1 sapato.', paragrafo: 'mat-fa.p8.b1.s2' },
       C: { expr: '18 + (18 - 12) + 2', falta: 'Achou as 24 camisetas e somou as 2 calças, como se a pergunta fosse de peças de roupa: 24 + 2 = 26. A pergunta é só de camisetas.', paragrafo: 'mat-fa.p8.b2.s4' },
-      D: { expr: '12 + 3*(4 + 3)', falta: 'Trocou por camisetas todas as calças e sapatos da viagem I (12 + 7 × 3 = 33). A mala nova ainda leva 2 calças e 1 sapato: parta da viagem II e faça uma troca só.', paragrafo: 'mat-fa.p8.b2.s4' },
-      E: { expr: '18 + 3*(4 + 3)', falta: 'Misturou as viagens: as camisetas da II com as calças e os sapatos da I (18 + 7 × 3 = 39). Parta de uma viagem só e faça a troca uma vez.', paragrafo: 'mat-fa.p8.b1.s3' },
+      D: { expr: '12 + 3*(4 + 3)', falta: 'Contou cada calça e cada sapato como 3 camisetas (metade da troca de 6, o que a questão não garante) e trocou as 7 peças da viagem I: 12 + 7 × 3 = 33. A mala nova ainda leva 2 calças e 1 sapato: parta da viagem II e faça uma troca só.', paragrafo: 'mat-fa.p8.b2.s4' },
+      E: { expr: '18 + 3*(4 + 3)', falta: 'Misturou as viagens: às 18 camisetas da II somou as 4 calças e os 3 sapatos da I, contando cada peça como 3 camisetas (metade da troca de 6): 18 + 7 × 3 = 39. Parta de uma viagem só e faça a troca uma vez.', paragrafo: 'mat-fa.p8.b1.s3' },
     },
   },
   'enem-2023-175': {

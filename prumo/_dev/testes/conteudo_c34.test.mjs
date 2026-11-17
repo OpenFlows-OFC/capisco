@@ -136,7 +136,7 @@ test('autoria dos Caps. 3 e 4 em texto, igual à dos Caps. 1 e 2, e créditos se
   assert.deepEqual(pack.questoes.find(x => x.id === 'enem-2023-175').autoria, pack.autoriaPadrao);
   const cr = new Pack(pack).creditos();
   const frases = new Set(cr.itens.map(i => i.autoria.replace(/^Explicação e "o que faltou": /, '')).filter(Boolean));
-  assert.deepEqual([...frases], ['rascunho por IA (Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026), revisão pendente']);
+  assert.deepEqual([...frases], ['Texto da equipe Prumo · CC BY-SA 4.0 · revisão em andamento']);
 });
 
 test('links "Ir além" dos Caps. 3 e 4: OBMEP módulo 35 e Khan na unidade de cada capítulo', { skip: pular }, async () => {

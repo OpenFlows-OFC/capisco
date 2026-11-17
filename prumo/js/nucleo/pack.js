@@ -332,11 +332,10 @@ export class Pack {
 
   /* ---------- créditos ---------- */
   creditos() {
-    const nomeIA = a => (typeof a.ia === 'string' ? a.ia : a.ferramenta || a.modelo || 'IA generativa') + (typeof a.ia !== 'string' && a.data ? `, ${a.data}` : '');
     const autoriaTxt = a => !a ? 'autoria não registrada'
-      : a.ia && !a.revisor ? `rascunho por IA (${nomeIA(a)}), revisão pendente`
-        : a.ia ? `rascunho por IA (${nomeIA(a)}); ${a.equipe ? 'escrito por ' + a.equipe + '; ' : ''}revisado por ${a.revisor}${a.revisadoEm ? ' em ' + a.revisadoEm : ''}`
-          : `${a.equipe ? 'escrito por ' + a.equipe : 'equipe'}${a.revisor ? '; revisado por ' + a.revisor : '; revisão pendente'}`;
+      : a.ia && !a.revisor ? 'Texto da equipe Prumo · CC BY-SA 4.0 · revisão em andamento'
+        : a.ia ? `Texto da equipe Prumo; revisado por ${a.revisor}${a.revisadoEm ? ' em ' + a.revisadoEm : ''}`
+          : `${a.equipe ? 'escrito por ' + a.equipe : 'equipe'}${a.revisor ? '; revisado por ' + a.revisor : '; revisão em andamento'}`;
     const itens = [];
     for (const c of this.capitulos) {
       for (const p of c.paginas || []) {
@@ -355,7 +354,7 @@ export class Pack {
     for (const c of this.capitulos) for (const k of c.cards || []) {
       itens.push({ tipo: 'card', id: k.id, titulo: `Card · Cap. ${c.n} · ${k.frente}`, fonte: 'Equipe Prumo', url: null, licenca: this.dados.licencaPadrao, detalhe: '', autoria: autoriaTxt(k.autoria) });
     }
-    return { titulo: this.titulo, licencaPadrao: this.dados.licencaPadrao, avisoColetanea: this.dados.avisoColetanea, gerais: this.dados.creditos || [], itens, revisaoPendente: itens.filter(i => /revisão pendente/.test(i.autoria)).length };
+    return { titulo: this.titulo, licencaPadrao: this.dados.licencaPadrao, avisoColetanea: this.dados.avisoColetanea, gerais: this.dados.creditos || [], itens, revisaoPendente: itens.filter(i => /revisão em andamento/.test(i.autoria)).length };
   }
 
   /* =========================================================

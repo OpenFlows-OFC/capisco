@@ -7,7 +7,7 @@
    falha de forma visível (nada de engolir 404).
    A lista ARQUIVOS é gerada por _dev/ui/gera_precache.mjs (não edite à mão).
    ========================================================= */
-const VERSAO = 'prumo-pwa-v2';
+const VERSAO = 'prumo-pwa-v3';
 const FONTES = 'prumo-pwa-fontes-v2';   // fontes do design system (Gabarito, Atkinson Hyperlegible Next e Mono); o activate apaga o cache antigo
 const PREFIXO = 'prumo-pwa-';
 // <precache>
@@ -25,14 +25,27 @@ const ARQUIVOS = [
   'marca/prumo-simbolo-negativo.svg',
   'marca/prumo-simbolo.svg',
   'css/prumo.css',
+  'fontes/atkinson-hyperlegible-mono-500-latin-ext.woff2',
+  'fontes/atkinson-hyperlegible-mono-500-latin.woff2',
+  'fontes/atkinson-hyperlegible-next-400-latin-ext.woff2',
+  'fontes/atkinson-hyperlegible-next-400-latin.woff2',
+  'fontes/atkinson-hyperlegible-next-600-latin-ext.woff2',
+  'fontes/atkinson-hyperlegible-next-600-latin.woff2',
+  'fontes/fontes.css',
+  'fontes/gabarito-700-latin-ext.woff2',
+  'fontes/gabarito-700-latin.woff2',
+  'fontes/gabarito-800-latin-ext.woff2',
+  'fontes/gabarito-800-latin.woff2',
   'js/app.js',
   'js/ui/ajustes.js',
   'js/ui/caderno.js',
   'js/ui/casca.js',
   'js/ui/componentes.js',
   'js/ui/dom.js',
+  'js/ui/estudar.js',
   'js/ui/hoje.js',
   'js/ui/missao.js',
+  'js/ui/perfil.js',
   'js/ui/plano.js',
   'js/ui/primeiro-uso.js',
   'js/ui/pronto.js',
@@ -47,6 +60,7 @@ const ARQUIVOS = [
   'js/nucleo/nucleo.js',
   'js/nucleo/pack.js',
   'js/nucleo/plano.js',
+  'js/nucleo/pratica.js',
   'js/nucleo/prova.js',
   'js/nucleo/recomendador.js',
   'js/nucleo/relogio.js',
@@ -70,26 +84,37 @@ const ARQUIVOS = [
   'conteudo/img/mat-fa-p3-s4.svg',
   'conteudo/img/mat-fa-p4-s2.svg',
   'conteudo/img/mat-fa-p4-s4.svg',
+  'conteudo/praticas/lc-argumentacao.js',
+  'conteudo/praticas/lc-argumentacao.teoria.js',
+  'conteudo/praticas/lc-interpretacao.js',
+  'conteudo/praticas/lc-interpretacao.teoria.js',
+  'conteudo/praticas/lc-variacao.js',
+  'conteudo/praticas/lc-variacao.teoria.js',
+  'conteudo/praticas/mat-estatistica.js',
+  'conteudo/praticas/mat-estatistica.teoria.js',
+  'conteudo/praticas/mat-geometria.js',
+  'conteudo/praticas/mat-geometria.teoria.js',
+  'conteudo/praticas/mat-porcentagem.js',
+  'conteudo/praticas/mat-porcentagem.teoria.js',
+  'conteudo/praticas/mat-proporcao.js',
+  'conteudo/praticas/mat-proporcao.teoria.js',
+  'conteudo/praticas/img/enem-2020-145-1.png',
+  'conteudo/praticas/img/enem-2021-148-1.png',
+  'conteudo/praticas/img/enem-2021-153-1.jpg',
+  'conteudo/praticas/img/enem-2022-138-1.png',
+  'conteudo/praticas/img/enem-2022-149-1.png',
+  'conteudo/praticas/img/enem-2022-171-1.png',
+  'conteudo/praticas/img/enem-2023-136-1.png',
+  'conteudo/praticas/img/enem-2023-140-1.png',
+  'conteudo/praticas/img/enem-2023-165-1.png',
 ];
 // </precache>
 
-// A folha de fontes do index.html (Gabarito 700/800, Atkinson Hyperlegible Next 400/600, Atkinson Hyperlegible Mono 500). Na primeira visita o service worker
-// ainda não controla a página, então as fontes são buscadas já na instalação (sem derrubar a instalação
-// se o Google não responder: aí elas entram em tempo de execução, na visita seguinte).
-const FONTES_CSS = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@500&family=Atkinson+Hyperlegible+Next:wght@400;600&family=Gabarito:wght@700;800&display=swap';
-async function guardarFontes() {
-  const c = await caches.open(FONTES);
-  if (await c.match(FONTES_CSS, { ignoreVary: true })) return;
-  const res = await fetch(FONTES_CSS, { mode: 'cors', credentials: 'omit' });
-  if (!res.ok) return;
-  const css = await res.clone().text();
-  await c.put(FONTES_CSS, res);
-  const urls = [...new Set([...css.matchAll(/url\((https:\/\/fonts\.gstatic\.com[^)]+)\)/g)].map(m => m[1]))].slice(0, 24);
-  await Promise.all(urls.map(u => fetch(u, { mode: 'cors', credentials: 'omit' }).then(r => (r.ok ? c.put(u, r) : null)).catch(() => null)));
-}
+// As fontes (Gabarito, Atkinson Hyperlegible Next e Mono, woff2 em fontes/) vêm no próprio app e entram no precache:
+// o Prumo não depende de nenhum servidor externo.
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSAO).then(c => c.addAll(ARQUIVOS)).then(() => guardarFontes().catch(() => null)).then(() => {
+  e.waitUntil(caches.open(VERSAO).then(c => c.addAll(ARQUIVOS)).then(() => {
     // primeira instalação: entra já, para o app abrir offline desde a primeira visita.
     // versão nova: espera o aluno fechar e abrir (ou tocar "Atualizar agora", fora da missão).
     if (!self.registration.active) return self.skipWaiting();

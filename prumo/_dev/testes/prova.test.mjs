@@ -22,8 +22,8 @@ for (const pk of await packs()) {
     n.despachar('FAZER_PROVA');
     let t = n.tela();
     assert.equal(t.nome, 'prova');
-    assert.equal(t.vm.titulo, 'Prova do caderno · Funções afins');
-    assert.equal(t.vm.tamanho, 'até 12 questões · cerca de 36 min');
+    assert.equal(t.vm.titulo, 'Prova do caderno: Funções afins');
+    assert.equal(t.vm.tamanho, 'São até 12 questões, cerca de 36 minutos.');
     n.despachar('COMECAR_PROVA');
     const caps = new Set();
     for (let g = 0; g < 20 && n.estado() !== 'provaResultado'; g++) {
@@ -81,10 +81,10 @@ for (const pk of await packs()) {
     assert.equal(n.hoje().estado, 'folga');
     assert.ok(n.hoje().prova);
   });
-  test(`[${P}] sem todos os capítulos em Firmando, não há oferta`, () => {
+  test(`[${P}] sem todos os capítulos no nível 2 de 5, não há oferta`, () => {
     const { n } = novo(pk.dados);
     assert.equal(n.hoje().prova, null);
     assert.equal(n.despachar('FAZER_PROVA'), false);
-    assert.equal(n.sumario().prova.texto, 'Libera quando todos os capítulos estiverem em Firmando ou acima.');
+    assert.equal(n.sumario().prova.texto, 'Ela libera quando todos os capítulos chegarem ao nível 2 de 5.');
   });
 }

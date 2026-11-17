@@ -9,7 +9,8 @@
    ========================================================= */
 import * as R from './relogio.js';
 import { P, chefeId } from './motor.js';
-import { montarMissao, proximaVariante } from './recomendador.js';
+import { proximaVariante } from './recomendador.js';
+import { montarMissaoGeral } from './pratica.js';
 import { fecharSemanas, encerrarPausa, semanasComMeta } from './plano.js';
 import { receberCards, novaMao, cardAtual, avancarMao, responderCard, resumoMao } from './cards.js';
 import { novaProva, provaOferecida } from './prova.js';
@@ -27,6 +28,10 @@ export class Missao {
   get st() { return this.ctx.st; }
   get pack() { return this.ctx.pack; }
   get M() { return this.ctx.M; }
+  /** Tópicos de prática (pratica.js) e o motor deles (a mesma regra, outro índice). */
+  get prat() { return this.ctx.prat; }
+  /** Item de qualquer origem: tópico de prática ('<tópico>:<questão>') ou caderno. */
+  itemDe(id) { return (this.prat && this.prat.item(id)) || this.pack.item(id); }
   get m() { return this.st.missao; }
   estadoAtual() { if (!this.st.perfil) return 'primeiroUso'; return this.m ? this.m.estado : 'hoje'; }
 
@@ -87,7 +92,7 @@ export class Missao {
 
   /* ---------------- montagem e virada de data ---------------- */
   novaMissao(d, extra = {}) {
-    const mm = montarMissao(this.st, this.pack, this.M, d, { estudarMesmoAssim: !!extra.estudarMesmoAssim });
+    const mm = montarMissaoGeral(this.st, this.pack, this.M, this.prat, d, { estudarMesmoAssim: !!extra.estudarMesmoAssim, topico: extra.topico || null, soCaderno: !!extra.soCaderno, livre: !!extra.livre });
     return {
       dia: d, regra: mm.regra, tipo: mm.tipo, trilha: mm.trilha, frase: mm.frase, passos: mm.passos, cap: mm.cap || null,
       minutos: mm.minutos, venc: mm.venc, boasVindas: !!mm.boasVindas, retorno: !!mm.retorno, reta: mm.reta || null, provaPassou: !!mm.provaPassou,
@@ -96,6 +101,7 @@ export class Missao {
       rodada: null, ultima: null, ultimaPre: null, feedbackEm: null, resolucaoAberta: false, fimRodada: null, mao: null,
       fechada: false, parcial: false, encerradoNoPasso: null, rev: 0, resumo: novoResumo(),
       faixa: extra.faixa || null, recado: extra.recado || null, prova: null, provaFeitaHoje: !!extra.provaFeitaHoje,
+      livre: !!extra.livre, missaoDoDia: extra.missaoDoDia || null,
     };
   }
   /** Remonta a missão de hoje se ela ainda não começou (o plano mudou). */
@@ -108,15 +114,15 @@ export class Missao {
     const d = R.hoje(), st = this.st, m = this.m;
     let faixa = null, recado = null;
     if (m && m.dia !== d) {
-      if (m.iniciada && !m.fechada) {
+      if (m.iniciada && !m.fechada && !m.livre) {
         const passo = Math.min(m.i + 1, m.passos.length), total = m.passos.length;
         this.descartarRodadaAberta();
         m.fechada = true; m.parcial = true; m.encerradoNoPasso = passo;
         st.historico.push({ dia: m.dia, regra: m.regra, tipo: m.tipo, passos: total, feitos: m.i, parcial: true, fechada: true, viradaDeData: true });
         const quando = R.diff(m.dia, d) === 1 ? 'Ontem' : `Em ${R.fmtCurta(m.dia)}`;
-        faixa = `${quando} você parou no passo ${passo} de ${total}. Ficou registrado.`;
+        faixa = `${quando} ficou registrado até o passo ${passo}.`;
         // o mesmo aviso no formato do Recado do design system: rótulo em negrito + a frase
-        recado = { rotulo: quando, texto: `você parou no passo ${passo} de ${total}. Ficou registrado.` };
+        recado = { rotulo: null, texto: `${quando} ficou registrado até o passo ${passo}.` };
       }
     }
     if (st.pausa && st.pausa.ate && st.pausa.ate < d) encerrarPausa(st, d);
@@ -131,7 +137,7 @@ export class Missao {
   estadoDoPasso() {
     const m = this.m, p = this.passo();
     if (!p) return this.encerrar(false);
-    if (p.t === 'leitura') return 'leitura';
+    if (p.t === 'leitura' || p.t === 'teoria') return 'leitura';
     if (p.t === 'cards') { if (!m.mao || m.mao.passo !== m.i) m.mao = Object.assign(novaMao(p.ids), { passo: m.i, pendente: null }); return 'cards'; }
     return 'pergunta';
   }
@@ -156,6 +162,8 @@ export class Missao {
     m.encerradoNoPasso = Math.min(m.i + 1, m.passos.length);
     if (m.mao && !m.resumo.cards && Object.keys(m.mao.respostas).length) m.resumo.cards = resumoMao(st, m.mao, m.dia);
     m.rodada = null;
+    // o visto do dia (carimbo) é da missão: só quando o dia contou como estudado e não é estudo livre; só cresce
+    if (!m.livre && st.dias && st.dias[m.dia]) { st.carimbos = st.carimbos || {}; st.carimbos[m.dia] = true; }
     st.historico.push({ dia: m.dia, regra: m.regra, tipo: m.tipo, passos: m.passos.length, feitos: parcial ? m.i : m.passos.length, parcial: !!parcial, fechada: true });
     return 'encerramento';
   }
@@ -173,7 +181,7 @@ export class Missao {
     const m = this.m, u = m.prova && DENTRO_PROVA.has(m.estado) ? m.prova.ultima : m.ultima;
     const em = m.prova && DENTRO_PROVA.has(m.estado) ? m.prova.feedbackEm : m.feedbackEm;
     if (!u || em == null) return true;
-    return R.agora() - em >= this.M.pausa(this.pack.item(u.item));
+    return R.agora() - em >= (u.pausaMs != null ? u.pausaMs : this.M.pausa(this.pack.item(u.item)));
   }
 
   /* ---------------- resposta (o único lugar que chama o motor na missão) ---------------- */
@@ -288,6 +296,68 @@ export class Missao {
     m.rodada = null;
   }
 
+  /* ---------------- tópico de prática (pratica.js) ---------------- */
+  /** Pergunta antes da teoria: guarda a marcação; nenhum sinal de acerto até o fim da leitura. */
+  guardarPrePratica(p, alt) {
+    const st = this.st, d = R.hoje();
+    st.praticas = st.praticas || {};
+    const pr = st.praticas[p.cap] = st.praticas[p.cap] || { desde: d, pre: null };
+    if (!pr.pre) pr.pre = { alt, dia: d, revelado: null };
+    this.m.resumo.pres++;
+    this.m.ultimaPre = { i: this.m.i, id: p.id, alvo: 'teoria', cap: p.cap, pratica: true };
+  }
+  /** Fim da teoria: se a pergunta de antes foi respondida nesta missão, mostra a resposta (agora, depois de ler). */
+  fimDaTeoria() {
+    const m = this.m, p = this.passo(), st = this.st, up = m.ultimaPre;
+    const pr = ((st.praticas || {})[p.cap] || {}).pre;
+    if (up && up.pratica && up.cap === p.cap && pr && !pr.revelado) {
+      const item = this.itemDe(`${p.cap}:pre`), d = R.hoje();
+      pr.revelado = d;
+      m.ultima = { passo: m.i, item: item.id, alt: pr.alt, res: pr.alt === item.gabarito ? 'ok' : 'erro', fonte: 'pratica', revela: true, cap: p.cap, pausaMs: this.M.pausa(item) };
+      m.feedbackEm = R.agora(); m.resolucaoAberta = false; m.ultimaPre = null;
+      return 'feedback';
+    }
+    return this.avancar();
+  }
+  /** Resposta numa questão de tópico (rodada, revisão antecipada ou revisão): o mesmo motor, outro índice. */
+  responderPratica(p, item, alt) {
+    const st = this.st, m = this.m, MP = this.prat.M, d = R.hoje(), agora = R.agora();
+    const itemM = this.prat.paraMotor(item);
+    const aval = MP.avaliar(itemM, item.alternativas.findIndex(a => a.letra === alt));
+    st.vistos[item.id] = d;
+    st.praticas = st.praticas || {};
+    if (!st.praticas[p.cap]) st.praticas[p.cap] = { desde: d, pre: null };
+    m.resumo.tentativas++; if (aval.res === 'ok') m.resumo.certas++;
+    const tipo = p.t === 'revisao' ? 'revisao' : p.antecipada ? 'antecipada' : 'enem';
+    const u = { passo: m.i, item: item.id, alt, res: aval.res, t: p.t, papel: 'aplicar', origem: 'enem', tipo, cap: p.cap, fonte: 'pratica', revisao: null, fimRodada: false, paragrafo: null, pausaMs: this.M.pausa(item) };
+    if (p.t === 'revisao') {
+      MP.registrar(st, MP.novaRodada(st, p.cap, 'revisao'), itemM, aval, { dia: d, agora, alt, tipo });
+      const fr = MP.fecharRevisao(st, p.cap, aval.res, d);
+      u.revisao = fr;
+      m.resumo.revisoes.push(Object.assign({ cap: p.cap, fonte: 'pratica' }, fr));
+    } else {
+      if (!m.rodada || m.rodada.chave !== p.r) {
+        const n = m.passos.filter(x => x.r === p.r).length;
+        m.rodada = Object.assign(MP.novaRodada(st, p.cap, p.rodadaTipo || 'novo', Math.max(1, n)), { chave: p.r, corrida: [], insercoes: 0, ultimoErro: false, fonte: 'pratica' });
+      }
+      const rod = m.rodada;
+      const out = MP.registrar(st, rod, itemM, aval, { dia: d, agora, alt, tipo });
+      if (aval.res === 'ok') { rod.corrida.push({ papel: 'aplicar', origem: 'enem', t: p.t }); rod.ultimoErro = false; }
+      else { rod.corrida = []; rod.ultimoErro = true; }
+      if (p.antecipada) { m.resumo.antecipada.n++; if (aval.res === 'ok') m.resumo.antecipada.certas++; }
+      const naoFecha = !out.fim && this.naoFechaMais();
+      if (out.fim || naoFecha) {
+        const fr = MP.fecharRodada(st, rod, d);
+        fr.naoFecha = !!naoFecha && !fr.venceu; fr.cap = rod.id; fr.tipo = rod.tipo; fr.fonte = 'pratica'; fr.insercoes = 0;
+        m.passos = m.passos.filter((x, j) => j <= m.i || x.r !== rod.chave);   // as questões que sobraram ficam inéditas
+        m.fimRodada = fr; m.resumo.rodadas.push(fr); m.rodada = null;
+        u.fimRodada = true;
+      }
+    }
+    m.ultima = u; m.feedbackEm = agora; m.resolucaoAberta = false;
+    return 'feedback';
+  }
+
   /* ---------------- Prova do caderno ---------------- */
   responderProva(alt) {
     const st = this.st, m = this.m, pr = m.prova, M = this.M, d = R.hoje();
@@ -340,6 +410,35 @@ Missao.T = {
       const r = m.retomar || this.estadoDoPasso(); m.retomar = null;
       return r;
     },
+    /** "Estudar este tópico hoje" (Estudar): o tópico vira a missão do dia e começa. Só antes de a missão começar. */
+    ESTUDAR_TOPICO(e) {
+      const m = this.m, id = e && e.id, d = R.hoje();
+      // missão do dia cumprida: o aluno pode continuar por conta própria (estudo livre; conta como dia estudado, sem 2º visto)
+      if (m.fechada && id !== this.pack.id && this.prat && this.prat.existe(id)) {
+        const doDia = m.livre && m.missaoDoDia ? m.missaoDoDia : JSON.parse(JSON.stringify(Object.assign({}, m, { estado: 'feito' })));
+        this.st.praticas = this.st.praticas || {};
+        if (!this.st.praticas[id]) this.st.praticas[id] = { desde: d, pre: null };
+        this.st.missao = this.novaMissao(d, { topico: id, livre: true, missaoDoDia: doDia, provaFeitaHoje: m.provaFeitaHoje });
+        const nl = this.m;
+        nl.iniciada = true;
+        return this.estadoDoPasso();
+      }
+      if (m.fechada || m.iniciada || m.tipo === 'pausa' || (m.prova && !m.prova.encerrada)) return IGNORAR;
+      const folga = m.tipo === 'folga' || m.estudarMesmoAssim;
+      const extra = { faixa: m.faixa, recado: m.recado, provaFeitaHoje: m.provaFeitaHoje, estudarMesmoAssim: folga };
+      if (id === this.pack.id) {
+        if (m.tipo === 'topico' || m.tipo === 'folga') this.st.missao = this.novaMissao(d, Object.assign(extra, { soCaderno: true }));
+      } else {
+        if (!this.prat || !this.prat.existe(id)) return IGNORAR;
+        this.st.praticas = this.st.praticas || {};
+        if (!this.st.praticas[id]) this.st.praticas[id] = { desde: d, pre: null };
+        this.st.missao = this.novaMissao(d, Object.assign(extra, { topico: id }));
+      }
+      const nm = this.m;
+      if (!nm.passos.length) return 'hoje';
+      nm.iniciada = true; nm.hojeNao = false;
+      return this.estadoDoPasso();
+    },
     HOJE_NAO() { const m = this.m; if (m.iniciada || m.fechada || !m.passos.length) return IGNORAR; m.hojeNao = true; return 'hoje'; },
     ESTUDAR_MESMO_ASSIM() {
       const m = this.m;
@@ -365,23 +464,33 @@ Missao.T = {
     RESPONDER(e) {
       const alt = e && e.alt;
       if (!LETRAS.includes(alt)) return IGNORAR;          // guarda: alt != null (sem botão "não sei")
-      const p = this.passo(), item = this.pack.item(p.id);
+      const p = this.passo(), item = p.fonte === 'pratica' ? null : this.pack.item(p.id);
+      if (p.fonte === 'pratica') {
+        const it = this.itemDe(p.id);
+        if (!it || !it.alternativas.some(a => a.letra === alt)) return IGNORAR;
+        if (p.t === 'pre') { this.guardarPrePratica(p, alt); return this.avancar(); }   // nenhum sinal de acerto ou erro
+        return this.responderPratica(p, it, alt);
+      }
       if (this.pack.indice(item, alt) < 0) return IGNORAR;
       if (p.t === 'pre') { this.guardarPre(p, alt); return this.avancar(); }   // nenhum sinal de acerto ou erro
       return this.responder(p, item, alt);
     },
   },
   leitura: {
-    TERMINEI_TRECHO() { return this.avancar(); },
-    JA_SEI() { return this.irParaProximaPergunta(); },     // para todos; não lê a pré-pergunta
-    SALVAR_NOTA(e) { this.ctx.salvarNota(Object.assign({ pagina: this.passo().pagina }, e)); return 'leitura'; },
+    TERMINEI_TRECHO() { return this.passo().t === 'teoria' ? this.fimDaTeoria() : this.avancar(); },
+    JA_SEI() { return this.passo().t === 'teoria' ? this.fimDaTeoria() : this.irParaProximaPergunta(); },     // para todos; não lê a pré-pergunta
+    SALVAR_NOTA(e) { if (this.passo().t === 'teoria') return IGNORAR; this.ctx.salvarNota(Object.assign({ pagina: this.passo().pagina }, e)); return 'leitura'; },
   },
   feedback: {
     CONTINUAR() {
       if (!this.pausaCumprida()) return IGNORAR;          // intervalo deliberativo
       return this.m.fimRodada && this.restaPasso() ? 'fimDaRodada' : this.avancar();
     },
-    VOLTAR_AO_TRECHO() { return this.m.ultima && this.m.ultima.paragrafo ? 'trecho' : IGNORAR; },
+    VOLTAR_AO_TRECHO() {
+      const u = this.m.ultima;
+      if (u && u.fonte === 'pratica') return !u.revela && u.res === 'erro' ? 'trecho' : IGNORAR;   // "Rever a teoria"
+      return u && u.paragrafo ? 'trecho' : IGNORAR;
+    },
     VER_RESOLUCAO() { this.m.resolucaoAberta = true; return 'feedback'; },
   },
   trecho: { VOLTAR() { return 'feedback'; } },
@@ -395,8 +504,15 @@ Missao.T = {
   },
   trechoCard: { VOLTAR() { return 'cards'; } },
   fimDaMao: { SEGUIR() { return this.avancar(); } },
-  encerramento: { FECHAR() { return 'feito'; } },
-  feito: {},
+  encerramento: {
+    FECHAR() {
+      // estudo livre: ao fechar, volta a missão do dia (já cumprida); o visto continua sendo só o dela
+      const m = this.m;
+      if (m.livre && m.missaoDoDia) { this.st.missao = m.missaoDoDia; this.st.missao.estado = 'feito'; }
+      return 'feito';
+    },
+  },
+  feito: { ESTUDAR_TOPICO(e) { return Missao.T.hoje.ESTUDAR_TOPICO.call(this, e); } },   // estudo livre depois do Pronto por hoje
   prova: {
     COMECAR_PROVA() { return 'provaPergunta'; },
     AGORA_NAO() { this.m.prova = null; return 'hoje'; },

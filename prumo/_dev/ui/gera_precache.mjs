@@ -11,11 +11,14 @@ const arquivos = [
   ...lista('', f => /^(icone.*|apple-touch-icon)\.(svg|png)$/.test(f)),
   ...lista('marca', f => /\.svg$/.test(f)),
   ...lista('css', f => /\.css$/.test(f)),
+  ...lista('fontes', f => /\.(css|woff2)$/.test(f)),
   'js/app.js',
   ...lista('js/ui', f => /\.js$/.test(f)),
   ...lista('js/nucleo', f => /\.js$/.test(f)),
   ...lista('conteudo', f => /\.js$/.test(f)),
   ...lista('conteudo/img', f => /\.(png|svg|webp|jpg)$/.test(f)),
+  ...lista('conteudo/praticas', f => /\.js$/.test(f)),
+  ...lista('conteudo/praticas/img', f => /\.(png|svg|webp|jpg)$/.test(f)),
 ];
 const sw = path.join(raiz, 'sw.js');
 const txt = readFileSync(sw, 'utf8');

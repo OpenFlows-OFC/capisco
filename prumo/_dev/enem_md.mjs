@@ -5,6 +5,18 @@
 // Não usa renderizador de LaTeX (três questões têm "R$", que quebraria um que use "$").
 // Usado por _dev/extrai_enem_c12.mjs (gera o texto) e por _dev/valida_pack.mjs (confere).
 
+// A transcrição do enem.dev põe U+00A0 em vários pontos onde o PDF quebrava a linha ("que percebemos").
+// Juntar as quebras da diagramação é mudança de formato (e.1): esses viram espaço comum. Ficam inquebráveis
+// só os de propósito: em volta de uma variável de uma letra ("preço y do"), depois de "R$" e entre algarismos
+// (milhar "1 000", posto por _dev/correcoes_enem.mjs). textoDeMd/textoDeHtml tratam os dois espaços igual.
+export function soltarNbsp(s) {
+  if (!s) return s;
+  // "a", "e" e "o" soltos são artigo ou conjunção ("que a pessoa"), e não variável.
+  const variavel = t => /^_[A-Za-z]_[.,;:)]?$/.test(t) || /^(?![aeo])[A-Za-z][.,;:)]?$/.test(t);
+  return s.replace(/(\S*)\u00a0(?=(\S*))/g, (m, a, b) =>
+    (variavel(a) || variavel(b) || /R\$$/.test(a) || (/\d$/.test(a) && /^\d/.test(b))) ? m : a + ' ');
+}
+
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function inline(s) {
@@ -16,7 +28,7 @@ function inline(s) {
 // imagens: { [url]: { src, alt } } — a URL original vira a cópia local.
 export function mdParaHtml(md, imagens = {}) {
   if (!md) return '';
-  const paragrafos = md.replace(/\r/g, '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+  const paragrafos = soltarNbsp(md).replace(/\r/g, '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
   return paragrafos.map(p => {
     const img = p.match(/^!\[[^\]]*\]\(([^)]+)\)$/);
     if (img) {

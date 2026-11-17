@@ -35,7 +35,7 @@ for (const pk of await packs()) {
       assert.ok(reveladas.length >= 2);
       for (const [id, x] of reveladas) assert.ok(st.topicos[x.cap].tentativas.some(y => y.item === id && y.dia === x.revelado && y.tipo === 'revisao'));
       // uma revisão errada que volta o Cap. 1 para Aprendendo
-      assert.ok(st.topicos['mat-fa.c1'].rodadas.some(r => r.tipo === 'revisao' && !r.venceu && r.de >= 2 && r.para === 1));
+      assert.ok(st.topicos['mat-fa.c1'].rodadas.some(r => r.tipo === 'revisao' && !r.venceu && r.de >= 2 && r.para === Math.max(1, r.de - 1)));
       // caderno de erros com a Q168
       assert.ok(st.erros.some(e => e.item === 'enem-2019-168' && e.tipo === 'revisao' && e.marcou));
       // constância com semanas de meta

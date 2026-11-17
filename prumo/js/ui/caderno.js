@@ -12,7 +12,7 @@ import { topoAba } from './hoje.js';
 
 const SUBS = [
   { id: 'sumario', rotulo: 'Sumário' }, { id: 'erros', rotulo: 'Erros' },
-  { id: 'notas', rotulo: 'Notas' }, { id: 'cards', rotulo: 'Cards' },
+  { id: 'notas', rotulo: 'Notas' }, { id: 'cards', rotulo: 'Cartões' },
 ];
 
 function subabas(atual) {

@@ -62,7 +62,7 @@ const jogar = (alvo) => {
     if (e === alvo) break;
     const m = n.st.missao, p = m && m.passos[m.i];
     if (e === 'hoje') { if (!n.despachar('COMECAR')) break; }
-    else if (e === 'pergunta') n.despachar({ tipo: 'RESPONDER', alt: n.pack.item(p.id).gabarito });
+    else if (e === 'pergunta') n.despachar({ tipo: 'RESPONDER', alt: n.missao.itemDe(p.id).gabarito });
     else if (e === 'leitura') n.despachar('TERMINEI_TRECHO');
     else if (e === 'feedback') { if (alvo === 'feedbackErro') break; m.feedbackEm = 0; n.despachar('CONTINUAR'); }
     else if (e === 'fimDaRodada' || e === 'fimDaMao') n.despachar('SEGUIR');
@@ -89,7 +89,7 @@ const jogar = (alvo) => {
     await pg.evaluate(() => { window.__prumo.nucleo.despachar('COMECAR'); window.__prumo.app.render(); }); await auditar('pre-pergunta');
     await pg.click('label.alt:has(input[value="B"])'); await auditar('pre-pergunta-marcada');
     await pg.click('[data-acao="responder"]'); await auditar('leitura');
-    await pg.evaluate(() => { window.__prumo.nucleo.despachar('TERMINEI_TRECHO'); const n = window.__prumo.nucleo, m = n.st.missao; n.despachar({ tipo: 'RESPONDER', alt: n.pack.item(m.passos[m.i].id).gabarito }); window.__prumo.app.render(); });
+    await pg.evaluate(() => { window.__prumo.nucleo.despachar('TERMINEI_TRECHO'); const n = window.__prumo.nucleo, m = n.st.missao; n.despachar({ tipo: 'RESPONDER', alt: n.missao.itemDe(m.passos[m.i].id).gabarito }); window.__prumo.app.render(); });
     await auditar('feedback-esperando');
     await pg.waitForTimeout(3600); await auditar('feedback-liberado');
     await pg.evaluate(jogar, 'naoExiste');
@@ -97,7 +97,7 @@ const jogar = (alvo) => {
     await pg.evaluate(() => { window.__prumo.nucleo.despachar('FECHAR'); window.__prumo.app.render(); }); await auditar('hoje-feito');
     // estado de exemplo: revisão errada e cards
     await pg.evaluate(() => { window.__prumo.nucleo.carregarExemplo(); window.__prumo.app.render(); }); await auditar('hoje-exemplo');
-    await pg.evaluate(() => { const n = window.__prumo.nucleo; n.despachar('COMECAR'); const m = n.st.missao; const it = n.pack.item(m.passos[m.i].id); n.despachar({ tipo: 'RESPONDER', alt: it.alternativas.find(a => !a.certa).letra }); window.__prumo.app.render(); });
+    await pg.evaluate(() => { const n = window.__prumo.nucleo; n.despachar('COMECAR'); const m = n.st.missao; const it = n.missao.itemDe(m.passos[m.i].id); n.despachar({ tipo: 'RESPONDER', alt: it.alternativas.find(a => !a.certa).letra }); window.__prumo.app.render(); });
     await auditar('revisao-errada');
     await pg.evaluate(jogar, 'cards'); await auditar('card-frente');
     await pg.click('.barra [data-ev="VIRAR"]'); await auditar('card-verso');

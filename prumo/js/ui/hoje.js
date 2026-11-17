@@ -11,12 +11,13 @@
    ========================================================= */
 import { h, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { marca, constancia, linkAjustes, cabecalhoProva, recado } from './componentes.js';
+import { marca, constancia, cabecalhoProva, recado } from './componentes.js';
 
-/** Topo das abas: marca + Ajustes; e, em Hoje, a linha da data com os risquinhos. */
-export function topoAba({ data, constancia: c } = {}) {
-  return h`<div class="linha-topo">${marca()}${linkAjustes()}</div>
-    ${data || c ? h`<div class="linha-data">${data ? h`<p class="data-hoje">${data}</p>` : ''}${constancia(c)}</div>` : ''}`;
+/** Topo das abas: a marca; em Hoje, a saudação, a data e os risquinhos em destaque. */
+export function topoAba({ data, constancia: c, saudacao } = {}) {
+  return h`<div class="linha-topo">${marca()}${data ? h`<p class="data-hoje">${data}</p>` : ''}</div>
+    ${saudacao ? h`<p class="saudacao">${saudacao}</p>` : ''}
+    ${c ? h`<div class="linha-data constancia-destaque">${constancia(c)}</div>` : ''}`;
 }
 
 function links(vm) {
@@ -57,17 +58,19 @@ function rosto(vm) {
   return h`<section class="rosto ${b.esmaecido ? 'esmaecido' : ''}" aria-labelledby="manchete">
     ${lede(vm)}
     ${vm.porqueEstudo ? h`<p class="texto-2">${vm.porqueEstudo}</p>` : ''}
-    <div class="bloco-titulo">
-      ${b.rotulo ? h`<p class="rotulo">${b.rotulo}</p>` : ''}
+    <div class="proximo">
+      <p class="rotulo">${vm.proximoRotulo || 'Seu próximo conteúdo'}${b.rotulo ? h`<span class="so-leitor">, ${b.rotulo}</span>` : ''}</p>
       <h1 class="manchete" id="manchete" tabindex="-1" data-foco-inicial>${b.titulo}</h1>
-      ${cabecalhoProva(b.cabecalho)}
       ${composicao ? h`<p class="composicao">${composicao}</p>` : ''}
+      ${recado(vm.recado, { papel: 'status' })}
+      ${acao(vm)}
+    </div>
+    <div class="bloco-titulo">
+      ${cabecalhoProva(b.cabecalho)}
       ${b.atrasada ? h`<p class="atrasada">${b.atrasada}</p>` : ''}
       ${b.regra ? h`<p class="ganho">${b.regra}</p>` : ''}
     </div>
     <div class="acoes-rosto">
-      ${recado(vm.recado, { papel: 'status' })}
-      ${acao(vm)}
       ${links(vm)}
     </div>
   </section>`;
@@ -90,6 +93,28 @@ function semMissao(vm) {
   </section>`;
 }
 
+/** Meta da semana: 7 marcas (seg a dom), cheias nos dias estudados. Sem perda: a semana seguinte começa limpa. */
+function semana(s) {
+  if (!s) return '';
+  return h`<section class="semana" aria-label="${s.rotulo}">
+    <p class="semana-texto"><strong>${s.rotulo}:</strong> ${s.texto}</p>
+    <ol class="semana-marcas">${cada(s.dias, x => h`<li class="${x.estudado ? 'feito' : ''} ${x.hoje ? 'hoje' : ''} ${x.diaDeEstudo ? '' : 'folga'}"><span class="marca" aria-hidden="true"></span><span class="dia">${x.rotulo}</span><span class="so-leitor">${x.estudado ? ', estudado' : x.diaDeEstudo ? '' : ', folga'}</span></li>`)}</ol>
+  </section>`;
+}
+/** "Semana nova" / "Bem-vindo de volta": recomeço anunciado, com a contagem da prova e o visto de retorno. */
+function recomeco(r) {
+  if (!r) return '';
+  return h`<section class="recomeco" aria-labelledby="recomeco-t">
+    <h2 class="titulo-pequeno" id="recomeco-t">${r.titulo}</h2>
+    ${r.risquinhos ? h`<p>${r.risquinhos}</p>` : ''}
+    <p>${r.prova}</p>
+    <p class="texto-2">${r.visto}</p>
+  </section>`;
+}
+function venceHoje(v) {
+  return v ? h`<p class="pr-recado vence-hoje"><strong class="pr-recado-rotulo"><span class="grifo">${v.vence}</span></strong> ${v.porque}</p>` : '';
+}
+
 /** Tela Hoje (aba). t = nucleo.tela() nos estados 'hoje' e 'feito'. */
 export function telaHoje(ctx, t) {
   const vm = t.vm;
@@ -98,8 +123,12 @@ export function telaHoje(ctx, t) {
   return {
     chave: `hoje:${vm.dia}:${vm.estado}`,
     titulo: 'Hoje',
-    html: h`${topoAba({ data: vm.data, constancia: vm.constancia })}
+    html: h`${topoAba({ data: vm.data, constancia: vm.constancia, saudacao: vm.saudacao })}
+      ${recomeco(vm.recomeco)}
+      ${vm.intencao ? h`<p class="intencao">${vm.intencao.texto}</p>` : ''}
+      ${venceHoje(vm.venceHoje)}
       ${corpo}
+      ${semana(vm.semana)}
       ${blocoProva(vm.prova)}`,
   };
 }

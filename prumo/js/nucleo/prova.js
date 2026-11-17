@@ -69,9 +69,9 @@ export function provaOferecida(st, pack, M, m) {
 export function vmAberturaProva(pack, prova) {
   const n = Math.min(P.chefe.topicos, pack.capitulos.length);
   return {
-    titulo: `Prova do caderno · ${pack.titulo}`,
+    titulo: `Prova do caderno: ${pack.titulo}`,
     regra: regraProva(pack),
-    tamanho: `até ${P.chefe.teto} questões · cerca de ${P.chefe.teto * 3} min`,
+    tamanho: `São até ${P.chefe.teto} questões, cerca de ${P.chefe.teto * 3} minutos.`,
     aviso: 'Mais longa que a sua missão normal; um dia de folga é uma boa hora.',
     trofeu: `O troféu registra que você firmou os ${n} capítulos.`,
     reaproveita: prova && prova.reaproveita ? 'Nesta demo, a prova reaproveita questões.' : null,
@@ -96,8 +96,8 @@ export function vmResultadoProva(st, pack, prova, d = R.hoje()) {
   }
   return {
     venceu: false, titulo: 'Prova do caderno',
-    texto: `Teto de ${P.chefe.teto} tentativas. Nada do que você já consolidou muda.`,
-    revisar: (r.revisar || []).map(id => { const c = pack.capitulo(id); return { cap: id, texto: `Cap. ${c.n} · ${c.titulo}` }; }),
+    texto: `Você chegou ao limite de ${P.chefe.teto} questões sem fechar a prova. Nada do que você já firmou muda.`,
+    revisar: (r.revisar || []).map(id => { const c = pack.capitulo(id); return { cap: id, texto: `Cap. ${c.n}: ${c.titulo}` }; }),
     linhaRevisar: (r.revisar || []).length ? `Os capítulos que mais pesaram: ${(r.revisar || []).map(id => `Cap. ${pack.capitulo(id).n}`).join(' e ')}.` : null,
     volta: 'A Prova continua liberada: ela volta a ser oferecida no próximo dia, antes da missão ou numa folga.',
   };

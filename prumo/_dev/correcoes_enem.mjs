@@ -76,8 +76,9 @@ export const CONFERENCIA = {
     ],
     imagem: { recorte: 'Recortes do gráfico e da planta baixa da questão 179 (página 31 do PDF oficial do Enem 2019, 2º dia, Caderno Azul), renderizados com PyMuPDF em 17/11/2026 (gráfico em 4×, planta em cerca de 4,4×, as duas com a mesma largura) e postos um embaixo do outro, e não lado a lado como no caderno. Só mudança de formato.' } },
   'enem-2021-164': { em: '2026-11-17', pagina: 28,
-    nota: 'O PDF traz "até 10 kg", com espaço, como nas outras duas vezes em que a massa aparece; a transcrição trazia "até 10kg". No PDF, a coluna Viagem da tabela usa fonte sem mapa Unicode: "I" e "II" foram lidos na página renderizada e conferem com a imagem do enem.dev, que foi mantida (nítida, 452 × 103 px).',
-    correcoes: [{ campo: 'contexto', de: 'mala com até 10kg.', para: 'mala com até 10 kg.' }] },
+    nota: 'O PDF traz "até 10 kg", com espaço, como nas outras duas vezes em que a massa aparece; a transcrição trazia "até 10kg". No PDF, a coluna Viagem da tabela usa fonte sem mapa Unicode: "I" e "II" foram lidos na página renderizada e conferem com a imagem do enem.dev. Essa imagem (452 × 103 px) foi trocada por um recorte da tabela renderizado do PDF oficial (709 × 148 px).',
+    correcoes: [{ campo: 'contexto', de: 'mala com até 10kg.', para: 'mala com até 10 kg.' }],
+    imagem: { recorte: 'Recorte da tabela da questão 164 (página 28 do PDF oficial do Enem 2021, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026. Só mudança de formato.' } },
   'enem-2023-175': { em: '2026-11-17', pagina: 29, nota: 'Igual ao PDF.', correcoes: [] },
 };
 

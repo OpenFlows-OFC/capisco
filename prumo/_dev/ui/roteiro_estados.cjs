@@ -33,13 +33,13 @@ async function parteA(motor, tema) {
       if (e === 'encerramento') break;
       if (e === 'pergunta') {
         const rot = (await pg.textContent('.pergunta-cabeca')) || '';
-        if (/Revisão do Cap/.test(rot) && !errouRevisao) {
+        if (/Revisão do capítulo/.test(rot) && !errouRevisao) {
           confere(await tem('Vale a primeira resposta.'), 'revisão: "Vale a primeira resposta."');
           await cap(pg, 'revisao-pergunta');
           await U.escolher(pg, await U.erradaDe(pg, 'E'));
           await pg.waitForSelector('.feedback');
           const t = await U.texto(pg);
-          confere(/volta para Aprendendo|continua em Aprendendo/.test(t) && t.includes('Seu histórico continua.'), 'revisão errada: texto de c.3h');
+          confere(/A revisão de .+ volta para amanhã\. Seus dias estudados e seu histórico continuam\./.test(t), 'revisão errada: texto de c.3h');
           confere(!/perdeu/i.test(t), 'revisão errada sem "perdeu"');
           confere((await pg.$('.nivel i.novo')) === null, 'nível que desce sem animação');
           await cap(pg, 'revisao-errada', true);
@@ -60,7 +60,7 @@ async function parteA(motor, tema) {
           await cap(pg, 'card-verso');
           await pg.click('.barra [data-ev="AINDA_NAO"]');
           await pg.waitForSelector('.mao-pendente');
-          confere(await tem('Este card volta uma vez no fim desta mão.'), '"Ainda não": volta uma vez');
+          confere(await tem('Este cartão volta uma vez no fim desta mão.'), '"Ainda não": volta uma vez');
           confere(/Ver o parágrafo \d+ da p\. \d+/.test(await U.texto(pg)), '"Ver o parágrafo N da p. P"');
           confere(/^revisão [1-5] de 5$/.test((await pg.textContent('.ficha-frente .ficha-topo span:last-child')) || ''), 'ficha: "revisão N de 5"');
           await cap(pg, 'card-ainda-nao');
@@ -82,7 +82,7 @@ async function parteA(motor, tema) {
     confere(viuPendente && viuVolta, 'mão de cards completa (Ainda não + volta)');
     await pg.waitForSelector('.colofao');
     const tp = await U.texto(pg);
-    confere(/Você lembrou \d+ de \d+ cards\./.test(tp), 'resumo da mão no Pronto por hoje');
+    confere(/Você marcou 'lembrei' em \d+ de \d+ cartões \(não muda o nível\)\./.test(tp), 'resumo da mão no Pronto por hoje');
     confere((await pg.$('.pr-frases')) !== null && !/ · /.test(await pg.textContent('.pr-frases')), 'resumo em frases, sem cadeia de pontos');
     await cap(pg, 'pronto-exemplo', true);
     await pg.click('[data-ev="FECHAR"]');
@@ -111,17 +111,18 @@ async function parteA(motor, tema) {
       }
     }
     // estudando todo dia (pelo núcleo), as revisões ficam em dia e aparece a Questão do dia
-    for (let k = 1; k <= 21 && !(vistos.questaoDoDia || vistos.firme); k++) {
+    // com o caderno em dia, o recomendador oferece a Questão do dia ou (P3) o próximo tópico das áreas escolhidas
+    for (let k = 1; k <= 21 && !(vistos.questaoDoDia || vistos.firme || vistos.P3); k++) {
       await pg.evaluate(() => {
         const n = window.__prumo.nucleo;
         n.avancarDias(1);
         const v = n.tela().vm;
-        if (v && (v.estado === 'questaoDoDia' || v.estado === 'firme')) return;
+        if (v && (v.estado === 'questaoDoDia' || v.estado === 'firme' || n.st.missao.regra === 'P3')) return;
         if (v && v.acao && v.acao.evento === 'COMECAR') {
           n.despachar('COMECAR');
           for (let g = 0; g < 300; g++) {
             const e = n.estado(), m = n.st.missao, p = m.passos[m.i];
-            if (e === 'pergunta') n.despachar({ tipo: 'RESPONDER', alt: n.pack.item(p.id).gabarito });
+            if (e === 'pergunta') n.despachar({ tipo: 'RESPONDER', alt: n.missao.itemDe(p.id).gabarito });
             else if (e === 'leitura') n.despachar('TERMINEI_TRECHO');
             else if (e === 'feedback') { m.feedbackEm = 0; n.despachar('CONTINUAR'); }
             else if (e === 'fimDaRodada' || e === 'fimDaMao') n.despachar('SEGUIR');
@@ -133,15 +134,20 @@ async function parteA(motor, tema) {
       });
       await pg.evaluate(() => window.__prumo.app.render());
       await pg.waitForTimeout(100);
-      const v = await pg.evaluate(() => window.__prumo.nucleo.tela().vm);
+      const v = await pg.evaluate(() => Object.assign({ regra: window.__prumo.nucleo.st.missao.regra }, window.__prumo.nucleo.tela().vm));
+      if (v.regra === 'P3' && !vistos.P3) {
+        vistos.P3 = true;
+        await cap(pg, 'hoje-p3', true);
+        confere(/Seu próximo conteúdo/.test(await U.texto(pg)) && (await pg.$('.proximo [data-ev="COMECAR"]')) !== null, 'P3: o próximo tópico em Hoje, com Começar');
+      }
       if ((v.estado === 'questaoDoDia' || v.estado === 'firme') && !vistos[v.estado]) {
         vistos[v.estado] = true;
         await cap(pg, `hoje-${v.estado}`, true);
-        confere(/dos capítulos que você já abriu|está firme/.test(await U.texto(pg)), 'Questão do dia: texto');
+        confere(/dos capítulos que você já abriu|nível 3 de 5 ou acima/.test(await U.texto(pg)), 'Questão do dia: texto');
       }
     }
     console.log(`  [${motor} ${tema}] estados vistos: ${Object.keys(vistos).join(', ')}`);
-    confere(vistos.questaoDoDia || vistos.firme, 'estado Questão do dia visto');
+    confere(vistos.questaoDoDia || vistos.firme || vistos.P3, 'estado Questão do dia (ou o próximo tópico, P3) visto');
     confere(vistos.folga, 'estado folga visto');
     // Ajustes: sem "Símbolo da constância" (a chama saiu; os risquinhos são o único símbolo)
     await pg.evaluate(() => { location.hash = '#/ajustes'; });
@@ -180,7 +186,7 @@ async function parteB(motor, tema) {
       for (let g = 0; g < 200; g++) {
         const e = n.estado(), m = n.st.missao, p = m.passos[m.i];
         if (e === 'pergunta') {
-          const it = n.pack.item(p.id);
+          const it = n.missao.itemDe(p.id);
           const alt = p.t === 'pre' ? it.alternativas.find(a => !a.certa).letra : it.gabarito;
           n.despachar({ tipo: 'RESPONDER', alt });
         } else if (e === 'leitura') n.despachar('TERMINEI_TRECHO');
@@ -224,7 +230,7 @@ async function parteB(motor, tema) {
       } else if (e === 'leitura') {
         if (await pg.$('.par-texto figure.grafico-equipe') && !(await pg.$('.capturado-grafico'))) { await cap(pg, 'leitura-grafico', true); await pg.evaluate(() => document.body.classList.add('capturado-grafico')); }
         await pg.click('[data-acao="termineiLer"]');
-      } else if (e === 'fimDaRodada') { viuFim = true; confere(await tem('entrou em Aprendendo') || await tem('Rodada encerrada'), 'Fim da rodada: texto'); await cap(pg, 'fim-da-rodada'); await pg.click('.barra [data-ev="SEGUIR"]'); }
+      } else if (e === 'fimDaRodada') { viuFim = true; confere(await tem('entrou no nível 1 de 5') || await tem('Rodada encerrada'), 'Fim da rodada: texto'); await cap(pg, 'fim-da-rodada'); await pg.click('.barra [data-ev="SEGUIR"]'); }
       else if (e === 'fimDaMao') { await cap(pg, 'fim-da-mao'); await pg.click('.barra [data-ev="SEGUIR"]'); }
       else if (e === 'cards') { const v = await pg.evaluate(() => window.__prumo.nucleo.tela().vm); await pg.click(v.virado ? '.barra [data-ev="LEMBREI"]' : '.barra [data-ev="VIRAR"]'); await pg.waitForTimeout(60); }
       else { falhas.push('estado inesperado: ' + e); break; }

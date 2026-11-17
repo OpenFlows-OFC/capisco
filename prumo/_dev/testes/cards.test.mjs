@@ -19,7 +19,7 @@ for (const pk of await packs()) {
     jogar(n, rel);
     assert.equal(Object.keys(n.st.cards).length, pack.cardsDe('mat-fa.c1').length);
     for (const c of Object.values(n.st.cards)) { assert.equal(c.caixa, 1); assert.equal(c.proxima, '2026-11-19'); }
-    assert.ok(n.prontoPorHoje().mudancas.some(x => /^Os \d+ cards do Cap\. 1 entraram no seu baralho\.$/.test(x.texto)));
+    assert.ok(n.prontoPorHoje().mudancas.some(x => /^Os \d+ cartões do capítulo Parte fixa e parte que varia entraram no seu baralho\.$/.test(x.texto)));
   });
 
   test(`[${P}] Decisão 1 · a mão é um passo anunciado em Hoje ("Cards: N cards para lembrar"), no máximo 8, vencidos e caixa mais baixa primeiro`, () => {
@@ -27,9 +27,9 @@ for (const pk of await packs()) {
     jogar(n, rel); n.despachar('FECHAR');
     irPara(n, rel, '2026-11-19');
     const h = n.hoje();
-    const linha = h.bloco.passos.find(p => p.texto.startsWith('Cards: '));
-    assert.match(linha.texto, /^Cards: \d+ cards para lembrar$/);
-    assert.match(h.bloco.composicao, /(^| e )\d+ cards\.$/, 'composição em frase, sem cadeia de pontos');
+    const linha = h.bloco.passos.find(p => p.texto.startsWith('Cartões: '));
+    assert.match(linha.texto, /^Cartões: \d+ cartões para lembrar$/);
+    assert.match(h.bloco.composicao, /(^| e )\d+ cartões\.$/, 'composição em frase, sem cadeia de pontos');
     assert.ok(!/·|≈/.test(h.bloco.composicao));
     // ordem: atrasados antes dos de hoje, caixa mais baixa primeiro, determinística
     const st = base();
@@ -73,7 +73,7 @@ for (const pk of await packs()) {
     n.despachar('AINDA_NAO');
     t = n.tela();
     assert.match(t.vm.pendente.trecho.rotulo, /^Ver o parágrafo \d+ da p\. \d+$/);
-    assert.equal(t.vm.pendente.texto, 'Ainda não. Este card volta uma vez no fim desta mão.');
+    assert.equal(t.vm.pendente.texto, 'Ainda não. Este cartão volta uma vez no fim desta mão.');
     n.despachar('VER_TRECHO'); assert.equal(n.estado(), 'trechoCard'); n.despachar('VOLTAR');
     n.despachar('SEGUIR');
     const caixa1 = n.st.cards[primeiro].caixa;
@@ -87,7 +87,7 @@ for (const pk of await packs()) {
     assert.equal(m.mao.fila.filter(x => x === primeiro).length, 2, 'volta uma vez só');
     assert.equal(n.st.cards[primeiro].caixa, caixa1, 'a volta do fim da mão não mexe na caixa de novo');
     const resumo = m.resumo.cards.texto;
-    assert.match(resumo, new RegExp(`^Você lembrou ${mao0.length - 1} de ${mao0.length} cards\\. O outro volta em \\S+ \\d\\d/\\d\\d\\.$`));
+    assert.match(resumo, new RegExp(`^Você marcou 'lembrei' em ${mao0.length - 1} de ${mao0.length} cartões \\(não muda o nível\\)\\. O outro volta em \\S+ \\d\\d/\\d\\d\\.$`));
     assert.equal(n.estado(), 'encerramento');
     assert.ok(n.prontoPorHoje().mudancas.some(x => x.texto === resumo));
     n.despachar('FECHAR');
@@ -98,15 +98,15 @@ for (const pk of await packs()) {
     const { n, rel } = novo(pk.dados);
     let c = n.cardsDoCaderno();
     assert.equal(c.capitulos[0].cards.length, 0);
-    assert.equal(c.capitulos[0].aviso, 'Os cards deste capítulo entram no seu baralho quando a primeira rodada dele terminar.');
+    assert.equal(c.capitulos[0].aviso, 'Os cartões deste capítulo entram no seu baralho quando a primeira rodada dele terminar.');
     jogar(n, rel);
     c = n.cardsDoCaderno();
     const k = c.capitulos[0].cards[0];
     assert.ok(k.frente && k.verso);
-    assert.equal(k.caixaNome, 'Aprendendo');
+    assert.equal(k.caixaNome, 'revisão 1 de 5');
     assert.equal(k.proximaTexto, 'qui 19/11');
     assert.match(k.trecho.rotulo, /^Ver o parágrafo \d+ da p\. \d+$/);
-    assert.equal(c.aviso, 'Consultar é leitura livre; jogar, só na missão.');
+    assert.equal(c.aviso, 'Aqui você lê os seus cartões quando quiser. Para treinar com eles, eles aparecem na missão do dia.');
   });
 
   test(`[${P}] Decisão 1 · cards no JSON, no CSV e na restauração`, () => {

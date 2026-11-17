@@ -17,7 +17,7 @@ const ate = ({ alvo, errar }) => {
     const m = n.st.missao, p = m && m.passos[m.i];
     if (e === 'hoje') { if (!n.despachar('COMECAR')) break; }
     else if (e === 'pergunta') {
-      const it = n.pack.item(p.id);
+      const it = n.missao.itemDe(p.id);
       const tipo = n.tela().vm.tipo;
       const alt = errar && tipo !== 'pre' && tipo !== 'preBloco' && !window.__errou ? it.alternativas.find(a => !a.certa).letra : it.gabarito;
       if (alt !== it.gabarito) window.__errou = true;

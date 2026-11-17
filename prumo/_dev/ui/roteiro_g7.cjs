@@ -10,6 +10,8 @@ async function roteiro(motor, tema) {
   try {
     // 1 · Primeiro uso
     await pg.goto(U.BASE); await U.pronto(pg);
+    confere(await tem('Ver com dados de exemplo'), 'onboarding: atalho dos dados de exemplo');
+    await pg.click('[data-acao="puPular"]');
     confere(await tem('Já usei o Prumo: restaurar uma cópia'), 'link "Já usei o Prumo: restaurar uma cópia"');
     confere(await tem('Ver com dados de exemplo'), 'link "Ver com dados de exemplo"');
     await cap(pg, 'primeiro-uso', true);
@@ -17,7 +19,7 @@ async function roteiro(motor, tema) {
     await pg.fill('#pu-data', '2026-12-15');
     await pg.click('label:has(input[name="minutos"][value="25"])');
     await pg.click('button[type="submit"]');
-    confere(await tem('Prumo · seg, ter, qua, qui · 19:00'), 'texto do alarme');
+    confere(await tem('"Prumo", às 19:00, segunda, terça, quarta e quinta'), 'texto do alarme');
     await cap(pg, 'alarme');
     await pg.click('[data-acao="puAlarme"][data-arg="criado"]');
     await cap(pg, 'fecho');
@@ -26,7 +28,7 @@ async function roteiro(motor, tema) {
     // 2 · Hoje como folha de rosto; "Por que esta missão?" → "ver a regra"
     await pg.waitForSelector('.manchete');
     confere((await U.texto(pg)).toUpperCase().includes('MISSÃO 1'), 'Hoje: "Missão 1"');
-    confere(await tem('Cap. 1: Parte fixa e parte que varia'), 'Hoje: manchete do Cap. 1');
+    confere(await tem('Funções afins: Parte fixa e parte que varia'), 'Hoje: manchete com o nome do capítulo');
     confere((await pg.$('.pr-cabecalho')) !== null && await tem('Capítulo') && await tem('Tempo') && !(await tem('Data')), 'Hoje: Cabecalho (Capítulo | Páginas | Tempo), sem Data');
     confere(await tem('No fim, o visto do dia.'), 'Hoje: regra anuncia o visto');
     confere(await tem('0 dias estudados'), 'Hoje: 0 dias estudados');
@@ -77,7 +79,7 @@ async function roteiro(motor, tema) {
     await U.responderCerta(pg);
     await pg.waitForSelector('.feedback');
     confere(await tem('Certa.'), 'checagem certa');
-    confere((await pg.$('.casa.cheia')) !== null && (await tem('Falta acertar uma questão do Enem')), 'medidor: checagem cheia e "Falta acertar uma questão do Enem"');
+    confere((await pg.$('.casa.cheia')) !== null && (await tem('Para fechar: 2 certas seguidas, falta 1')), 'medidor: checagem cheia e "Para fechar: 2 certas seguidas, falta 1"');
     confere((await pg.getAttribute('[data-continuar]', 'aria-disabled')) === 'true', 'intervalo deliberativo: Continuar começa travado');
     confere(await tem('Leia a explicação'), '"Leia a explicação" durante a pausa');
     await cap(pg, 'feedback-checagem');
@@ -121,7 +123,7 @@ async function roteiro(motor, tema) {
     await pg.waitForSelector('.feedback');
     confere(await tem('Você marcou E. A certa é D.'), 'feedback de erro');
     confere(await tem('O que faltou'), '"o que faltou"');
-    confere(await tem('a contagem recomeça'), 'medidor: "a contagem recomeça"');
+    confere(await tem('A próxima é sobre o trecho que faltou'), 'medidor: "A próxima é sobre o trecho que faltou"');
     confere(await tem('A próxima é uma questão da equipe sobre a p. 1, § 2.'), 'aviso da questão da equipe');
     confere((await pg.$('.alt.sua')) !== null && (await pg.$('.alt.certa')) !== null, 'alternativas marcadas "sua" e "certa"');
     await cap(pg, 'feedback-erro-q162', true);
@@ -170,7 +172,7 @@ async function roteiro(motor, tema) {
     confere((await U.estado(pg)) === 'encerramento', 'direto ao Pronto por hoje');
     confere(await tem('Pronto por hoje'), 'título do colofão');
     confere(await tem('1 dia estudado'), '"1 dia estudado"');
-    confere(await tem('O Cap. 1 entrou em Aprendendo. Próxima revisão: amanhã'), 'linha do nível novo');
+    confere(await tem('O capítulo Parte fixa e parte que varia entrou no nível 1 de 5. Próxima revisão: amanhã'), 'linha do nível novo');
     confere(await tem('Amanhã você vê se acertou a pergunta de entrada da p. 2.'), 'gancho do próximo dia');
     confere((await pg.$('.pr-visto')) !== null && /\d\d\/\d\d\/\d{4}/.test(await pg.textContent('.pr-visto-data')), 'visto do dia com a data dd/mm/aaaa');
     await cap(pg, 'pronto-por-hoje', true);

@@ -7,7 +7,7 @@
    dão a mesma missão. Desempates: mais atrasada, ordem do caderno, id.
    ========================================================= */
 import * as R from './relogio.js';
-import { NIVEL } from './motor.js';
+import { rotuloNivel } from './motor.js';
 import { capacidade, ehDiaDeEstudo, emPausa, diasPrevistosSemEstudo, ultimoDiaEstudado, textoDiasCurto } from './plano.js';
 import { maoDoDia, minutosDaMao } from './cards.js';
 
@@ -218,8 +218,8 @@ export function regraDaFila(passos, cap, titulo) {
     tipo: 'capitulo', todosEnem,
     frase: `2 acertos seguidos, um deles ${onde}`,
     insercao: todosEnem ? 'Errou uma questão do Enem? A próxima é uma questão da equipe sobre o mesmo trecho.' : 'Errou uma questão de aplicar? A próxima é uma questão da equipe sobre o mesmo trecho.',
-    ganho: `Acerte duas seguidas, uma delas ${ondeGanho}: ${titulo || 'o capítulo'} entra em Aprendendo.`,
-    falta: todosEnem ? 'Falta acertar uma questão do Enem' : 'Falta acertar uma questão de aplicar',
+    ganho: `Acerte duas seguidas, uma delas ${ondeGanho}: ${titulo || 'o capítulo'} entra no nível 1 de 5.`,
+    falta: 'Para fechar: 2 certas seguidas, falta 1',
   };
 }
 export function estimarMinutos(passos) {
@@ -331,12 +331,12 @@ export function montarMissao(st, pack, M, d, { estudarMesmoAssim = false } = {})
     return Object.assign(revisoesOuManter('R4', `Reta final: ${faltam === 0 ? 'a prova é hoje' : faltam === 1 ? 'falta 1 dia' : `faltam ${faltam} dias`}; nada novo entra.`), { reta: { faltam, dias: reta } });
   // R5 · capítulo que bateu no teto na última rodada
   const teto = tetoSemVencer(st, M, d), pre = teto && prereqFraco(st, M, teto);
-  if (r('R5a', !!pre, pre ? `${nomeCap(teto)} bateu no teto; base: ${nomeCap(pre)}, abaixo de Firmando` : teto ? `${nomeCap(teto)} bateu no teto; pré-requisitos já em Firmando ou acima` : 'Nenhum capítulo bateu no teto')) {
+  if (r('R5a', !!pre, pre ? `${nomeCap(teto)} bateu no teto; base: ${nomeCap(pre)}, abaixo do nível 2 de 5` : teto ? `${nomeCap(teto)} bateu no teto; pré-requisitos já no nível 2 de 5 ou acima` : 'Nenhum capítulo bateu no teto')) {
     const ps = venc.includes(pre) ? [passoRevisao(st, pack, pre, d, reservados)]
       : passosAntecipada(st, pack, pre, d, reservados);
     const outras = venc.filter(id => id !== pre);
     const revs = outras.slice(0, Math.max(0, Math.floor((minutos - estimarMinutos(ps)) / MIN.revisao))).map(id => passoRevisao(st, pack, id, d, reservados));
-    return fim({ regra: 'R5a', tipo: 'prereq', cap: pre, capTravado: teto, frase: `O ${nomeCap(teto)} bateu no teto na última rodada, e a base dele, o ${nomeCap(pre)}, ainda está em ${NIVEL[(st.topicos[pre] || {}).caixa || 0]}. Hoje: revisão do ${nomeCap(pre)}.`, passos: comCards([...ps, ...revs]) });
+    return fim({ regra: 'R5a', tipo: 'prereq', cap: pre, capTravado: teto, frase: `O ${nomeCap(teto)} bateu no teto na última rodada, e a base dele, o ${nomeCap(pre)}, ainda está ${(st.topicos[pre] || {}).caixa ? 'no ' + rotuloNivel(st.topicos[pre].caixa) : 'sem nível'}. Hoje: revisão do ${nomeCap(pre)}.`, passos: comCards([...ps, ...revs]) });
   }
   if (r('R5b', !!teto, teto ? `${nomeCap(teto)} bateu no teto na última rodada` : 'Nenhum capítulo bateu no teto')) {
     const ps = passosR5b(st, pack, teto, d, reservados);
@@ -375,6 +375,6 @@ export function verARegra(st, pack, M, missao, d) {
   return {
     linhas, revisoes: revs, lembranca, questoes: questoes.length ? `Questões do Enem: ${questoes.join(', ')}` : null,
     texto: [...linhas, ...revs].join(' · '),
-    oQueE: 'O recomendador é IA baseada em regras: uma lista de decisão em que a primeira regra que bate decide. Sem aprendizado de máquina e sem sorteio: o mesmo estado e a mesma data dão a mesma missão.',
+    oQueE: 'O Prumo escolhe a missão por regras fixas: uma lista de decisão em que a primeira regra que bate decide. Sem aprendizado de máquina e sem sorteio: o mesmo estado e a mesma data dão a mesma missão.',
   };
 }

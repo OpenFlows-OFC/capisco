@@ -117,7 +117,7 @@ export const capitulos34 = [
               {
                 "id": "mat-fa.p6.b1.s2",
                 "n": 2,
-                "html": "O que aconteceu num trecho é a <strong>subida</strong> do trecho: valor no fim menos valor no começo. Se o trecho dura 1 minuto, essa subida já é a taxa daquele minuto. O 4º minuto vai de t = 3 a t = 4, e não de 0 a 4. Cada minuto tem a sua subida. Uma sequência cujo total confere com o fim do gráfico ainda pode errar minuto a minuto: confira um por um."
+                "html": "O que aconteceu num trecho é a <strong>subida</strong> do trecho: valor no fim menos valor no começo. Se o trecho dura 1 minuto, essa subida já é a taxa daquele minuto. O 4º minuto vai de t = 3 a t = 4, e não de 0 a 4. Cada minuto tem a sua subida. Uma lista de valores por minuto cuja soma confere com o fim do gráfico ainda pode errar minuto a minuto: confira um por um."
               }
             ]
           },
@@ -298,8 +298,8 @@ export const capitulos34 = [
       {
         "id": "mat-fa.c3.k7",
         "tipo": "armadilha",
-        "frente": "A soma das potências deu o total do gráfico. Então a sequência está certa?",
-        "verso": "Não basta. Confira a subida de cada trecho, um por um.",
+        "frente": "Os valores por minuto somam o total do fim. Então estão todos certos?",
+        "verso": "Não basta. Compare cada valor com a subida do seu minuto, um por um.",
         "bloco": "mat-fa.p6.b1",
         "paragrafo": "mat-fa.p6.b1.s2",
         "autoria": {
@@ -2943,7 +2943,7 @@ export const modelos34 = [
     "erros": [
       {
         "expr": "xb + sg*(p - 2)",
-        "falta": "Contou o total de itens, que muda {pm2} a cada troca. A troca é por tipo: {p} pães de queijo valem 1 suco e 1 fatia de bolo.",
+        "falta": "{erroTotalTexto} A troca é por tipo: {p} pães de queijo valem 1 suco e 1 fatia de bolo.",
         "paragrafo": "mat-fa.p8.b1.s2"
       },
       {
@@ -2986,6 +2986,7 @@ export const modelos34 = [
         "T": 44,
         "Tt": "44,00",
         "nomeBase": "segundo",
+        "erroTotalTexto": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 6 pães e saem 2 itens, o total sobe 4, e 10 + 4 = 14.",
         "trocaTexto": "saem 1 suco e 1 fatia, entram 6 pães de queijo",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a menos que o segundo: 10 + 6 = 16 pães de queijo.",
         "x1t": "4 pães de queijo",
@@ -3010,7 +3011,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "14",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 4 a cada troca. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 6 pães e saem 2 itens, o total sobe 4, e 10 + 4 = 14. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3058,6 +3059,7 @@ export const modelos34 = [
         "T": 57,
         "Tt": "57,00",
         "nomeBase": "primeiro",
+        "erroTotalTexto": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 6 pães e entram 2 itens, o total cai 4, e 14 − 4 = 10.",
         "trocaTexto": "saem 6 pães de queijo, entram 1 suco e 1 fatia",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a mais que o primeiro: 14 − 6 = 8 pães de queijo.",
         "x1t": "14 pães de queijo",
@@ -3087,7 +3089,7 @@ export const modelos34 = [
               "letra": "C",
               "texto": "10",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 4 a cada troca. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 6 pães e entram 2 itens, o total cai 4, e 14 − 4 = 10. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3130,6 +3132,7 @@ export const modelos34 = [
         "T": 47,
         "Tt": "47,00",
         "nomeBase": "segundo",
+        "erroTotalTexto": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 4 pães e saem 2 itens, o total sobe 2, e 6 + 2 = 8.",
         "trocaTexto": "saem 1 suco e 1 fatia, entram 4 pães de queijo",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a menos que o segundo: 6 + 4 = 10 pães de queijo.",
         "x1t": "2 pães de queijo",
@@ -3154,7 +3157,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "8",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 2 a cada troca. A troca é por tipo: 4 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 4 pães e saem 2 itens, o total sobe 2, e 6 + 2 = 8. A troca é por tipo: 4 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3202,6 +3205,7 @@ export const modelos34 = [
         "T": 61,
         "Tt": "61,00",
         "nomeBase": "primeiro",
+        "erroTotalTexto": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 4 pães e entram 2 itens, o total cai 2, e 10 − 2 = 8.",
         "trocaTexto": "saem 4 pães de queijo, entram 1 suco e 1 fatia",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a mais que o primeiro: 10 − 4 = 6 pães de queijo.",
         "x1t": "10 pães de queijo",
@@ -3231,7 +3235,7 @@ export const modelos34 = [
               "letra": "C",
               "texto": "8",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 2 a cada troca. A troca é por tipo: 4 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 4 pães e entram 2 itens, o total cai 2, e 10 − 2 = 8. A troca é por tipo: 4 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3274,6 +3278,7 @@ export const modelos34 = [
         "T": 53,
         "Tt": "53,00",
         "nomeBase": "segundo",
+        "erroTotalTexto": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 5 pães e saem 2 itens, o total sobe 3, e 8 + 3 = 11.",
         "trocaTexto": "saem 1 suco e 1 fatia, entram 5 pães de queijo",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a menos que o segundo: 8 + 5 = 13 pães de queijo.",
         "x1t": "3 pães de queijo",
@@ -3298,7 +3303,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "11",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 3 a cada troca. A troca é por tipo: 5 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 5 pães e saem 2 itens, o total sobe 3, e 8 + 3 = 11. A troca é por tipo: 5 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3346,6 +3351,7 @@ export const modelos34 = [
         "T": 55,
         "Tt": "55,00",
         "nomeBase": "primeiro",
+        "erroTotalTexto": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 5 pães e entram 2 itens, o total cai 3, e 12 − 3 = 9.",
         "trocaTexto": "saem 5 pães de queijo, entram 1 suco e 1 fatia",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a mais que o primeiro: 12 − 5 = 7 pães de queijo.",
         "x1t": "12 pães de queijo",
@@ -3375,7 +3381,7 @@ export const modelos34 = [
               "letra": "C",
               "texto": "9",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 3 a cada troca. A troca é por tipo: 5 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 5 pães e entram 2 itens, o total cai 3, e 12 − 3 = 9. A troca é por tipo: 5 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3418,6 +3424,7 @@ export const modelos34 = [
         "T": 42,
         "Tt": "42,00",
         "nomeBase": "segundo",
+        "erroTotalTexto": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 5 pães e saem 2 itens, o total sobe 3, e 6 + 3 = 9.",
         "trocaTexto": "saem 1 suco e 1 fatia, entram 5 pães de queijo",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a menos que o segundo: 6 + 5 = 11 pães de queijo.",
         "x1t": "1 pão de queijo",
@@ -3442,7 +3449,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "9",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 3 a cada troca. A troca é por tipo: 5 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 5 pães e saem 2 itens, o total sobe 3, e 6 + 3 = 9. A troca é por tipo: 5 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3490,6 +3497,7 @@ export const modelos34 = [
         "T": 46,
         "Tt": "46,00",
         "nomeBase": "primeiro",
+        "erroTotalTexto": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 5 pães e entram 2 itens, o total cai 3, e 11 − 3 = 8.",
         "trocaTexto": "saem 5 pães de queijo, entram 1 suco e 1 fatia",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a mais que o primeiro: 11 − 5 = 6 pães de queijo.",
         "x1t": "11 pães de queijo",
@@ -3519,7 +3527,7 @@ export const modelos34 = [
               "letra": "C",
               "texto": "8",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 3 a cada troca. A troca é por tipo: 5 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 5 pães e entram 2 itens, o total cai 3, e 11 − 3 = 8. A troca é por tipo: 5 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3562,6 +3570,7 @@ export const modelos34 = [
         "T": 38,
         "Tt": "38,00",
         "nomeBase": "segundo",
+        "erroTotalTexto": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 6 pães e saem 2 itens, o total sobe 4, e 8 + 4 = 12.",
         "trocaTexto": "saem 1 suco e 1 fatia, entram 6 pães de queijo",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a menos que o segundo: 8 + 6 = 14 pães de queijo.",
         "x1t": "2 pães de queijo",
@@ -3586,7 +3595,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "12",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 4 a cada troca. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 6 pães e saem 2 itens, o total sobe 4, e 8 + 4 = 12. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3634,6 +3643,7 @@ export const modelos34 = [
         "T": 42.5,
         "Tt": "42,50",
         "nomeBase": "primeiro",
+        "erroTotalTexto": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 6 pães e entram 2 itens, o total cai 4, e 13 − 4 = 9.",
         "trocaTexto": "saem 6 pães de queijo, entram 1 suco e 1 fatia",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a mais que o primeiro: 13 − 6 = 7 pães de queijo.",
         "x1t": "13 pães de queijo",
@@ -3663,7 +3673,7 @@ export const modelos34 = [
               "letra": "C",
               "texto": "9",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 4 a cada troca. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Tirou dos pães do primeiro pedido a mudança no total de itens: a cada troca saem 6 pães e entram 2 itens, o total cai 4, e 13 − 4 = 9. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3706,6 +3716,7 @@ export const modelos34 = [
         "T": 57,
         "Tt": "57,00",
         "nomeBase": "segundo",
+        "erroTotalTexto": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 6 pães e saem 2 itens, o total sobe 4, e 7 + 4 = 11.",
         "trocaTexto": "saem 1 suco e 1 fatia, entram 6 pães de queijo",
         "passoTexto": "O terceiro tem 1 suco e 1 fatia a menos que o segundo: 7 + 6 = 13 pães de queijo.",
         "x1t": "1 pão de queijo",
@@ -3730,7 +3741,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "11",
               "erro": 0,
-              "falta": "Contou o total de itens, que muda 4 a cada troca. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
+              "falta": "Somou aos pães do segundo pedido a mudança no total de itens: a cada troca entram 6 pães e saem 2 itens, o total sobe 4, e 7 + 4 = 11. A troca é por tipo: 6 pães de queijo valem 1 suco e 1 fatia de bolo.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -4629,7 +4640,7 @@ export const questoes34 = [
       "correcoes": []
     },
     "anulada": false,
-    "contexto": "<p>Um administrador resolve estudar o lucro de sua empresa e, para isso, traça o gráfico da receita e do custo de produção de seus itens, em real, em função da quantidade de itens produzidos.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2020-175.png\" alt=\"Descrição da equipe Prumo. Gráfico com duas curvas, sobre uma grade tracejada. Eixo horizontal: quantidade de itens produzidos, de 5 em 5, até 30. Eixo vertical: R$, de 5 em 5, de 0 a 55. A curva Receita, mais grossa, começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 25 itens e desce para cerca de 45 com 30 itens. A curva Custo, mais fina, começa perto de 5 com 5 itens, sobe rápido até cerca de 45 com 10 itens, desce até cerca de 10 com 25 itens e sobe para cerca de 35 com 30 itens. As curvas se encontram com 5 itens e se cruzam perto de 15 itens, na altura de 40.\" loading=\"lazy\"></figure><p>O lucro é determinado pela diferença: Receita – Custo.</p>",
+    "contexto": "<p>Um administrador resolve estudar o lucro de sua empresa e, para isso, traça o gráfico da receita e do custo de produção de seus itens, em real, em função da quantidade de itens produzidos.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2020-175.png\" alt=\"Descrição da equipe Prumo. Gráfico com duas curvas, sobre uma grade tracejada. Eixo horizontal: quantidade de itens produzidos, de 5 em 5, até 30. Eixo vertical: R$, de 5 em 5, de 0 a 55. A curva Receita, mais grossa, começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 25 itens e desce para cerca de 45 com 30 itens. A curva Custo, mais fina, começa perto de 5 com 5 itens, sobe rápido até cerca de 45 com 10 itens, desce até cerca de 10 com 25 itens e sobe para cerca de 35 com 30 itens. As curvas se encontram com 5 itens e se cruzam perto de 15 itens, na altura de 40.\" loading=\"lazy\"></figure><p>O lucro é determinado pela diferença: Receita – Custo.</p>",
     "introducao": "O gráfico que representa o lucro dessa empresa, em função da quantidade de itens produzidos, é",
     "fonteMd": "Um administrador resolve estudar o lucro de sua empresa e, para isso, traça o gráfico da receita e do custo de produção de seus itens, em real, em função da quantidade de itens produzidos.\n\n![](https://enem.dev/2020/questions/175/33aa811b-1dc7-4083-a8c0-2aeeb9fd52d6.png)\n\nO lucro é determinado pela diferença: Receita – Custo.",
     "materialDeTerceiros": null,
@@ -4880,7 +4891,7 @@ export const questoes34 = [
       ]
     },
     "anulada": false,
-    "contexto": "<p>Nos seis cômodos de uma casa há sensores de presença posicionados de forma que a luz de cada cômodo acende assim que uma pessoa nele adentra, e apaga assim que a pessoa se retira desse cômodo. Suponha que o acendimento e o desligamento sejam instantâneos.</p><p>O morador dessa casa visitou alguns desses cômodos, ficando exatamente um minuto em cada um deles. O gráfico descreve o consumo acumulado de energia, em watt × minuto, em função do tempo t, em minuto, das lâmpadas de LED dessa casa, enquanto a figura apresenta a planta baixa da casa, na qual os cômodos estão numerados de 1 a 6, com as potências das respectivas lâmpadas indicadas.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2019-179.png\" alt=\"Descrição da equipe Prumo. Em cima, gráfico de linha. Eixo horizontal: tempo, em minutos. Eixo vertical: energia, em W·min. A linha liga os pontos (0; 0), (1; 20), (2; 35), (3; 40), (4; 55), (5; 75), (6; 85), (7; 105) e (8; 120). Embaixo, planta baixa da casa com seis cômodos numerados: 1, sala, lâmpada de 20 W, onde fica a entrada; 2, quarto, 13 W; 3, banho, 2 W; 4, suíte, 15 W; 5, banho, 5 W; 6, cozinha, 10 W.\" loading=\"lazy\"></figure>",
+    "contexto": "<p>Nos seis cômodos de uma casa há sensores de presença posicionados de forma que a luz de cada cômodo acende assim que uma pessoa nele adentra, e apaga assim que a pessoa se retira desse cômodo. Suponha que o acendimento e o desligamento sejam instantâneos.</p><p>O morador dessa casa visitou alguns desses cômodos, ficando exatamente um minuto em cada um deles. O gráfico descreve o consumo acumulado de energia, em watt × minuto, em função do tempo t, em minuto, das lâmpadas de LED dessa casa, enquanto a figura apresenta a planta baixa da casa, na qual os cômodos estão numerados de 1 a 6, com as potências das respectivas lâmpadas indicadas.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2019-179.png\" alt=\"Descrição da equipe Prumo. Em cima, gráfico de linha. Eixo horizontal: tempo, em minutos. Eixo vertical: energia, em W·min. A linha liga os pontos (0; 0), (1; 20), (2; 35), (3; 40), (4; 55), (5; 75), (6; 85), (7; 105) e (8; 120). Embaixo, planta baixa da casa com seis cômodos numerados: 1, sala, lâmpada de 20 W, onde fica a entrada; 2, quarto, 13 W; 3, banho, 2 W; 4, suíte, 15 W; 5, banho, 5 W; 6, cozinha, 10 W.\" loading=\"lazy\"></figure>",
     "introducao": "A sequência de deslocamentos pelos cômodos, conforme o consumo de energia apresentado no gráfico, é",
     "fonteMd": "Nos seis cômodos de uma casa há sensores de presença posicionados de forma que a luz de cada cômodo acende assim que uma pessoa nele adentra, e apaga assim que a pessoa se retira desse cômodo. Suponha que o acendimento e o desligamento sejam instantâneos.\n\nO morador dessa casa visitou alguns desses cômodos, ficando exatamente um minuto em cada um deles. O gráfico descreve o consumo acumulado de energia, em watt x minuto, em função do tempo t, em minuto, das lâmpadas de LED dessa casa, enquanto a figura apresenta a planta baixa da casa, na qual os cômodos estão numerados de 1 a 6, com as potências das respectivas lâmpadas indicadas.\n\n![](https://enem.dev/2019/questions/179/3c23edf9-5531-4ae5-b328-9b0a6b31fdc1.png)",
     "materialDeTerceiros": null,
@@ -5014,7 +5025,7 @@ export const questoes34 = [
       "pdf": "https://download.inep.gov.br/enem/provas_e_gabaritos/2021_PV_impresso_D2_CD7.pdf",
       "sha256": "887b2a10ebb163f0c40db2ab4f67a5a4b5959ceb74ce7273466a755b8e55f540",
       "pagina": 28,
-      "nota": "O PDF traz \"até 10 kg\", com espaço, como nas outras duas vezes em que a massa aparece; a transcrição trazia \"até 10kg\". No PDF, a coluna Viagem da tabela usa fonte sem mapa Unicode: \"I\" e \"II\" foram lidos na página renderizada e conferem com a imagem do enem.dev, que foi mantida (nítida, 452 × 103 px).",
+      "nota": "O PDF traz \"até 10 kg\", com espaço, como nas outras duas vezes em que a massa aparece; a transcrição trazia \"até 10kg\". No PDF, a coluna Viagem da tabela usa fonte sem mapa Unicode: \"I\" e \"II\" foram lidos na página renderizada e conferem com a imagem do enem.dev. Essa imagem (452 × 103 px) foi trocada por um recorte da tabela renderizado do PDF oficial (709 × 148 px).",
       "correcoes": [
         {
           "campo": "contexto",
@@ -5050,14 +5061,14 @@ export const questoes34 = [
       {
         "letra": "D",
         "texto": "33",
-        "falta": "Trocou por camisetas todas as calças e sapatos da viagem I (12 + 7 × 3 = 33). A mala nova ainda leva 2 calças e 1 sapato: parta da viagem II e faça uma troca só.",
+        "falta": "Contou cada calça e cada sapato como 3 camisetas (metade da troca de 6, o que a questão não garante) e trocou as 7 peças da viagem I: 12 + 7 × 3 = 33. A mala nova ainda leva 2 calças e 1 sapato: parta da viagem II e faça uma troca só.",
         "expr": "12 + 3*(4 + 3)",
         "paragrafo": "mat-fa.p8.b2.s4"
       },
       {
         "letra": "E",
         "texto": "39",
-        "falta": "Misturou as viagens: as camisetas da II com as calças e os sapatos da I (18 + 7 × 3 = 39). Parta de uma viagem só e faça a troca uma vez.",
+        "falta": "Misturou as viagens: às 18 camisetas da II somou as 4 calças e os 3 sapatos da I, contando cada peça como 3 camisetas (metade da troca de 6): 18 + 7 × 3 = 39. Parta de uma viagem só e faça a troca uma vez.",
         "expr": "18 + 3*(4 + 3)",
         "paragrafo": "mat-fa.p8.b1.s3"
       }
@@ -5067,7 +5078,9 @@ export const questoes34 = [
         "src": "conteudo/img/enem-2021-164.png",
         "alt": "Descrição da equipe Prumo. Tabela com as colunas Viagem, Camisetas, Calças e Sapatos. Viagem I: 12 camisetas, 4 calças e 3 sapatos. Viagem II: 18 camisetas, 3 calças e 2 sapatos.",
         "altFonte": "equipe",
-        "original": "https://enem.dev/2021/questions/164/eab2c90e-a45f-482b-997d-a5c2f6931726.png"
+        "original": "https://enem.dev/2021/questions/164/eab2c90e-a45f-482b-997d-a5c2f6931726.png",
+        "recorte": "Recorte da tabela da questão 164 (página 28 do PDF oficial do Enem 2021, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026. Só mudança de formato.",
+        "recortePDF": "https://download.inep.gov.br/enem/provas_e_gabaritos/2021_PV_impresso_D2_CD7.pdf"
       }
     ],
     "atribuicao": "INEP · Enem 2021, 2º dia, Caderno Azul, questão 164 · CC BY-ND 3.0",

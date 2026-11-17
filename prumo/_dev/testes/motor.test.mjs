@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as R from '../../js/nucleo/relogio.js';
-import { criarMotor, intervalos, horizonte, retaFinal, recuperabilidade, pausa, P, NIVEL } from '../../js/nucleo/motor.js';
+import { criarMotor, intervalos, horizonte, retaFinal, recuperabilidade, pausa, P, NIVEL, rotuloNivel } from '../../js/nucleo/motor.js';
 import { Pack } from '../../js/nucleo/pack.js';
 import { vazio } from '../../js/nucleo/estado.js';
 import { packs } from './ajuda.mjs';
@@ -21,7 +21,8 @@ test('prova já passada também usa 90 dias', () => {
   assert.equal(horizonte(comProva('2026-11-01'), '2026-11-18'), 90);
 });
 test('níveis com os nomes do motor e pesos 2/3/4 com critério 6', () => {
-  assert.deepEqual(NIVEL.slice(1), ['Aprendendo', 'Firmando', 'Firme', 'Forte', 'Dominado']);
+  assert.equal(NIVEL.length, 6, 'NIVEL é só chave interna (0 a 5)');
+  assert.deepEqual([0, 1, 2, 3, 4, 5].map(rotuloNivel), ['ainda não começou', 'nível 1 de 5', 'nível 2 de 5', 'nível 3 de 5', 'nível 4 de 5', 'nível 5 de 5: dominado']);
   assert.deepEqual(P.pesos, { lembrar: 2, compreender: 3, aplicar: 4 });
   assert.equal(P.criterio, 6);
   assert.equal(P.teto, 8);
@@ -47,14 +48,17 @@ for (const pk of await packs()) {
     assert.equal(st.topicos['mat-fa.c1'].proxima, R.addDias('2026-11-19', iv[2]));
     assert.equal(out.caixaAntes, 1); assert.equal(out.caixaDepois, 2);
   });
-  test(`[${pk.nome}] g.8 · fecharRevisao: nível 3 + revisão errada → nível 1, próxima em intervalos[1], histórico intacto`, () => {
+  test(`[${pk.nome}] g.8 · fecharRevisao: nível 3 + revisão errada → nível 2 (desce um), próxima amanhã, histórico intacto`, () => {
     R.definirFonte('2026-11-19');
     const tent = [{ item: 'a', dia: '2026-11-10', em: 1, res: 'ok' }, { item: 'b', dia: '2026-11-15', em: 2, res: 'ok' }];
     const st = comProva('2026-12-15', { topicos: { 'mat-fa.c1': { caixa: 3, proxima: '2026-11-19', tentativas: JSON.parse(JSON.stringify(tent)), rodadas: [] } } });
     const iv = M.intervalos(st);
     M.fecharRevisao(st, 'mat-fa.c1', 'erro');
-    assert.equal(st.topicos['mat-fa.c1'].caixa, 1);
-    assert.equal(st.topicos['mat-fa.c1'].proxima, R.addDias('2026-11-19', iv[1]));
+    assert.equal(st.topicos['mat-fa.c1'].caixa, 2, 'desce UM nível');
+    assert.equal(st.topicos['mat-fa.c1'].proxima, R.addDias('2026-11-19', 1), 'a revisão volta para amanhã');
+    M.fecharRevisao(st, 'mat-fa.c1', 'erro'); M.fecharRevisao(st, 'mat-fa.c1', 'erro');
+    assert.equal(st.topicos['mat-fa.c1'].caixa, 1, 'nunca abaixo do nível 1');
+    assert.ok(iv[1] >= 1);
     assert.deepEqual(st.topicos['mat-fa.c1'].tentativas, tent);
   });
   test(`[${pk.nome}] rodada.teto tem prioridade sobre tetoDe (mudança de uma linha) e a vitória vem antes do teto`, () => {
