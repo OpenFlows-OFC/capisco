@@ -7,7 +7,12 @@
    ========================================================= */
 import { h, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { nivel, teoria, prepararFiguras } from './componentes.js';
+import { nivel, teoria, prepararFiguras, comoFunciona } from './componentes.js';
+
+/* "Como funciona um tópico": aberta até o aluno começar o primeiro tópico; depois, recolhida. */
+const CHAVE_COMO = 'prumo-ui-como-funciona';
+function jaViuComo() { try { return localStorage.getItem(CHAVE_COMO) === '1'; } catch (e) { return false; } }
+function marcarComo() { try { localStorage.setItem(CHAVE_COMO, '1'); } catch (e) { /* sem armazenamento: segue aberta */ } }
 import { topoAba } from './hoje.js';
 
 function linhaTopico(t) {
@@ -47,7 +52,9 @@ function paginaTopico(p) {
       ${nivel({ cheios: p.nivel.cheios, nome: p.nivel.cheios ? p.nivel.rotulo : null })}
       <p style="margin:8px 0 0">${p.estadoTexto}</p>
       ${p.progresso ? h`<p class="texto-2" style="margin:4px 0 0">${p.progresso.texto}</p>` : ''}
+      ${jaViuComo() ? '' : comoFunciona({ aberto: true })}
       ${botaoAcao(p.acao)}
+      ${jaViuComo() ? comoFunciona() : ''}
       <section class="secao" aria-labelledby="pq-t"><h2 class="titulo-pequeno" id="pq-t">Por que cai no Enem</h2><p>${p.porQueCai}</p></section>
       ${p.ideias && p.ideias.length ? h`<section class="secao" aria-labelledby="id-t"><h2 class="titulo-pequeno" id="id-t">O essencial</h2><ul class="teoria-lista">${cada(p.ideias, x => h`<li>${x}</li>`)}</ul></section>` : ''}
       <section class="secao" aria-labelledby="co-t"><h2 class="titulo-pequeno" id="co-t">Como é o estudo</h2><p>${p.composicao}</p>
@@ -90,6 +97,7 @@ export function telaEstudar(ctx, t, rota) {
 registrar({
   acoes: {
     estudarTopico(ctx, el) {
+      marcarComo();
       const ev = el.dataset.evento;
       if (ev === 'CONTINUAR') { ctx.despachar({ tipo: 'CONTINUAR' }); return; }
       const ok = ctx.despachar({ tipo: 'ESTUDAR_TOPICO', id: el.dataset.arg });

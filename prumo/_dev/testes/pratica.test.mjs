@@ -90,7 +90,7 @@ for (const pk of await packs()) {
     assert.equal(n.estado(), 'leitura');
     t = n.tela();
     assert.equal(t.vm.teoria, true);
-    assert.equal(t.vm.faixa, 'Resposta guardada. No fim da teoria você vê se acertou.');
+    assert.equal(t.vm.faixa, 'Resposta guardada. No fim da apostila você vê se acertou.');
     assert.ok(!JSON.stringify(t.vm).includes(n.st.praticas[PRIMEIRO].pre.alt + '. A certa'), 'nada de acerto durante a leitura');
     assert.equal(Object.keys(n.st.dias).length, 0, 'ler não conta como dia estudado');
     n.despachar('TERMINEI_TRECHO');

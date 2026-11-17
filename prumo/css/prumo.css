@@ -616,29 +616,70 @@ figure { margin: 12px 0 16px; }
   body { background: #fff; color: #000; }
 }
 
-/* ---------------- Teoria do tópico: a apostila na folha pautada ---------------- */
-.teoria .pagina { font-size: 18px; line-height: var(--pauta-passo); padding-bottom: var(--pauta-passo); }
-.teoria .pagina p, .teoria .pagina li { margin: 0; max-width: 64ch; }
-.teoria .pagina p + p { margin-top: var(--pauta-passo); }
-.teoria-porque { margin-bottom: var(--pauta-passo) !important; }
-.teoria-secao + .teoria-secao { margin-top: var(--pauta-passo); }
-.teoria-sub { position: relative; margin: 0 0 0; font: 700 20px/30px var(--font-display); color: var(--grafite); }
-.teoria-n { position: absolute; left: calc(var(--margem) * -1); width: calc(var(--margem) - 16px); text-align: right; font: 500 13px/30px var(--font-numeros); color: var(--grafite-2); }
-.teoria-figura { margin: var(--pauta-passo) 0; padding: 8px; background: var(--papel); border: 1px solid var(--pauta); color: var(--grafite); }
+/* ---------------- Apostila do tópico: material impresso, não o caderno ----------------
+   Três superfícies, três papéis: o caderno pautado é do aluno; a prova é o caderno do Enem;
+   a apostila é folha branca impressa, com capa, sumário, exemplos e quadros. */
+.apostila { margin: 0 0 var(--space-4); background: var(--ficha); border: 1px solid var(--pauta-forte); border-radius: var(--radius-ficha); overflow: hidden; box-shadow: 0 1px 0 var(--pauta), 0 8px 20px rgba(20, 30, 60, .07); }
+.apostila .cabeco { display: none; }
+.apostila-capa { background: var(--tinta); color: var(--on-tinta); padding: 18px 20px 16px; }
+.apostila-selo { margin: 0 0 8px; font: 700 13px/18px var(--font-texto); letter-spacing: .06em; text-transform: uppercase; }
+.apostila-selo span { display: inline-block; padding: 1px 7px; margin-right: 2px; border: 1.5px solid currentColor; border-radius: var(--radius-caixa); }
+.apostila .apostila-titulo { margin: 0; font: 800 27px/32px var(--font-display); color: inherit; letter-spacing: -.01em; }
+.apostila-base { margin: 8px 0 0; font-size: 15px; line-height: 21px; }
+.apostila-base cite { font-style: italic; font-weight: 600; }
+.apostila-dados { margin: 6px 0 0; font: 600 14px/20px var(--font-texto); opacity: .9; }
+.apostila-sumario { padding: 14px 20px 12px; border-bottom: 1px dashed var(--pauta-forte); }
+.apostila-sumario .rotulo { margin: 0 0 4px; }
+.apostila-sumario ol { margin: 0; padding-left: 1.4em; font-size: 16px; line-height: 25px; }
+.apostila-corpo { padding: 16px 20px 20px; font-size: 18px; line-height: 1.6; }
+.apostila-corpo p { margin: 0 0 12px; max-width: 64ch; }
+.apostila-abre { padding-bottom: 14px; border-bottom: 1px solid var(--pauta); }
+.teoria-secao + .teoria-secao { margin-top: 8px; }
+.teoria-sub { display: flex; align-items: flex-start; gap: 10px; margin: 24px 0 10px; font: 700 21px/28px var(--font-display); color: var(--grafite); }
+.teoria-n { flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-caixa); background: var(--tinta); color: var(--on-tinta); font: 500 15px/1 var(--font-numeros); }
+.teoria-figura { margin: 16px 0; padding: 10px; background: var(--papel); border: 1px solid var(--pauta); border-radius: var(--radius-caixa); color: var(--grafite); }
 .teoria-figura svg { display: block; width: 100%; height: auto; max-height: 340px; }
 .teoria-figura figcaption { font-size: 14px; line-height: 20px; color: var(--grafite-2); margin-top: 8px; }
-.teoria-tabela-rolagem { margin: var(--pauta-passo) 0; overflow-x: auto; background: var(--papel); }
-.teoria-tabela { border-collapse: collapse; font-size: 16px; line-height: 24px; min-width: 100%; }
-.teoria-tabela caption { text-align: left; font-size: 14px; line-height: 20px; color: var(--grafite-2); caption-side: bottom; padding-top: 8px; }
-.teoria-tabela th, .teoria-tabela td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--pauta); vertical-align: top; }
-.teoria-tabela th { font-weight: 600; border-bottom: 1.5px solid var(--pauta-forte); }
-.teoria-enem { margin: var(--pauta-passo) 0 0 !important; font-size: 17px; line-height: var(--pauta-passo); }
+.teoria-tabela-rolagem { margin: 16px 0; overflow-x: auto; border: 1px solid var(--pauta); border-radius: var(--radius-caixa); }
+.teoria-tabela { border-collapse: collapse; font-size: 16px; line-height: 23px; min-width: 100%; }
+.teoria-tabela caption { text-align: left; font-size: 14px; line-height: 20px; color: var(--grafite-2); caption-side: bottom; padding: 8px 10px; }
+.teoria-tabela th, .teoria-tabela td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--pauta); vertical-align: top; }
+.teoria-tabela th { font-weight: 600; background: color-mix(in srgb, var(--tinta) 9%, var(--ficha)); border-bottom: 1.5px solid var(--pauta-forte); }
 .grifo { background: linear-gradient(to bottom, transparent 14%, var(--marca-texto) 14%, var(--marca-texto) 90%, transparent 90%); color: var(--on-marca-texto); padding: 0 3px; }
-.exemplo { margin-top: var(--pauta-passo); padding: 0 0 0 12px; border-left: 2px solid var(--tinta); background: var(--papel); }
-.exemplo-rotulo { font: 700 16px/30px var(--font-display); color: var(--tinta); }
+.exemplo { margin: 16px 0; padding: 12px 14px; background: var(--papel); border: 1px solid var(--pauta-forte); border-radius: var(--radius-caixa); }
+.apostila-corpo .exemplo p { margin: 0; }
+.exemplo-rotulo { margin: 0 0 6px !important; font: 700 13px/18px var(--font-texto); letter-spacing: .05em; text-transform: uppercase; color: var(--tinta); }
+.exemplo-res { margin: 10px 0 2px !important; font: 700 13px/18px var(--font-texto); letter-spacing: .05em; text-transform: uppercase; color: var(--grafite-2); }
 .exemplo-passos, .teoria-lista { margin: 0; padding-left: 1.25em; }
-.teoria-lista li + li, .exemplo-passos li + li { margin-top: 0; }
-.teoria .rodape-licenca { margin-top: var(--space-4); }
+.exemplo-passos li + li { margin-top: 4px; }
+.teoria-lista li + li { margin-top: 4px; }
+.apostila-quadro { margin: 16px 0; padding: 12px 14px; border-radius: var(--radius-caixa); font-size: 16.5px; line-height: 1.5; }
+.exemplo { font-size: 16.5px; line-height: 1.5; }
+.apostila-corpo .apostila-quadro p { margin: 0; }
+.quadro-rotulo { margin: 0 0 4px !important; font: 700 15px/20px var(--font-display); }
+.quadro-enem { background: color-mix(in srgb, var(--marca-texto) 38%, var(--ficha)); }
+.quadro-cuidado { margin-top: 24px; background: color-mix(in srgb, var(--margem-caderno) 20%, var(--ficha)); border-left: 4px solid var(--margem-caderno); }
+.quadro-resumo { border: 1.5px solid var(--tinta); background: var(--papel); }
+.teoria .rodape-licenca { margin: 0; padding: 0 20px 16px; }
+.apostila .teoria-rodape { margin: 0; padding: 12px 20px 0; border-top: 1px solid var(--pauta); }
+
+/* Trilha do tópico: Aquecer → Apostila → Questões → Visto */
+.trilha { list-style: none; display: flex; gap: 6px; margin: 10px 0 14px; padding: 0; }
+.trilha li { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px 5px; border: 1px solid var(--pauta); border-radius: var(--radius-caixa); font: 600 12.5px/16px var(--font-texto); color: var(--grafite-2); text-align: center; }
+.trilha li.feita { color: var(--grafite); border-color: var(--pauta-forte); }
+.trilha li.atual { background: var(--tinta); border-color: var(--tinta); color: var(--on-tinta); }
+.trilha-n { flex: none; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; font: 500 12px/1 var(--font-numeros); }
+.aquecer-recado { margin: 0 0 var(--space-4); }
+
+/* Como funciona um tópico (aberta na primeira vez) */
+.como-funciona-caixa { padding: 14px 16px; background: var(--ficha); border: 1.5px solid var(--tinta); border-radius: var(--radius-ficha); }
+details.como-funciona-caixa { border-width: 1px; border-color: var(--pauta-forte); }
+.como-funciona-caixa summary { cursor: pointer; margin: 0; }
+.como-funciona-caixa h2 { margin: 0; }
+.como-funciona { list-style: none; margin: 8px 0 0; padding: 0; }
+.como-funciona li { display: flex; gap: 12px; align-items: flex-start; margin-top: 12px; }
+.como-funciona .trilha-n { margin-top: 2px; color: var(--tinta); }
+.como-funciona p { margin: 2px 0 0; font-size: 16px; line-height: 23px; color: var(--grafite-2); }
 
 /* ---------------- Hoje: saudação, risquinhos em destaque e o próximo conteúdo ---------------- */
 .saudacao { margin: var(--space-2) 0 0; font: 800 28px/34px var(--font-display); color: var(--grafite); letter-spacing: -.01em; }
@@ -717,3 +758,5 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
 .amanha { margin: var(--space-6) 0; padding-top: var(--space-4); border-top: 1px solid var(--pauta); }
 .amanha-enunciado { max-height: 18rem; overflow: auto; }
 .amanha-enunciado img { max-width: 100%; height: auto; }
+
+.vence-hoje .grifo { background: var(--marca-texto); border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }

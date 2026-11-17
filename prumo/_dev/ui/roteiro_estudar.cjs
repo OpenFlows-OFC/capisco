@@ -60,11 +60,11 @@ async function roteiro(motor, tema) {
     await pg.click('[data-acao="estudarTopico"]');
     // pré-pergunta: sem acerto
     await pg.waitForFunction(() => window.__prumo.nucleo.estado() === 'pergunta');
-    confere(await tem('Antes de ler a teoria'), 'pré-pergunta');
+    confere(await tem('Aquecimento: antes da apostila'), 'pré-pergunta');
     const pre = await pg.evaluate(() => { const n = window.__prumo.nucleo, m = n.st.missao, it = n.missao.itemDe(m.passos[m.i].id); return { certa: it.gabarito, errada: it.alternativas.find(a => !a.certa).letra }; });
     await U.escolher(pg, pre.errada);
     await pg.waitForSelector('.teoria');
-    confere(await tem('Resposta guardada. No fim da teoria você vê se acertou.'), 'teoria: resposta guardada, sem acerto');
+    confere(await tem('Resposta guardada. No fim da apostila você vê se acertou.'), 'teoria: resposta guardada, sem acerto');
     confere(!(await tem(`A certa é ${pre.certa}`)), 'teoria: nada de acerto durante a leitura');
     confere((await pg.$$('.teoria-secao')).length >= 3, 'teoria: seções');
     await foto('teoria');

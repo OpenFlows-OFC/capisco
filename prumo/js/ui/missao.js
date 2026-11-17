@@ -10,7 +10,7 @@ import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
 import {
   topo, enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, nivel,
-  botaoContinuar, animarContinuar, prepararFiguras, questaoCab, teoria,
+  botaoContinuar, animarContinuar, prepararFiguras, questaoCab, teoria, trilha,
 } from './componentes.js';
 
 const CADERNO = new Set(['enem', 'equipe']);   // aí o cabeçalho "QUESTÃO 162" já é o título da tela
@@ -51,6 +51,7 @@ function pergunta(ctx, vm) {
     titulo: vm.rotulo,
     html: h`<main class="missao">
       ${topo(vm.topo, { rotuloDaTela: vm.rotulo })}
+      ${trilha(vm.fase)}
       <section class="pergunta">
         ${cabecaPergunta(vm)}
         ${vm.avisoInserida ? h`<p class="pr-recado aviso-inserida">${vm.avisoInserida}</p>` : ''}
@@ -85,6 +86,7 @@ function leituraTeoria(ctx, vm) {
     titulo: `Teoria: ${vm.titulo}`,
     html: h`<main class="missao missao-leitura">
       ${topo(vm.topo)}
+      ${trilha(vm.fase)}
       ${vm.faixa ? h`<p class="pr-recado" role="status">${vm.faixa}</p>` : ''}
       ${vm.jaSei ? h`<p class="ja-sei"><button type="button" class="link link-discreto" data-ev="${vm.jaSei.evento}">${vm.jaSei.rotulo}</button></p>` : ''}
       ${teoria(vm)}

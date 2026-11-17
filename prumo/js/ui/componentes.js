@@ -295,32 +295,51 @@ export function prepararFiguras(raiz, { aoAmpliar, textoFalha = 'A imagem não c
   });
 }
 
-/* ---------------- Teoria de um tópico de prática: a apostila na folha pautada ---------------- */
+/* ---------------- Teoria de um tópico de prática: a apostila impressa ----------------
+   A apostila tem cara própria (folha branca impressa, capa, sumário, caixas), diferente
+   do caderno pautado (o que é do aluno) e do caderno de prova (a questão do Enem). */
+function livroDe(fontes) {
+  const f = (fontes || []).find(x => /^Wikilivros, /.test(x.titulo));
+  if (!f) return null;
+  return f.titulo.replace(/^Wikilivros, /, '').split('/')[0];
+}
 /** t = teoria do núcleo: seções (parágrafos, figura, tabela, quadro "No Enem", exemplos), armadilhas e resumo. */
 export function teoria(t, { tituloComoH1 = true } = {}) {
   if (!t) return '';
-  const T = tituloComoH1 ? h`<h1 class="pagina-titulo" id="pg-titulo" tabindex="-1" data-foco-inicial>${t.titulo}</h1>` : h`<h2 class="pagina-titulo" id="pg-titulo">${t.titulo}</h2>`;
-  return h`<article class="pagina-livro teoria" aria-labelledby="pg-titulo">
-    <p class="rotulo cabeco">${t.cabeco}</p>
-    ${T}
-    <div class="pagina">
-      ${t.porQueCai ? h`<p class="teoria-porque"><strong>Por que cai no Enem.</strong> ${t.porQueCai}</p>` : ''}
+  const T = tituloComoH1 ? h`<h1 class="pagina-titulo apostila-titulo" id="pg-titulo" tabindex="-1" data-foco-inicial>${t.titulo}</h1>` : h`<h2 class="pagina-titulo apostila-titulo" id="pg-titulo">${t.titulo}</h2>`;
+  const livro = livroDe(t.fontes);
+  const nEx = (t.secoes || []).reduce((s, x) => s + (x.exemplos || []).length, 0);
+  const palavras = (t.secoes || []).reduce((s, x) => s + (x.paragrafos || []).join(' ').split(/\s+/).length, 0);
+  const min = Math.max(5, Math.round(palavras / 140 + nEx * 1.5));
+  const materia = String(t.cabeco || '').replace(/: teoria$/, '');
+  return h`<article class="pagina-livro teoria apostila" aria-labelledby="pg-titulo">
+    <header class="apostila-capa">
+      <p class="apostila-selo"><span>Apostila</span>${materia ? h` · ${materia}` : ''}</p>
+      ${T}
+      ${livro ? h`<p class="apostila-base">Adaptada do livro <cite>${livro}</cite>, do Wikilivros</p>` : ''}
+      <p class="apostila-dados">${(t.secoes || []).length} seções · ${nEx} exemplos resolvidos · cerca de ${min} min</p>
+    </header>
+    ${(t.secoes || []).length > 1 ? h`<nav class="apostila-sumario" aria-label="Sumário"><p class="rotulo">Neste capítulo</p>
+      <ol>${cada(t.secoes, sc => h`<li>${sc.titulo}</li>`)}</ol></nav>` : ''}
+    <div class="apostila-corpo">
+      ${t.porQueCai ? h`<p class="apostila-abre"><strong>Por que cai no Enem.</strong> ${t.porQueCai}</p>` : ''}
       ${cada(t.secoes, sc => h`<section class="teoria-secao">
-        <h2 class="teoria-sub"><span class="teoria-n" aria-hidden="true">${sc.n}</span> ${sc.titulo}</h2>
+        <h2 class="teoria-sub"><span class="teoria-n" aria-hidden="true">${sc.n}</span><span>${sc.titulo}</span></h2>
         ${cada(sc.paragrafos, p => h`<p>${p}</p>`)}
-        ${sc.figura ? h`<figure class="teoria-figura" role="group" aria-label="${sc.figura.alt}">${cru(sc.figura.svg)}${sc.figura.legenda ? h`<figcaption>${sc.figura.legenda}</figcaption>` : ''}</figure>` : ''}
+        ${sc.figura ? h`<figure class="teoria-figura" role="group" aria-label="${sc.figura.alt}">${cru(sc.figura.svg)}${sc.figura.legenda ? h`<figcaption><strong>Figura ${sc.figura.n}.</strong> ${sc.figura.legenda}</figcaption>` : ''}</figure>` : ''}
         ${sc.tabela ? h`<div class="teoria-tabela-rolagem"><table class="teoria-tabela">${sc.tabela.legenda ? h`<caption>${sc.tabela.legenda}</caption>` : ''}
           ${sc.tabela.cabecalho.length ? h`<thead><tr>${cada(sc.tabela.cabecalho, c => h`<th scope="col">${c}</th>`)}</tr></thead>` : ''}
           <tbody>${cada(sc.tabela.linhas, l => h`<tr>${cada(l, c => h`<td>${c}</td>`)}</tr>`)}</tbody></table></div>` : ''}
-        ${sc.atencao ? h`<p class="pr-recado teoria-enem"><strong class="pr-recado-rotulo"><span class="grifo">${sc.atencao.rotulo}:</span></strong> ${sc.atencao.texto}</p>` : ''}
         ${cada(sc.exemplos, ex => h`<div class="exemplo">
-          <p class="exemplo-rotulo">Exemplo ${ex.n}</p>
-          <p>${ex.enunciado}</p>
+          <p class="exemplo-rotulo">Exemplo resolvido ${ex.n}</p>
+          <p class="exemplo-enunciado">${ex.enunciado}</p>
+          <p class="exemplo-res">Resolução</p>
           <ol class="exemplo-passos">${cada(ex.resolucao, r => h`<li>${r}</li>`)}</ol>
         </div>`)}
+        ${sc.atencao ? h`<aside class="apostila-quadro quadro-enem teoria-enem"><p class="quadro-rotulo">${sc.atencao.rotulo}</p><p>${sc.atencao.texto}</p></aside>` : ''}
       </section>`)}
-      ${t.armadilhas && t.armadilhas.length ? h`<section class="teoria-secao"><h2 class="teoria-sub">Armadilhas comuns</h2><ul class="teoria-lista">${cada(t.armadilhas, a => h`<li>${a}</li>`)}</ul></section>` : ''}
-      ${t.resumo && t.resumo.length ? h`<section class="teoria-secao teoria-resumo"><h2 class="teoria-sub">Resumo</h2><ul class="teoria-lista">${cada(t.resumo, a => h`<li>${a}</li>`)}</ul></section>` : ''}
+      ${t.armadilhas && t.armadilhas.length ? h`<aside class="apostila-quadro quadro-cuidado teoria-secao"><h2 class="quadro-rotulo">Cuidado: erros comuns</h2><ul class="teoria-lista">${cada(t.armadilhas, a => h`<li>${a}</li>`)}</ul></aside>` : ''}
+      ${t.resumo && t.resumo.length ? h`<section class="apostila-quadro quadro-resumo teoria-secao teoria-resumo"><h2 class="quadro-rotulo">Resumo do capítulo</h2><ul class="teoria-lista">${cada(t.resumo, a => h`<li>${a}</li>`)}</ul></section>` : ''}
     </div>
     ${t.habilidades && t.habilidades.length ? h`<section class="teoria-rodape"><p class="rotulo">Habilidades do Enem</p><ul class="teoria-lista pequeno">${cada(t.habilidades, x => h`<li>${x.codigo}: ${x.descricao}</li>`)}</ul></section>` : ''}
     ${t.fontes && t.fontes.length ? h`<section class="teoria-rodape"><p class="rotulo">Fontes</p>
@@ -328,4 +347,25 @@ export function teoria(t, { tituloComoH1 = true } = {}) {
       ${t.adaptacao ? h`<p class="pequeno texto-2">${t.adaptacao}</p>` : ''}</section>` : ''}
     ${t.credito ? h`<p class="rodape-licenca">${t.credito}</p>` : ''}
   </article>`;
+}
+
+/* ---------------- Trilha do tópico: onde o aluno está (Aquecer → Apostila → Questões → Visto) ---------------- */
+const ETAPAS = [['aquecer', 'Aquecer'], ['apostila', 'Apostila'], ['questoes', 'Questões'], ['visto', 'Visto']];
+export function trilha(fase) {
+  if (!fase) return '';
+  const i = ETAPAS.findIndex(e => e[0] === fase);
+  return h`<ol class="trilha" aria-label="Etapas do tópico">${cada(ETAPAS, (e, k) => h`<li class="${k < i ? 'feita' : k === i ? 'atual' : ''}" aria-current="${k === i ? 'step' : 'false'}"><span class="trilha-n">${k < i ? '✓' : k + 1}</span>${e[1]}</li>`)}</ol>`;
+}
+/** Explicação do tópico (primeira vez em destaque; depois, recolhida). */
+export const COMO_FUNCIONA = [
+  ['Aquecer', 'Uma questão antes de ler. Chute se não souber: a ideia é ler a apostila já com a dúvida na cabeça. A resposta aparece depois da leitura.'],
+  ['Apostila', 'A teoria do tópico, com exemplos resolvidos, figuras e tabelas. Se você já domina, pode pular.'],
+  ['Questões do Enem', 'Questões de provas reais. Acertou 2 seguidas, o tópico sobe de nível. Errou, ele desce um nível e a explicação mostra o que faltou.'],
+  ['Visto do dia', 'Terminou, ganhou o visto e o dia conta. O Prumo marca as revisões nas datas certas até a prova.'],
+];
+export function comoFunciona({ aberto = false } = {}) {
+  const lista = h`<ol class="como-funciona">${cada(COMO_FUNCIONA, (x, k) => h`<li><span class="trilha-n">${k + 1}</span><div><strong>${x[0]}</strong><p>${x[1]}</p></div></li>`)}</ol>`;
+  return aberto
+    ? h`<section class="secao como-funciona-caixa" aria-labelledby="cf-t"><h2 class="titulo-pequeno" id="cf-t">Como funciona um tópico</h2>${lista}</section>`
+    : h`<details class="secao como-funciona-caixa"><summary class="titulo-pequeno">Como funciona um tópico</summary>${lista}</details>`;
 }

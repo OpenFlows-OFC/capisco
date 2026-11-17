@@ -494,7 +494,7 @@ export class Nucleo {
   _rotulos(p, item) {
     const pk = this.pack;
     if (p.fonte === 'pratica') {
-      if (p.t === 'pre') return { tipo: 'pre', rotulo: 'Antes de ler a teoria', sub: null, aviso: 'Tente antes de ler. A teoria responde, e no fim da leitura você vê se acertou.' };
+      if (p.t === 'pre') return { tipo: 'pre', rotulo: 'Aquecimento: antes da apostila', sub: null, aviso: 'Responda mesmo chutando: você lê a apostila já com a dúvida na cabeça. No fim da leitura você vê se acertou.' };
       if (p.t === 'revisao') return { tipo: 'revisao', rotulo: `Revisão do ${this._nomeCap(p.cap)}`, sub: 'Vale a primeira resposta.' };
       if (p.antecipada) return { tipo: 'antecipada', rotulo: 'Revisão antecipada', sub: `${cap1(this._nomeCap(p.cap))}: não sobe nível.` };
       return { tipo: 'enem', rotulo: 'Questão do Enem', sub: null };
@@ -595,7 +595,7 @@ export class Nucleo {
     // pergunta
     const item = this.missao.itemDe(p.id), r = this._rotulos(p, item);
     const primeiraChecagem = p.t === 'checagem' && !Object.values(st.topicos).some(t => (t.tentativas || []).some(x => x.tipo === 'checagem'));
-    const etapa = p.fonte === 'pratica' ? (p.t === 'pre' ? 'Antes da teoria' : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : this.prat.curto(p.cap)) : p.t === 'pre' ? `Pergunta da p. ${pk.pagina(p.pagina).n}` : p.t === 'checagem' ? `Confira a p. ${pk.pagina(p.pagina).n}` : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : p.t === 'dia' ? 'Questão do dia' : r.tipo === 'enem' ? 'Questão do Enem' : r.tipo === 'antecipada' ? 'Revisão antecipada' : 'Questão da equipe';
+    const etapa = p.fonte === 'pratica' ? (p.t === 'pre' ? 'Aquecimento' : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : this.prat.curto(p.cap)) : p.t === 'pre' ? `Pergunta da p. ${pk.pagina(p.pagina).n}` : p.t === 'checagem' ? `Confira a p. ${pk.pagina(p.pagina).n}` : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : p.t === 'dia' ? 'Questão do dia' : r.tipo === 'enem' ? 'Questão do Enem' : r.tipo === 'antecipada' ? 'Revisão antecipada' : 'Questão da equipe';
     return {
       estado: 'pergunta', tipo: r.tipo, rotulo: r.rotulo, subrotulo: r.sub, aviso: r.aviso || null,
       avisoPrimeiraChecagem: primeiraChecagem ? 'Isso fica só no seu celular. Ninguém da escola vê.' : null,
@@ -603,6 +603,7 @@ export class Nucleo {
       // Pilar III (b.3): a questão inserida depois do erro é anunciada no topo, com o trecho do erro
       avisoInserida: p.inserido ? `Depois do erro: uma questão da equipe sobre ${p.sobre && pk.local(p.sobre) ? `a ${pk.local(p.sobre).rotulo}` : 'o mesmo trecho'}.` : null,
       item: this._itemVM(item), topo: this._topo(p, etapa),
+      fase: p.fonte === 'pratica' ? (p.t === 'pre' ? 'aquecer' : 'questoes') : null,
       acao: { evento: 'RESPONDER', rotulo: 'Responder', exige: 'alt' },
     };
   }
@@ -638,8 +639,8 @@ export class Nucleo {
     const respondeuAgora = !!(ant && ant.t === 'pre' && ant.fonte === 'pratica' && m.ultimaPre && m.ultimaPre.cap === p.cap);
     const temQuestao = m.passos.slice(m.i + 1).some(x => x.t === 'questao' || x.t === 'revisao');
     return Object.assign(this.teoria(p.cap), {
-      estado: 'leitura', topo: this._topo(p, `Teoria de ${this.prat.curto(p.cap)}`),
-      faixa: respondeuAgora ? 'Resposta guardada. No fim da teoria você vê se acertou.' : null,
+      estado: 'leitura', fase: 'apostila', topo: this._topo(p, `Apostila: ${this.prat.curto(p.cap)}`),
+      faixa: respondeuAgora ? 'Resposta guardada. No fim da apostila você vê se acertou.' : null,
       jaSei: temQuestao || respondeuAgora ? { evento: 'JA_SEI', rotulo: 'Já sei isto: pular a leitura' } : null,
       botao: { evento: 'TERMINEI_TRECHO', rotulo: respondeuAgora ? 'Terminei de ler: ver a pergunta do começo' : temQuestao ? 'Terminei de ler: ir para as questões' : 'Terminei de ler' },
       nota: null,
@@ -1109,9 +1110,9 @@ export class Nucleo {
   creditos() {
     const c = this.pack.creditos();
     c.app = [
-      { item: 'Gabarito (marca e títulos)', licenca: 'SIL Open Font License 1.1', fonte: 'Google Fonts' },
-      { item: 'Atkinson Hyperlegible Next (texto)', licenca: 'SIL Open Font License 1.1', fonte: 'Google Fonts' },
-      { item: 'Atkinson Hyperlegible Mono (números)', licenca: 'SIL Open Font License 1.1', fonte: 'Google Fonts' },
+      { item: 'Gabarito (marca e títulos)', licenca: 'SIL Open Font License 1.1', fonte: 'arquivo incluído no app' },
+      { item: 'Atkinson Hyperlegible Next (texto)', licenca: 'SIL Open Font License 1.1', fonte: 'arquivo incluído no app' },
+      { item: 'Atkinson Hyperlegible Mono (números)', licenca: 'SIL Open Font License 1.1', fonte: 'arquivo incluído no app' },
       { item: 'Código do Prumo', licenca: 'da equipe do TCC', fonte: 'ETEC Jornalista Roberto Marinho' },
     ];
     return c;
