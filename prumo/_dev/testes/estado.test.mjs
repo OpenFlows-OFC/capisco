@@ -17,8 +17,14 @@ test('migração dentro da versão 2: campos que faltam são preenchidos; prova 
   const st = E.normalizar({ app: 'prumo', versao: 2, perfil: { provaTipo: 'naosei', prova: null, dias: [1, 3, 5], minutos: 15 } });
   assert.equal(st.perfil.prova, null);
   assert.deepEqual(st.cards, {}); assert.deepEqual(st.semanas, {});
-  assert.equal(st.config.simboloConstancia, 'chama');
+  assert.equal(st.config.simboloConstancia, 'risquinhos');
   assert.equal(st.perfil.metaSemana, 2);
+});
+test('design system: a chama saiu; um estado salvo com simboloConstancia "chama" (ou "regua") vira risquinhos', () => {
+  for (const v of ['chama', 'regua', 'outra']) {
+    const st = E.normalizar({ app: 'prumo', versao: 2, perfil: { provaTipo: 'naosei', prova: null, dias: [1, 3, 5], minutos: 15 }, config: { simboloConstancia: v } });
+    assert.equal(st.config.simboloConstancia, 'risquinhos');
+  }
 });
 test('g.8 · restaurar recusa o arquivo do Capisco e arquivo de outra versão', () => {
   assert.throws(() => E.lerCopia(JSON.stringify(CAPISCO)), err => err instanceof E.ErroCopia && err.message === E.MSG_COPIA_INVALIDA);

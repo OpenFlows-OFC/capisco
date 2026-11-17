@@ -7,7 +7,8 @@
    Leitura livre: nada aqui passa pela máquina da missão.
    ========================================================= */
 import { h, cru, cada } from './dom.js';
-import { nivel, blocos, linkAjustes } from './componentes.js';
+import { nivel, blocos } from './componentes.js';
+import { topoAba } from './hoje.js';
 
 const SUBS = [
   { id: 'sumario', rotulo: 'Sumário' }, { id: 'erros', rotulo: 'Erros' },
@@ -17,15 +18,16 @@ const SUBS = [
 function subabas(atual) {
   return h`<nav class="subabas" aria-label="Partes do caderno">${cada(SUBS, s => h`<a class="subaba" href="#/caderno${s.id === 'sumario' ? '' : '/' + s.id}" ${atual === s.id ? cru('aria-current="page"') : ''}>${s.rotulo}</a>`)}</nav>`;
 }
-const linkTrecho = tr => (tr ? h`<a class="link link-pequeno" href="#/caderno/pagina/${tr.pagina}/${tr.paragrafo}">${tr.rotulo}</a>` : '');
+// do Caderno de erros, a página abre com o marca-texto no trecho que o erro cobrou (".../erro")
+const linkTrecho = (tr, erro = false) => (tr ? h`<a class="link" href="#/caderno/pagina/${tr.pagina}/${tr.paragrafo}${erro ? '/erro' : ''}">${tr.rotulo}</a>` : '');
 
 function sumario(n) {
   const s = n.sumario();
   return h`
     ${s.avisoDemo ? h`<p class="texto-2 pequeno">${s.avisoDemo}</p>` : ''}
     <ul class="lista-fios">${cada(s.capitulos, c => h`<li>
-      <p class="rotulo">Cap. ${c.n} · ${c.paginas}</p>
-      <h2 style="font:600 20px/28px var(--f-titulo);margin:4px 0 6px">${c.titulo}</h2>
+      <p class="rotulo">Cap. ${c.n}, ${c.paginas}</p>
+      <h2 class="titulo-pequeno">${c.titulo}</h2>
       ${nivel({ cheios: c.nivel.cheios, nome: c.nivel.nome })}
       <p class="pequeno" style="margin:6px 0 0">${c.estado}</p>
       ${c.regra ? h`<p class="pequeno texto-2" style="margin:4px 0 0">${c.regra}</p>` : ''}
@@ -41,12 +43,12 @@ function erros(n, filtro) {
   const e = n.erros(filtro);
   if (e.vazio) return h`<p>${e.vazio}</p>`;
   return h`<ul class="lista-fios">${cada(e.itens, it => h`<li>
-    <p class="rotulo">${it.capRotulo} · ${it.dia}</p>
+    <p class="rotulo">${it.capRotulo}, ${it.dia}</p>
     ${it.questao ? h`<p style="margin:4px 0"><strong>${it.questao.rotulo}</strong></p>` : ''}
     <p style="margin:0">${it.linha}</p>
-    ${it.falta ? h`<p class="pequeno" style="margin:4px 0 0"><strong>O que faltou:</strong> ${it.falta}</p>` : ''}
+    ${it.falta ? h`<p class="pequeno" style="margin:4px 0 0"><strong>O que faltou.</strong> ${it.falta}</p>` : ''}
     <p class="pequeno texto-2" style="margin:4px 0 0">${it.situacao}</p>
-    ${linkTrecho(it.trecho)}
+    ${linkTrecho(it.trecho, true)}
   </li>`)}</ul>`;
 }
 
@@ -63,20 +65,20 @@ function cards(n) {
     ${c.aviso ? h`<p class="pequeno texto-2">${c.aviso}</p>` : h`<ul class="lista-fios">${cada(c.cards, k => h`<li>
       <p style="margin:0"><strong>${k.frente}</strong></p>
       <p style="margin:4px 0 0">${k.verso}</p>
-      <p class="pequeno texto-2" style="margin:4px 0 0">${k.caixaNome || ''}${k.proximaTexto ? ` · próxima: ${k.proximaTexto}` : ''}</p>
+      <p class="pequeno texto-2" style="margin:4px 0 0">${k.caixaRotulo ? `${k.caixaRotulo[0].toUpperCase()}${k.caixaRotulo.slice(1)}` : ''}${k.proximaTexto ? `${k.caixaRotulo ? '. ' : ''}Próxima: ${k.proximaTexto}.` : ''}</p>
     </li>`)}</ul>`}
   </section>`)}`;
 }
 
-function pagina(n, id, ancora) {
+function pagina(n, id, ancora, erro) {
   const p = n.pagina(id);
   if (!p) return h`<p>Página não encontrada.</p>`;
   return h`<article class="pagina-livro" style="margin-top:8px">
     <p class="rotulo cabeco">${p.cabeco}</p>
     <h2 class="pagina-titulo">${p.titulo}</h2>
-    ${blocos(p.blocos, ancora)}
-    <p class="pe num">${p.pe}</p>
-    <p class="pequeno texto-2">${p.credito.fonte} · ${p.credito.licenca}</p>
+    ${blocos(p.blocos, ancora, { grifar: erro })}
+    <p class="pe">${p.pe}</p>
+    <p class="pequeno texto-2">${p.credito.fonte}. ${p.credito.licenca}.</p>
     ${p.irAlem && p.irAlem.length ? h`<section class="secao"><p class="rotulo">Ir além</p><ul class="lista-fios">${cada(p.irAlem, l => h`<li><a href="${l.url}" target="_blank" rel="noopener">${l.rotulo}</a><p class="pequeno texto-2" style="margin:4px 0 0">${l.aviso}</p></li>`)}</ul></section>` : ''}
     <p class="links" style="margin-top:16px">${p.anterior ? h`<a class="link" href="#/caderno/pagina/${p.anterior}">página anterior</a>` : ''}${p.seguinte ? h`<a class="link" href="#/caderno/pagina/${p.seguinte}">página seguinte</a>` : ''}</p>
   </article>`;
@@ -87,7 +89,7 @@ export function telaCaderno(ctx, t, rota) {
   const n = ctx.nucleo;
   const sub = rota.sub || 'sumario';
   let corpo;
-  if (sub === 'pagina') corpo = pagina(n, rota.resto[0], rota.resto[1]);
+  if (sub === 'pagina') corpo = pagina(n, rota.resto[0], rota.resto[1], rota.resto[2] === 'erro');
   else if (sub === 'erros') corpo = erros(n, rota.resto[0] || null);
   else if (sub === 'notas') corpo = notas(n);
   else if (sub === 'cards') corpo = cards(n);
@@ -96,8 +98,9 @@ export function telaCaderno(ctx, t, rota) {
   return {
     chave: `caderno:${sub}:${rota.resto.join('/')}`,
     titulo: 'Caderno',
-    html: h`<header class="cabecalho"><p class="rotulo">${s.materia} · Caderno</p>${linkAjustes()}</header>
-      <h1 class="titulo" tabindex="-1" data-foco-inicial style="margin-top:8px">${s.titulo}</h1>
+    html: h`${topoAba()}
+      <p class="rotulo">Caderno de ${s.materia}</p>
+      <h1 class="titulo" tabindex="-1" data-foco-inicial>${s.titulo}</h1>
       ${subabas(sub === 'pagina' ? 'sumario' : sub)}
       ${corpo}`,
     depois(raiz) {

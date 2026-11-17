@@ -229,6 +229,7 @@ export class Pack {
     return {
       id: q.id, origem: 'enem', cap, pagina, modelo: q.modelo || null, blocos: q.blocos || [],
       rotulo: `Enem ${q.ano} · ${ROTULO_DIA[q.dia] || q.dia + 'º dia'} · questão ${q.numero}`,
+      numero: q.numero, prova: `Enem ${q.ano}, ${ROTULO_DIA[q.dia] || q.dia + 'º dia'}`,
       contexto: q.contexto || '', introducao: q.introducao || '', enunciado: q.contexto || '', imagens: q.imagens || [],
       alternativas: (q.alternativas || []).map(a => ({ letra: a.letra, texto: a.texto, imagem: a.imagem || null, certa: a.letra === q.gabarito, falta: a.falta || null, paragrafo: a.paragrafo || null, expr: a.expr || null })),
       gabarito: q.gabarito, explicacao: q.explicacao || '', atribuicao: q.atribuicao || rodape, rodape,

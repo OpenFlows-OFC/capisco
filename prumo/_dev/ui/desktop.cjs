@@ -42,8 +42,8 @@ const U = require('./comum.cjs');
       await U.continuar(pg);
       for (let g = 0; g < 10 && (await U.estado(pg)) !== 'cards'; g++) { await pg.evaluate(() => { const n = window.__prumo.nucleo; const e = n.estado(); if (e === 'fimDaRodada' || e === 'fimDaMao') n.despachar('SEGUIR'); window.__prumo.app.render(); }); }
       await pg.click('.barra [data-ev="VIRAR"]');
-      const dur = await pg.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.ficha-giro')).transitionDuration));
-      confere(dur <= 0.01, `virada do card sem animação (${dur}s)`);
+      const vir = await pg.evaluate(() => ({ anims: document.getAnimations().filter(a => a.playState === 'running').length, virado: document.querySelector('.ficha-giro').classList.contains('virado') }));
+      confere(vir.anims === 0 && vir.virado, `virada do card sem animação (${vir.anims} animações)`);
       await cap(pg, 'card-virado');
     } catch (e) { falhas.push('exceção: ' + e.message.split('\n')[0]); console.log(e); }
     falhas.push(...erros);

@@ -66,7 +66,7 @@ test('p. 7: pré-pergunta e checagem treinam a frase-armadilha da 2023 Q175', { 
   for (const v of [pre, checagem]) {
     assert.match(v.enunciado, /preço de um salgado menos o de um suco é igual ao preço do suco mais/);
     const armadilha = v.alternativas.find(a => a.paragrafo === 'mat-fa.p7.b1.s2');
-    assert.match(armadilha.falta, /salgado − suco = suco \+ R\$ [\d,]+, ou seja, salgado = 2 × suco/);
+    assert.match(armadilha.falta, /salgado − suco = suco \+ R\$\s[\d,]+, ou seja, salgado = 2 × suco/);
   }
   assert.match(v2.enunciado, /a mais que o dobro do preço de um suco/);
   // nenhuma frase começa com numeral
@@ -89,4 +89,65 @@ test('lucro da p. 6: o diagnóstico de "custo − receita" acompanha o sinal do 
   const falta = v => v.alternativas.find(a => a.paragrafo === 'mat-fa.p6.b2.s4').falta;
   assert.match(falta(m.variantes[0]), /^Tirou o sinal/);                 // lucro −80: prejuízo
   assert.doesNotMatch(falta(m.variantes[1]), /tirou o sinal/i);          // lucro 60: tirar o sinal daria a certa
+});
+
+// Pendências de conteúdo resolvidas em 17/11/2026 (conferência com o PDF, imagens, autoria, links).
+test('Caps. 3 e 4: texto conferido com o PDF oficial, com as correções da transcrição', { skip: pular }, async () => {
+  const { pack } = await import(PACK_URL);
+  const q = id => pack.questoes.find(x => x.id === id);
+  for (const id of ['enem-2019-143', 'enem-2020-175', 'enem-2019-179', 'enem-2021-164', 'enem-2023-175']) {
+    assert.equal(q(id).textoConferidoPDF, '2026-11-17', id);
+    assert.match(q(id).transcricao, /conferida com o PDF oficial do INEP em 17\/11\/2026/, id);
+  }
+  assert.match(q('enem-2019-179').contexto, /em watt × minuto,/);
+  assert.equal(q('enem-2019-179').introducao, 'A sequência de deslocamentos pelos cômodos, conforme o consumo de energia apresentado no gráfico, é');
+  assert.match(q('enem-2021-164').contexto, /mala com até 10 kg\./);
+  assert.match(q('enem-2020-175').contexto, /Receita – Custo\./);   // meia-risca, como no PDF
+  assert.equal(q('enem-2019-179').fonteMd.includes('watt x minuto'), true);   // fonteMd guarda o original do enem.dev
+});
+
+test('validador recusa texto dos Caps. 3 e 4 diferente do PDF oficial', { skip: pular }, () => {
+  const r = validarComAlteracao("const q = pack.questoes.find(x => x.id === 'enem-2021-164'); q.contexto = q.contexto.replace('até 10 kg.', 'até 10kg.');");
+  assert.equal(r.codigo, 1, r.saida);
+  assert.match(r.saida, /enem-2021-164.*(texto diferente do PDF oficial|texto-base diferente da transcrição)/);
+});
+
+test('imagens do Enem dos Caps. 3 e 4 recortadas do PDF em alta resolução (mesmo nome de arquivo)', { skip: pular }, async () => {
+  const { readFileSync } = await import('node:fs');
+  const largura = arq => readFileSync(join(RAIZ, 'conteudo/img', arq)).readUInt32BE(16);   // cabeçalho IHDR do PNG
+  for (const l of ['', '-a', '-b', '-c', '-d', '-e']) assert.ok(largura(`enem-2020-175${l}.png`) >= 500, `enem-2020-175${l}.png`);
+  // 2019 Q179: gráfico e planta um embaixo do outro (rodada 2), cada um com a largura toda da tela.
+  const altura = arq => readFileSync(join(RAIZ, 'conteudo/img', arq)).readUInt32BE(20);
+  assert.ok(largura('enem-2019-179.png') >= 800);
+  assert.ok(altura('enem-2019-179.png') > largura('enem-2019-179.png'));
+  assert.ok(largura('enem-2019-143.png') >= 700);
+  const { pack } = await import(PACK_URL);
+  const q = pack.questoes.find(x => x.id === 'enem-2020-175');
+  assert.equal(q.imagens.length, 6);
+  for (const im of q.imagens) assert.match(im.recorte, /PDF oficial do Enem 2020/);
+});
+
+test('autoria dos Caps. 3 e 4 em texto, igual à dos Caps. 1 e 2, e créditos sem "(true)"', { skip: pular }, async () => {
+  const { pack } = await import(PACK_URL);
+  const { Pack } = await import(pathToFileURL(join(RAIZ, 'js/nucleo/pack.js')).href);
+  const c4 = pack.capitulos.find(c => c.id === 'mat-fa.c4');
+  assert.equal(typeof c4.cards[0].autoria.ia, 'string');
+  assert.deepEqual(c4.cards[0].autoria, pack.autoriaPadrao);
+  assert.deepEqual(pack.questoes.find(x => x.id === 'enem-2023-175').autoria, pack.autoriaPadrao);
+  const cr = new Pack(pack).creditos();
+  const frases = new Set(cr.itens.map(i => i.autoria.replace(/^Explicação e "o que faltou": /, '')).filter(Boolean));
+  assert.deepEqual([...frases], ['rascunho por IA (Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026), revisão pendente']);
+});
+
+test('links "Ir além" dos Caps. 3 e 4: OBMEP módulo 35 e Khan na unidade de cada capítulo', { skip: pular }, async () => {
+  const { pack } = await import(PACK_URL);
+  const cap = id => pack.capitulos.find(c => c.id === id);
+  for (const c of [cap('mat-fa.c3'), cap('mat-fa.c4')]) {
+    const o = c.irAlem.find(l => l.tipo === 'obmep');
+    assert.equal(o.url, 'https://portaldaobmep.impa.br/index.php/modulo/ver?modulo=35');
+    assert.equal(o.rotulo, 'Portal da OBMEP: módulo Função Afim (videoaulas e exercícios)');
+  }
+  assert.match(cap('mat-fa.c3').irAlem.find(l => l.tipo === 'khan').url, /:3-bimestre-2026$/);
+  assert.match(cap('mat-fa.c3').irAlem.find(l => l.tipo === 'khan').rotulo, /Unidade 4, 3º Bimestre/);
+  assert.match(cap('mat-fa.c4').irAlem.find(l => l.tipo === 'khan').url, /:2-bimestre-2026$/);
 });

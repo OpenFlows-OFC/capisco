@@ -1,0 +1,368 @@
+# Trechos dos PDFs oficiais do INEP (Enem, 2º dia, Caderno 7 Azul) usados na conferência das 5 questões dos Caps. 3 e 4.
+# Texto extraído com PyMuPDF em 17/11/2026 (get_text com recorte na área da questão), sem edição: as quebras de linha
+# são as da diagramação, as tabulações viraram espaço, os números soltos são rótulos dos gráficos, e "[?]" marca
+# um glifo sem mapa Unicode (só na tabela da 2021 Q164). Onde a extração não dá o texto na ordem
+# de leitura, segue uma "leitura da página renderizada", feita na imagem da página e dita como tal.
+# Lido por _dev/valida_pack.mjs: o texto de cada questão no pack tem de aparecer no trecho, com espaços normalizados.
+# Arquivos (os mesmos de pdf_azul_c12.txt, conferidos pelo SHA-256 em 17/11/2026):
+#   2019: https://download.inep.gov.br/educacao_basica/enem/provas/2019/caderno_de_questoes_2_dia_caderno_7_azul_aplicacao_regular.pdf  SHA-256 a476882608be2bf1353af8b26c60838ac187f2d1a3653524c90de62b0372efa6
+#   2020: https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD7.pdf  SHA-256 f9970a82e0ee67a31ec16e2f14c99e620738b88dfe7c68484128964a5d5d69bc
+#   2021: https://download.inep.gov.br/enem/provas_e_gabaritos/2021_PV_impresso_D2_CD7.pdf  SHA-256 887b2a10ebb163f0c40db2ab4f67a5a4b5959ceb74ce7273466a755b8e55f540
+#   2023: https://download.inep.gov.br/enem/provas_e_gabaritos/2023_PV_impresso_D2_CD7.pdf  SHA-256 49e7ad9d0ab25710f6e5c4c3296fc40b63d86a3a87d5f25d83e8ecc81b98415b
+
+=== enem-2019-143 · Enem 2019, 2º dia, Caderno Azul, questão 143 · página 19 do PDF
+Os exercícios físicos são recomendados para o 
+bom funcionamento do organismo, pois aceleram o 
+metabolismo e, em consequência, elevam o consumo 
+de calorias. No gráfico, estão registrados os valores 
+calóricos, em kcal, gastos em cinco diferentes atividades 
+físicas, em função do tempo dedicado às atividades, 
+contado em minuto.
+140
+(kcal)
+120
+100
+80
+60
+40
+20
+5
+10
+II
+III
+IV
+V
+I
+15
+20
+25
+30
+Tempo (min)
+Qual dessas atividades físicas proporciona o maior 
+consumo de quilocalorias por minuto?
+A  I
+B  II
+C  III
+D  IV
+E  V
+
+=== enem-2020-175 · Enem 2020, 2º dia, Caderno Azul, questão 175 · página 29 do PDF
+Um administrador resolve estudar o lucro de sua empresa e, para isso, traça o gráfico da receita e do custo de 
+produção de seus itens, em real, em função da quantidade de itens produzidos.
+Receita
+Custo
+Quantidade de 
+itens produzidos
+R$
+5
+10
+15
+20
+25
+30
+35
+40
+45
+50
+55
+5
+10
+15
+20
+25
+30
+0
+O lucro é determinado pela diferença: Receita – Custo. 
+O gráfico que representa o lucro dessa empresa, em função da quantidade de itens produzidos, é
+A
+R$
+5
+−5
+−10
+−15
+−20
+10
+15
+20
+25
+30
+35
+40
+5
+10
+20
+25
+30
+0
+Quantidade de 
+itens produzidos
+15
+D
+R$
+5
+−5
+10
+15
+20
+25
+30
+35
+40
+45
+50
+55
+5
+10
+20
+25
+30
+0
+Quantidade de 
+itens produzidos
+15
+B
+R$
+5
+−5
+−10
+−15
+−20
+−25
+−30
+−35
+−40
+10
+15
+20
+5
+10
+20
+25
+30
+0
+Quantidade de 
+itens produzidos
+15
+E
+R$
+5
+−5
+10
+15
+20
+25
+30
+35
+40
+45
+50
+55
+5
+10
+20
+25
+30
+0
+Quantidade de 
+itens produzidos
+15
+C
+R$
+5
+−5
+10
+15
+20
+25
+30
+35
+40
+45
+50
+55
+5
+10
+20
+25
+30
+0
+Quantidade de 
+itens produzidos
+15
+--- leitura da página renderizada: as cinco alternativas são gráficos (sem texto), com as letras A a E em círculo, na ordem A, D, B, E, C da diagramação em duas colunas.
+
+=== enem-2019-179 · Enem 2019, 2º dia, Caderno Azul, questão 179 · página 31 do PDF
+Nos seis cômodos de uma casa há sensores de presença posicionados de forma que a luz de cada cômodo 
+acende assim que uma pessoa nele adentra, e apaga assim que a pessoa se retira desse cômodo. Suponha que o 
+acendimento e o desligamento sejam instantâneos.
+O morador dessa casa visitou alguns desses cômodos, ficando exatamente um minuto em cada um deles. 
+O gráfico descreve o consumo acumulado de energia, em watt × minuto, em função do tempo t, em minuto, das 
+lâmpadas de LED dessa casa, enquanto a figura apresenta a planta baixa da casa, na qual os cômodos estão 
+numerados de 1 a 6, com as potências das respectivas lâmpadas indicadas.
+Energia (W⋅min)
+Tempo (min)
+(0 ; 0)
+(1 ; 20)
+(2 ; 35)
+(3 ; 40)
+(4 ; 55)
+(5 ; 75)
+(6 ; 85)
+(7 ; 105)
+(8 ; 120)
+1
+2
+4
+5
+6
+3
+QUARTO
+(13 W)
+SALA
+(20 W)
+BANHO
+(2 W)
+BANHO
+(5 W)
+COZINHA
+(10 W)
+ENTRADA
+SUÍTE
+(15 W)
+A sequência de deslocamentos pelos cômodos, conforme o consumo de energia apresentado no gráfico, é
+A 1
+4
+5
+4
+1
+6
+1
+4
+→
+→
+→
+→
+→
+→
+→
+B 1
+2
+3
+1
+4
+1
+4
+4
+→
+→
+→
+→
+→
+→
+→
+C 1
+4
+5
+4
+1
+6
+1
+2
+3
+→
+→
+→
+→
+→
+→
+→
+→
+D 1
+2
+3
+5
+4
+1
+6
+1
+4
+→
+→
+→
+→
+→
+→
+→
+→
+E 1
+4
+2
+3
+5
+1
+6
+1
+4
+→
+→
+→
+→
+→
+→
+→
+→
+--- leitura da página renderizada (no PDF, cada seta das alternativas é desenhada à parte, e a extração separa as setas dos números):
+A 1 → 4 → 5 → 4 → 1 → 6 → 1 → 4
+B 1 → 2 → 3 → 1 → 4 → 1 → 4 → 4
+C 1 → 4 → 5 → 4 → 1 → 6 → 1 → 2 → 3
+D 1 → 2 → 3 → 5 → 4 → 1 → 6 → 1 → 4
+E 1 → 4 → 2 → 3 → 5 → 1 → 6 → 1 → 4
+
+=== enem-2021-164 · Enem 2021, 2º dia, Caderno Azul, questão 164 · página 28 do PDF
+Uma pessoa pretende viajar por uma companhia 
+aérea que despacha gratuitamente uma mala com até 
+10 kg.
+Em duas viagens que realizou, essa pessoa utilizou 
+a mesma mala e conseguiu 10 kg com as seguintes 
+combinações de itens:
+Viagem
+Camisetas
+Calças
+Sapatos
+[?]
+12
+4
+3
+[?]
+18
+3
+2
+Para ter certeza de que sua bagagem terá massa de 
+10 kg, ela decide levar essa mala com duas calças, um 
+sapato e o máximo de camisetas, admitindo que itens do 
+mesmo tipo têm a mesma massa.
+Qual a quantidade máxima de camisetas que essa 
+pessoa poderá levar?
+A  22
+B  24
+C  26
+D  33
+E  39
+--- leitura da página renderizada (a coluna Viagem usa fonte sem mapa Unicode): linhas da tabela "I · 12 · 4 · 3" e "II · 18 · 3 · 2".
+
+=== enem-2023-175 · Enem 2023, 2º dia, Caderno Azul, questão 175 · página 29 do PDF
+O metrô de um município oferece dois tipos de tíquetes com colorações diferentes, azul e vermelha, sendo vendidos 
+em cartelas, cada qual com nove tíquetes da mesma cor e mesmo valor unitário. Duas cartelas de tíquetes azuis e 
+uma cartela de tíquetes vermelhos são vendidas por R$ 32,40. Sabe-se que o preço de um tíquete azul menos o preço 
+de um tíquete vermelho é igual ao preço de um tíquete vermelho mais cinco centavos.
+Qual o preço, em real, de uma cartela de tíquetes vermelhos?
+A 
+A  4,68
+B 
+B  6,30
+C 
+C  9,30
+D 
+D  10,50
+E 
+E  10,65 

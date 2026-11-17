@@ -19,7 +19,9 @@ export const PREREQ = {
 const MEC_ENEM = {
   tipo: 'mec', rotulo: 'Fazer um simulado no MEC Enem',
   url: 'https://app.mecenem.mec.gov.br/',
-  aviso: 'Abre a plataforma do MEC em outra aba; ela pede login gov.br. O Prumo não é do MEC e não envia nenhum dado para lá.',
+  // Conferido no navegador em 17/11/2026 (Playwright, sem sessão): o endereço abre em /onBoarding, com
+  // telas de apresentação e, no fim, só o botão "Entrar com gov.br"; /home volta para /onBoarding.
+  aviso: 'Abre a plataforma do MEC em outra aba. Depois das telas de apresentação, ela pede login gov.br para continuar. O Prumo não é do MEC e não envia nenhum dado para lá.',
   conferidoEm: '2026-11-17',
   outros: [{ rotulo: 'App MEC Enem na App Store', url: 'https://apps.apple.com/br/app/mec-enem/id6747131349' }],
 };
@@ -55,7 +57,7 @@ const CREDITOS_FIXOS = [
     texto: 'Questões reproduzidas sem adaptação; só houve mudança de formato (texto em HTML e imagem em cópia local). A licença vem do rodapé do portal do INEP; a leitura de que ela cobre as provas é interpretação da equipe. Cada questão diz se o texto já foi conferido com o PDF oficial do caderno (textoConferidoPDF); onde a transcrição diferia do PDF, vale o PDF.' },
   { id: 'enem-dev', fonte: 'Projeto enem.dev (transcrição das provas)', licenca: 'código em GPL-2.0; licença dos dados da transcrição não encontrada',
     url: 'https://github.com/yunger7/enem-api', revisao: 'commit 938c56f',
-    texto: 'Fonte da transcrição do texto, das alternativas e das imagens das questões, conferida contra o gabarito oficial do INEP. A imagem da Enem 2020 Q164 não é a do enem.dev: é um recorte do PDF oficial do INEP.' },
+    texto: 'Fonte da transcrição do texto, das alternativas e das imagens das questões, conferida contra o gabarito oficial do INEP e, em 17/11/2026, contra o PDF oficial de cada caderno (onde diferia, vale o PDF). As imagens das Enem 2019 Q143, 2019 Q179, 2020 Q164 e 2020 Q175 (enunciado e alternativas) não são as do enem.dev: são recortes do PDF oficial do INEP, só com mudança de formato.' },
   { id: 'itens-prova', fonte: 'INEP, microdados do Enem: ITENS_PROVA 2019 a 2023', licenca: 'dados abertos do INEP',
     url: 'https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/enem',
     texto: 'Gabarito oficial, item anulado, habilidade da Matriz e parâmetros a, b e c da TRI de cada questão, conferidos em 17/11/2026.' },

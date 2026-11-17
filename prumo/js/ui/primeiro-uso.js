@@ -1,7 +1,7 @@
 /* =========================================================
    PRUMO · Primeiro uso (c.1)
    Montar o plano em menos de um minuto, ou recuperar o progresso.
-   Na 1ª tela, no topo: "Já usei o Prumo · restaurar uma cópia" e "Ver com
+   Na 1ª tela, no topo: "Já usei o Prumo: restaurar uma cópia" e "Ver com
    dados de exemplo" (Decisão 5: a banca abre pelo QR code, sem instalar).
    Três passos em texto ("1 de 3"): perguntas (prova, dias, minutos, horário,
    som) · texto do alarme · fecho. Nada é salvo até "Começar".
@@ -9,7 +9,7 @@
    ========================================================= */
 import { h, cru, cada, escolherArquivo } from './dom.js';
 import { registrar } from './registro.js';
-import { simbolo } from './componentes.js';
+import { marca as marcaPrumo } from './componentes.js';
 
 function estadoInicial(vm) {
   return {
@@ -20,7 +20,7 @@ function estadoInicial(vm) {
 const SEM_DATA = new Set(['enem', 'naosei']);
 
 function marca() {
-  return h`<div class="marca-linha">${simbolo()}<span class="nome">prumo</span><span class="descritor">App de Estudos</span></div>`;
+  return h`<div class="linha-topo">${marcaPrumo()}<span class="descritor">App de Estudos</span></div>`;
 }
 
 function passoPerguntas(ctx, vm, pu) {
@@ -77,7 +77,7 @@ function passoPerguntas(ctx, vm, pu) {
         <p class="ajuda-campo">Desligado por padrão. O que aparece na tela nunca depende do som.</p>
       </div>
 
-      <div class="acoes-pu"><button type="submit" class="botao" ${nDias < vm.dias.min ? cru('aria-disabled="true"') : ''}>Continuar</button></div>
+      <div class="acoes-pu"><button type="submit" class="botao botao-largo" ${nDias < vm.dias.min ? cru('aria-disabled="true"') : ''}>Continuar</button></div>
     </form>`;
 }
 
@@ -87,10 +87,10 @@ function passoAlarme(ctx, vm, pu) {
     <p class="rotulo">2 de 3</p>
     <h1 class="pergunta-pu" tabindex="-1" data-foco-inicial>Quer um lembrete?</h1>
     <p>Crie um alarme no app Relógio:</p>
-    <p class="alarme-texto num">${al.rotulo}</p>
+    <p class="alarme-texto">${al.rotulo}</p>
     <p>O Prumo não manda notificação.</p>
     <div class="acoes-pu">
-      <button type="button" class="botao" data-acao="puAlarme" data-arg="criado">Criei o alarme</button>
+      <button type="button" class="botao botao-largo" data-acao="puAlarme" data-arg="criado">Criei o alarme</button>
       <button type="button" class="botao-sec" data-acao="puAlarme" data-arg="agora-nao">Agora não</button>
     </div>
   </div>`;
@@ -102,7 +102,7 @@ function passoFecho(ctx, vm) {
     <h1 class="pergunta-pu" tabindex="-1" data-foco-inicial>Seus dados, no seu aparelho</h1>
     <p style="font-size:18px;line-height:28px">${vm.fecho}</p>
     <button type="button" class="link" data-folha="instalar">Como instalar</button>
-    <div class="acoes-pu"><button type="button" class="botao" data-acao="puConcluir">Começar</button></div>
+    <div class="acoes-pu"><button type="button" class="botao botao-largo" data-acao="puConcluir">Começar</button></div>
   </div>`;
 }
 
@@ -191,7 +191,7 @@ registrar({
         rotulo: 'Como instalar',
         corpo: h`<ul class="lista-fios"><li>${vm.instalar.iphone}</li><li>${vm.instalar.android}</li></ul>
           <p class="pequeno texto-2" style="margin-top:12px">Instalado, o Prumo abre sem internet e o iPhone guarda os dados por mais tempo.</p>`,
-        pe: h`<button type="button" class="botao" data-acao="fecharFolha">Entendi</button>`,
+        pe: h`<button type="button" class="botao botao-largo" data-acao="fecharFolha">Entendi</button>`,
       };
     },
   },

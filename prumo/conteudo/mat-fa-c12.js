@@ -21,7 +21,7 @@
 //
 // Texto, modelos, explicações, "o que faltou" e cards: rascunho por IA (Claude Opus 5.5), revisão
 // pendente; licença CC BY-SA 4.0. O texto das questões do Enem é do INEP (CC BY-ND 3.0), sem adaptação.
-import { AUTORIA_IA, svgLinha, svgPontos, altLinha, altPontos, compatibilizar } from './gerador.js';
+import { AUTORIA_IA, svgLinha, svgPontos, altLinha, altPontos, compatibilizar, contasJuntas, reaisJuntos } from './gerador.js';
 import { ENEM_C12 } from './mat-fa-c12-enem.js';
 
 const AUT = AUTORIA_IA;
@@ -30,12 +30,18 @@ const LIC_ENEM = 'CC BY-ND 3.0 (rodapé do portal do INEP; interpretação da eq
 const LIC_ENEM_URL = 'https://creativecommons.org/licenses/by-nd/3.0/legalcode';
 
 // "Ir além": fora da missão (leitor do Caderno e cartão de erro), em nova aba (g.2).
-const KHAN = {
-  tipo: 'khan', rotulo: 'A mesma matéria no curso da Khan que a sua escola usa',
+// Unidade 3 (2º Bimestre) do curso da Khan para a 1ª série do Ensino Médio de SP, conferida em 17/11/2026
+// (anexos/khan/2026-11-17_khan-curso-1a-serie-mat-sp.pdf): traz "Lei de Formação da Função Afim",
+// "Gráfico de função afim" e "Relação entre grandezas: representação gráfica". O rótulo diz o que o
+// capítulo encontra lá, e não promete "a mesma matéria".
+const KHAN_BASE = {
+  tipo: 'khan',
   url: 'https://pt.khanacademy.org/math/1-serie-em-mat-sp/x82b03a9b6c8af113:2-bimestre-2026',
   aviso: 'Todo o conteúdo da Khan Academy está disponível gratuitamente em www.khanacademy.org. O Prumo não é oficial nem endossado pela Khan Academy.',
   conferidoEm: '2026-11-17',
 };
+const KHAN_C1 = { ...KHAN_BASE, rotulo: 'Lei de formação da função afim, no curso da Khan para a 1ª série do Ensino Médio de SP (Unidade 3, 2º Bimestre)' };
+const KHAN_C2 = { ...KHAN_BASE, rotulo: 'Gráficos de relação entre grandezas, no curso da Khan para a 1ª série do Ensino Médio de SP (Unidade 3, 2º Bimestre)' };
 const OBMEP = {
   tipo: 'obmep', rotulo: 'Portal da OBMEP: módulo Função Afim (videoaulas e exercícios)',
   url: 'https://portaldaobmep.impa.br/index.php/modulo/ver?modulo=35',
@@ -43,7 +49,8 @@ const OBMEP = {
   conferidoEm: '2026-11-17',
 };
 
-const p = (id, n, html, figura) => (figura ? { id, n, html, figura } : { id, n, html });
+// O texto do parágrafo passa por contasJuntas (gerador.js): a quebra de linha não cai no meio de uma conta.
+const p = (id, n, texto, figura) => { const html = contasJuntas(texto); return figura ? { id, n, html, figura } : { id, n, html }; };
 
 // ------------------------------------------------------------------ figuras do texto
 const G_VEL = { xMax: 20, xPasso: 2, xRotulo: 2, yMin: 0, yMax: 50, yPasso: 10,
@@ -64,7 +71,7 @@ const ALT_AB = altPontos(P_AB, G_AB, { diagonal: true });
 
 const TABELA_TAXI = '<table class="tabela-equipe"><caption>Táxi com bandeirada de R$ 6 e R$ 3 por km</caption>'
   + '<thead><tr><th scope="col">Distância (km)</th><th scope="col">Conta</th><th scope="col">Preço (R$)</th></tr></thead><tbody>'
-  + [0, 1, 2, 3, 4].map(x => `<tr><td>${x}</td><td>3 · ${x} + 6</td><td>${3 * x + 6}</td></tr>`).join('')
+  + [0, 1, 2, 3, 4].map(x => `<tr><td>${x}</td><td>3 × ${x} + 6</td><td>${3 * x + 6}</td></tr>`).join('')
   + '</tbody></table>';
 
 // ------------------------------------------------------------------ páginas
@@ -72,11 +79,12 @@ const P1 = {
   id: 'mat-fa.p1', n: 1, capitulo: 'mat-fa.c1', titulo: 'Um preço com duas partes',
   modelo: 'mat-fa.p1.m', nucleo: 'mat-fa.p1.b1',
   notaPrompt: 'Com suas palavras: por que a bandeirada não multiplica pelos km?',
-  credito: CRED,
+  // fonte (e.2): é dela que Pack.creditos() lê a autoria da página; sem ela, os créditos diriam "autoria não registrada".
+  credito: CRED, fonte: CRED,
   blocos: [
     { id: 'mat-fa.p1.b1', paragrafos: [
       p('mat-fa.p1.b1.s1', 1, 'Pense numa corrida de táxi. Antes de o carro sair do lugar, o taxímetro já mostra um valor: é a <strong>bandeirada</strong>. Imagine um táxi com bandeirada de R$ 6. Você paga esses R$ 6 uma vez só, seja a corrida de 1 km, seja de 20 km. Por isso a bandeirada é a <strong>parte fixa</strong> do preço.'),
-      p('mat-fa.p1.b1.s2', 2, 'O resto do preço depende da distância. Se o táxi cobra R$ 3 por quilômetro, cada quilômetro a mais soma R$ 3. Numa corrida de x quilômetros, essa parte custa 3 · x. Ela é a <strong>parte que varia</strong>. O preço total P junta as duas: <strong>P = 3x + 6</strong>. Repare: só o 3 multiplica o x. O 6 entra uma vez, somado no fim.'),
+      p('mat-fa.p1.b1.s2', 2, 'O resto do preço depende da distância. Se o táxi cobra R$ 3 por quilômetro, cada quilômetro a mais soma R$ 3. Numa corrida de x quilômetros, essa parte custa 3 × x, que se escreve 3x. Ela é a <strong>parte que varia</strong>. O preço total P junta as duas: <strong>P = 3x + 6</strong>. Repare: só o 3 multiplica o x. O 6 entra uma vez, somado no fim.'),
     ] },
     { id: 'mat-fa.p1.b2', paragrafos: [
       p('mat-fa.p1.b2.s3', 3, 'Veja a mesma corrida em números: 0 km custa R$ 6 (você entrou e desistiu); 1 km, R$ 9; 2 km, R$ 12; 3 km, R$ 15; 4 km, R$ 18. Cada quilômetro soma sempre os mesmos R$ 3. Isso dá um jeito rápido de conferir uma fórmula: em x = 0, ela tem de dar só a parte fixa; em x = 1, a parte fixa mais uma unidade.',
@@ -88,7 +96,7 @@ const P1 = {
 const P2 = {
   id: 'mat-fa.p2', n: 2, capitulo: 'mat-fa.c1', titulo: 'Da frase para a fórmula',
   modelo: 'mat-fa.p2.m', nucleo: 'mat-fa.p2.b1',
-  notaPrompt: 'Com suas palavras: quando a conta usa x − 1 em vez de x?',
+  notaPrompt: 'Com suas palavras: como saber, pela frase, o que fica somado e o que multiplica?',
   credito: CRED,
   fonte: {
     fonte: 'Wikilivros, Matemática elementar/Função afim', revisao: '263886 (29/10/2013)',
@@ -101,12 +109,12 @@ const P2 = {
   },
   blocos: [
     { id: 'mat-fa.p2.b1', paragrafos: [
-      p('mat-fa.p2.b1.s1', 1, 'Todo preço com uma parte fixa e uma parte por unidade cabe num molde: <strong>y = ax + b</strong>. Isso é uma <strong>função afim</strong>. O número a é a taxa de variação: quanto y aumenta a cada unidade a mais de x. O número b é o valor de y quando x = 0, o ponto de partida. No táxi da página anterior, a = 3 (reais por km) e b = 6 (a bandeirada). Nos livros, a se chama coeficiente angular, e b, coeficiente linear.'),
+      p('mat-fa.p2.b1.s1', 1, 'Todo preço com uma parte fixa e uma parte por unidade cabe num molde: <strong>y = ax + b</strong>. Isso é uma <strong>função afim</strong>. O número a é a taxa de variação: quanto y muda a cada unidade a mais de x. O número b é o valor de y quando x = 0, o ponto de partida. No táxi da página anterior, a = 3 (reais por km) e b = 6 (a bandeirada). Nos livros, a se chama coeficiente angular, e b, coeficiente linear.'),
       p('mat-fa.p2.b1.s2', 2, 'No enunciado, algumas palavras mostram o lugar de cada número. “Fixo”, “só uma vez”, “de entrada” e “de instalação” apontam para o b, que fica somado. “Por”, “a cada”, “por unidade” e “por dia” apontam para o a, que multiplica o x. Cuidado com a palavra “taxa” sozinha: uma taxa de entrega ou de instalação costuma ser cobrada uma vez só. Quem decide é o “por”.'),
-      p('mat-fa.p2.b1.s3', 3, 'Agora, confira quem entra na conta. Uma escola leva x pessoas a uma feira de ciências: a professora e os alunos. A professora recebe R$ 150 fixos pela viagem. Cada aluno gasta R$ 20 de lanche por dia, durante 2 dias, ou seja, 2 · 20 = R$ 40. Como x conta todo mundo, os alunos são <strong>x − 1</strong>. O gasto total é y = 40(x − 1) + 150 = 40x + 110. Usar x no lugar de x − 1 é contar a professora como aluna.'),
+      p('mat-fa.p2.b1.s3', 3, 'Agora, confira quem entra na conta. Uma escola leva x pessoas a uma feira de ciências: a professora e os alunos. A escola paga R$ 150 fixos à professora pela viagem e R$ 20 de lanche por dia a cada aluno, durante 2 dias, ou seja, 2 × 20 = R$ 40 por aluno. Como x conta todo mundo, os alunos são <strong>x − 1</strong>. O gasto total da escola é y = 40(x − 1) + 150 = 40x + 110. Usar x no lugar de x − 1 é contar a professora como aluna.'),
     ] },
     { id: 'mat-fa.p2.b2', prePergunta: 'mat-fa.p2.b2.m', paragrafos: [
-      p('mat-fa.p2.b2.s4', 4, 'Porcentagem também vira fórmula. Calcular p% de uma quantidade é multiplicar por p/100. Se 40% dos A alunos de uma escola vão de ônibus, eles são <strong>0,4A</strong>, e os outros 60% são 0,6A. Fique de olho em duas trocas: escrever 40A (sem dividir por 100) ou usar a parte que sobra. E, quando a porcentagem vale só para uma parte do preço, multiplique só essa parte: 10% de serviço sobre a comida c, com entrega fixa de R$ 8, dá c + 0,1c + 8.'),
+      p('mat-fa.p2.b2.s4', 4, 'Porcentagem também vira fórmula. Calcular p% de uma quantidade é multiplicar por p/100. Se 40% dos A alunos de uma escola vão de ônibus, eles são <strong>0,4A</strong>, e os outros 60% são 0,6A. Fique de olho em dois enganos: escrever 40A (sem dividir por 100) ou usar a parte que sobra. E, quando a porcentagem vale só para uma parte do preço, multiplique só essa parte: 10% de serviço sobre a comida c, com entrega fixa de R$ 8, dá c + 0,1c + 8.'),
     ] },
   ],
 };
@@ -115,7 +123,8 @@ const P3 = {
   id: 'mat-fa.p3', n: 3, capitulo: 'mat-fa.c2', titulo: 'O que cada ponto diz',
   modelo: 'mat-fa.p3.m', nucleo: 'mat-fa.p3.b2',
   notaPrompt: 'Com suas palavras: num gráfico de velocidade, qual a diferença entre trecho horizontal e trecho em zero?',
-  credito: CRED,
+  // fonte (e.2): é dela que Pack.creditos() lê a autoria da página; sem ela, os créditos diriam "autoria não registrada".
+  credito: CRED, fonte: CRED,
   blocos: [
     { id: 'mat-fa.p3.b1', paragrafos: [
       p('mat-fa.p3.b1.s1', 1, 'Antes de qualquer conta, leia os eixos. Em quase todo gráfico de linha, o eixo horizontal é o tempo, e o vertical é a grandeza que muda: temperatura, velocidade, preço. Confira a unidade de cada eixo (minuto ou hora? km/h ou m/s?) e de quanto em quanto a escala anda: de 1 em 1, de 2 em 2, de 5 em 5.'),
@@ -135,7 +144,8 @@ const P4 = {
   id: 'mat-fa.p4', n: 4, capitulo: 'mat-fa.c2', titulo: 'Acima de, abaixo de',
   modelo: 'mat-fa.p4.m', nucleo: 'mat-fa.p4.b1',
   notaPrompt: 'Com suas palavras: como saber, num gráfico, por quanto tempo algo ficou acima de um limite?',
-  credito: CRED,
+  // fonte (e.2): é dela que Pack.creditos() lê a autoria da página; sem ela, os créditos diriam "autoria não registrada".
+  credito: CRED, fonte: CRED,
   blocos: [
     { id: 'mat-fa.p4.b1', paragrafos: [
       p('mat-fa.p4.b1.s1', 1, 'Muitos gráficos trazem uma <strong>linha de referência</strong>: um limite, uma meta, um valor que importa. Pense numa linha tracejada em 25 °C num gráfico de temperatura. Onde a curva está acima da linha, fez mais de 25 °C; abaixo, menos. Os instantes em que a curva cruza a linha são as fronteiras. Anote cada um.'),
@@ -166,20 +176,26 @@ const M_P1 = {
     { expr: 'F*x', falta: 'Multiplicou a parte fixa (R$ {F}) por x e deixou de fora os R$ {v} por {unidade}.', paragrafo: 'mat-fa.p1.b1.s1' },
     { expr: '(F+v)*x', falta: 'Somou as duas partes e multiplicou tudo por x. Só os R$ {v} por {unidade} multiplicam x.', paragrafo: 'mat-fa.p1.b1.s2' },
     { expr: 'F*x+v', falta: 'Trocou os papéis: quem multiplica x são os R$ {v} por {unidade}; os R$ {F} {fixo} ficam somados.', paragrafo: 'mat-fa.p1.b1.s2' },
+    { expr: 'v*(x-1)+F', falta: 'Usou x − 1, como se os R$ {F} {fixo} já incluíssem 1 {unidade}. Não incluem: todas as x unidades são cobradas, a R$ {v} cada, e a parte fixa vem somada.', paragrafo: 'mat-fa.p1.b1.s1' },
   ],
+  // Cada linha usa 4 dos 5 erros (linha.erros). Em ordem crescente de coeficiente, a certa (vx + F) fica
+  // depois de vx; quando v < F, também depois de v(x − 1) + F, o erro de achar que a parte fixa já paga
+  // 1 unidade (como quem pensa que a bandeirada inclui o 1º km). Assim a certa cai em B, C ou D.
+  // A e E pediriam um 5º erro com coeficiente maior que o da certa e termo independente maior (v(x + F),
+  // que dá "60x + 4800") ou um erro sem x ("V = 140"): artificiais, ficaram de fora.
   explicacao: 'Os R$ {F} {fixo} entram uma vez; os R$ {v} por {unidade} multiplicam x. Por isso, {CERTA}.',
   linhas: [
-    { quem: 'Um eletricista', F: 80, fixo: 'pela visita', v: 60, unidade: 'hora de trabalho', pedido: 'de um serviço de x horas' },
-    { quem: 'Uma locadora de carros', F: 30, fixo: 'pela lavagem na devolução', v: 120, unidade: 'dia de aluguel', pedido: 'de x dias de aluguel' },
-    { quem: 'Uma academia de bairro', F: 50, fixo: 'de matrícula', v: 90, unidade: 'mês', pedido: 'de x meses de treino' },
-    { quem: 'Um estacionamento', F: 12, fixo: 'pela entrada', v: 5, unidade: 'hora', pedido: 'para x horas' },
-    { quem: 'Uma empresa de internet', F: 150, fixo: 'pela instalação', v: 100, unidade: 'mês', pedido: 'de x meses de serviço' },
-    { quem: 'Uma empresa de limpeza', F: 20, fixo: 'pela visita de orçamento', v: 150, unidade: 'dia de faxina', pedido: 'de x dias de faxina' },
-    { quem: 'Uma locadora de bicicletas', F: 10, fixo: 'pelo cadastro', v: 4, unidade: 'hora de uso', pedido: 'para x horas de uso' },
-    { quem: 'Um bufê infantil', F: 400, fixo: 'pelo aluguel do salão', v: 35, unidade: 'convidado', pedido: 'de uma festa com x convidados' },
-    { quem: 'Uma escola de idiomas', F: 120, fixo: 'pelo material', v: 180, unidade: 'mês', pedido: 'de x meses de curso' },
-    { quem: 'Um fotógrafo', F: 200, fixo: 'pelo deslocamento', v: 15, unidade: 'foto editada', pedido: 'de x fotos editadas' },
-    { quem: 'Um professor particular', F: 25, fixo: 'pelo material', v: 60, unidade: 'aula', pedido: 'de x aulas' },
+    { quem: 'Um eletricista', F: 80, fixo: 'pela visita', v: 60, unidade: 'hora de trabalho', pedido: 'de um serviço de x horas', erros: [0, 1, 2, 3] },
+    { quem: 'Uma locadora de carros', F: 30, fixo: 'pela lavagem na devolução', v: 120, unidade: 'dia de aluguel', pedido: 'de x dias de aluguel', erros: [0, 1, 2, 3] },
+    { quem: 'Uma academia de bairro', F: 50, fixo: 'de matrícula', v: 90, unidade: 'mês', pedido: 'de x meses de treino', erros: [0, 1, 2, 3] },
+    { quem: 'Um estacionamento', F: 12, fixo: 'pela entrada', v: 5, unidade: 'hora', pedido: 'para x horas', erros: [0, 4, 2, 3] },
+    { quem: 'Uma empresa de internet', F: 150, fixo: 'pela instalação', v: 100, unidade: 'mês', pedido: 'de x meses de serviço', erros: [0, 1, 2, 3] },
+    { quem: 'Uma empresa de limpeza', F: 20, fixo: 'pela visita de orçamento', v: 150, unidade: 'dia de faxina', pedido: 'de x dias de faxina', erros: [0, 1, 2, 3] },
+    { quem: 'Uma locadora de bicicletas', F: 10, fixo: 'pelo cadastro', v: 4, unidade: 'hora de uso', pedido: 'para x horas de uso', erros: [0, 4, 2, 3] },
+    { quem: 'Um bufê infantil', F: 400, fixo: 'pelo aluguel do salão', v: 35, unidade: 'convidado', pedido: 'de uma festa com x convidados', erros: [0, 1, 2, 3] },
+    { quem: 'Uma escola de idiomas', F: 120, fixo: 'pelo material', v: 180, unidade: 'mês', pedido: 'de x meses de curso', erros: [0, 1, 2, 3] },
+    { quem: 'Um fotógrafo', F: 200, fixo: 'pelo deslocamento', v: 15, unidade: 'foto editada', pedido: 'de x fotos editadas', erros: [0, 4, 2, 3] },
+    { quem: 'Um professor particular', F: 25, fixo: 'pelo material', v: 60, unidade: 'aula', pedido: 'de x aulas', erros: [0, 1, 2, 3] },
   ],
   licenca: 'CC BY-SA 4.0', credito: CRED,
 };
@@ -202,7 +218,7 @@ const M_P2 = {
   explicacao: 'Quem paga são X − 1 pessoas ({quem} fica de fora), e cada uma paga {d} × {v} = {=d*v}. Y = {=d*v}(X − 1) + {F}, ou seja, {CERTA}.',
   linhas: [
     { destino: 'para um parque aquático', quem: 'a motorista da van', F: 900, item: 'ingresso', v: 70, d: 3, erros: [0, 1, 2, 3] },
-    { destino: 'para uma praia do litoral', quem: 'o motorista do ônibus', F: 1200, item: 'hospedagem', v: 90, d: 2, erros: [0, 2, 1, 4] },
+    { destino: 'para uma praia do litoral', quem: 'o motorista do ônibus', F: 800, item: 'hospedagem', v: 90, d: 2, erros: [0, 2, 1, 4] },
     { destino: 'para um torneio de vôlei', quem: 'o técnico', F: 600, item: 'hospedagem', v: 50, d: 4, erros: [0, 1, 4, 5] },
     { destino: 'para um festival de música', quem: 'a produtora', F: 500, item: 'alimentação', v: 40, d: 2, erros: [2, 3, 1, 5] },
     { destino: 'para uma mostra de teatro', quem: 'a professora', F: 300, item: 'pousada', v: 60, d: 3, erros: [0, 2, 3, 4] },
@@ -211,7 +227,7 @@ const M_P2 = {
     { destino: 'para um encontro de corais', quem: 'a regente', F: 400, item: 'almoço', v: 30, d: 3, erros: [2, 1, 4, 5] },
     { destino: 'para uma trilha num parque estadual', quem: 'o guia', F: 350, item: 'taxa do parque', v: 20, d: 3, erros: [0, 2, 3, 1] },
     { destino: 'para os Jogos Escolares', quem: 'a técnica', F: 800, item: 'hospedagem', v: 55, d: 4, erros: [0, 3, 4, 5] },
-    { destino: 'para Porto Seguro, na excursão de formatura', quem: 'o fotógrafo', F: 1000, item: 'passeio', v: 85, d: 2, erros: [2, 1, 4, 5] },
+    { destino: 'para Porto Seguro, na excursão de formatura', quem: 'o fotógrafo', F: 550, item: 'passeio', v: 85, d: 2, erros: [2, 1, 4, 5] },
   ],
   licenca: 'CC BY-SA 4.0', credito: CRED,
 };
@@ -224,10 +240,10 @@ const M_P2B2 = {
   erros: [
     { expr: '(1-p/100)*V', falta: 'Usou a parte que não é {parte} ({=100-p}%). A pergunta pede os {p}%.', paragrafo: 'mat-fa.p2.b2.s4' },
     { expr: 'p*V', falta: 'Usou {p} no lugar de {p}%. Porcentagem divide por 100: {p}% = {=p/100}.', paragrafo: 'mat-fa.p2.b2.s4' },
-    { expr: 'V-(100-p)', falta: 'Tirou {=100-p} do volume, como se os {=100-p}% que não são {parte} fossem {=100-p} litros. Porcentagem multiplica: {p}% de V é {=p/100} · V.', paragrafo: 'mat-fa.p2.b2.s4' },
+    { expr: 'V-(100-p)', falta: 'Tirou {=100-p} do volume, como se os {=100-p}% que não são {parte} fossem {=100-p} litros. Porcentagem multiplica: {p}% de V é {=p/100} × V.', paragrafo: 'mat-fa.p2.b2.s4' },
     { expr: '1-(1-p/100)*V', falta: 'Partiu de 1 como se fosse o todo e tirou a parte que não é {parte}. O todo aqui é V.', paragrafo: 'mat-fa.p2.b2.s4' },
   ],
-  explicacao: '{p}% é {p}/100 = {=p/100}. A parte de {parte} é {=p/100} · V, ou seja, {CERTA}.',
+  explicacao: '{p}% é {p}/100 = {=p/100}. A parte de {parte} é {=p/100} × V, ou seja, {CERTA}.',
   linhas: [
     { mistura: 'suco', p: 30, parte: 'polpa de fruta' },
     { mistura: 'refresco', p: 60, parte: 'água' },
@@ -249,20 +265,25 @@ const M_P3 = {
     { expr: 'z+h', falta: 'Somou também o trecho horizontal em {vh} km/h. Ali o veículo andava com velocidade constante; parado é só onde a velocidade é zero.', paragrafo: 'mat-fa.p3.b2.s4' },
     { expr: 'fim-inicio', falta: 'Mediu do começo da primeira parada ({inicio} min) ao fim da última ({fim} min) e contou junto o tempo em movimento entre elas.', paragrafo: 'mat-fa.p3.b2.s4' },
     { expr: 'T-z', falta: 'Calculou o tempo em movimento. A pergunta pede o tempo parado.', paragrafo: 'mat-fa.p3.b2.s3' },
+    { expr: 'zMaior', falta: 'Ficou só com a parada mais longa ({zMaior} min). A pergunta pede o total: some as duas paradas, {z1} + {z2}.', paragrafo: 'mat-fa.p3.b2.s4' },
+    { expr: 'h', falta: 'Contou como parada o trecho horizontal em {vh} km/h ({h} min). Ali a velocidade era constante, e não zero; parado é só onde a velocidade é zero.', paragrafo: 'mat-fa.p3.b2.s4' },
   ],
+  // Cada linha usa 4 dos 6 erros (linha.erros), escolhidos pelos valores da própria linha para a certa
+  // cair em letras diferentes (A a E), sem dois erros com o mesmo valor. A linha 8 tem o trecho horizontal
+  // (8 min) mais longo que as paradas (6 min): é a que permite a certa em A.
   explicacao: 'Parado é velocidade zero. A linha fica no zero de {a1} a {f1} min ({z1} min) e de {a2} a {f2} min ({z2} min). Total: {z1} + {z2} = {z} minutos.',
   linhas: [
-    { veiculo: 'um ônibus', serie: [[0, 30], [2, 40], [6, 40], [8, 0], [12, 0], [16, 50], [20, 0], [26, 0], [30, 30]] },
-    { veiculo: 'um caminhão de lixo', serie: [[0, 30], [2, 40], [6, 0], [14, 0], [16, 30], [18, 30], [20, 0], [30, 0], [32, 20]] },
-    { veiculo: 'um micro-ônibus', eixo: R4, serie: [[0, 30], [2, 40], [8, 40], [12, 0], [14, 0], [18, 50], [22, 30], [24, 0], [30, 0], [34, 40], [36, 30]] },
-    { veiculo: 'um ônibus escolar', eixo: R4, serie: [[0, 30], [2, 40], [4, 0], [10, 0], [14, 40], [16, 50], [20, 50], [24, 30], [28, 0], [34, 0], [38, 40], [40, 30]] },
-    { veiculo: 'um carro de autoescola', serie: [[0, 30], [4, 0], [10, 0], [12, 40], [14, 40], [16, 0], [26, 0], [30, 40]] },
-    { veiculo: 'um ônibus de linha', eixo: R4, serie: [[0, 40], [2, 0], [10, 0], [12, 30], [14, 30], [16, 0], [28, 0], [32, 50], [36, 40]] },
-    { veiculo: 'um caminhão de entregas', eixo: R4, serie: [[0, 30], [4, 40], [6, 0], [12, 0], [16, 40], [20, 30], [22, 0], [24, 0], [28, 50], [34, 50], [38, 30], [40, 40]] },
-    { veiculo: 'um táxi', serie: [[0, 30], [2, 0], [4, 0], [8, 40], [12, 30], [14, 0], [20, 0], [24, 40], [28, 40], [32, 20]] },
-    { veiculo: 'um ônibus intermunicipal', serie: [[0, 20], [2, 30], [6, 30], [10, 0], [14, 0], [18, 40], [22, 0], [24, 0], [28, 40], [30, 30]] },
-    { veiculo: 'um carro de aplicativo', eixo: R4, serie: [[0, 30], [2, 20], [4, 0], [12, 0], [14, 40], [18, 40], [20, 0], [32, 0], [34, 30], [36, 40]] },
-    { veiculo: 'um ônibus num dia de trânsito', eixo: R4, serie: [[0, 30], [4, 40], [6, 0], [16, 0], [18, 30], [22, 30], [24, 0], [36, 0], [38, 20], [40, 30]] },
+    { veiculo: 'um ônibus', serie: [[0, 30], [2, 40], [6, 40], [8, 0], [12, 0], [16, 50], [20, 0], [26, 0], [30, 30]], erros: [0, 4, 5, 1] },
+    { veiculo: 'um caminhão de lixo', serie: [[0, 30], [2, 40], [6, 0], [14, 0], [16, 30], [18, 30], [20, 0], [30, 0], [32, 20]], erros: [0, 3, 4, 5] },
+    { veiculo: 'um micro-ônibus', eixo: R4, serie: [[0, 30], [2, 40], [8, 40], [12, 0], [14, 0], [18, 50], [22, 30], [24, 0], [30, 0], [34, 40], [36, 30]], erros: [0, 1, 2, 3] },
+    { veiculo: 'um ônibus escolar', eixo: R4, serie: [[0, 30], [2, 40], [4, 0], [10, 0], [14, 40], [16, 50], [20, 50], [24, 30], [28, 0], [32, 0], [36, 40], [40, 30]], erros: [0, 4, 1, 2] },   // paradas de 6 e 4 min: o erro 4 ("só a parada mais longa") precisa de durações diferentes
+    { veiculo: 'um carro de autoescola', serie: [[0, 30], [4, 0], [10, 0], [12, 40], [14, 40], [16, 0], [26, 0], [30, 40]], erros: [0, 3, 5, 1] },
+    { veiculo: 'um ônibus de linha', eixo: R4, serie: [[0, 40], [2, 0], [10, 0], [12, 30], [14, 30], [16, 0], [28, 0], [32, 50], [36, 40]], erros: [0, 1, 2, 3] },
+    { veiculo: 'um caminhão de entregas', eixo: R4, serie: [[0, 30], [4, 40], [6, 0], [12, 0], [16, 40], [20, 30], [22, 0], [24, 0], [28, 50], [34, 50], [38, 30], [40, 40]], erros: [0, 1, 2, 3] },
+    { veiculo: 'um táxi', serie: [[0, 30], [2, 0], [4, 0], [8, 40], [12, 30], [14, 0], [20, 0], [24, 40], [28, 40], [32, 20]], erros: [4, 5, 1, 2] },
+    { veiculo: 'um ônibus circular', serie: [[0, 20], [2, 30], [10, 30], [12, 0], [16, 0], [18, 40], [22, 0], [24, 0], [28, 40], [30, 30]], erros: [5, 2, 1, 3] },
+    { veiculo: 'um carro de aplicativo', eixo: R4, serie: [[0, 30], [2, 20], [4, 0], [12, 0], [14, 40], [18, 40], [20, 0], [32, 0], [34, 30], [36, 40]], erros: [0, 3, 5, 2] },
+    { veiculo: 'um ônibus num dia de trânsito', eixo: R4, serie: [[0, 30], [4, 40], [6, 0], [16, 0], [18, 30], [22, 30], [24, 0], [36, 0], [38, 20], [40, 30]], erros: [0, 3, 4, 5] },
   ],
   licenca: 'CC BY-SA 4.0', credito: CRED,
 };
@@ -305,12 +326,12 @@ const M_P4B2 = {
   enunciado: '<p>Uma estação registrou a temperatura de duas cidades vizinhas, A e B, em {total} horários do mesmo dia. Cada ponto do gráfico mostra a temperatura de A no eixo horizontal e a de B no eixo vertical, em °C. O horário está escrito ao lado do ponto.</p>{FIGURA}<p>Em quantos desses horários fazia mais calor em A do que em B?</p>',
   certa: 'nA',
   erros: [
-    { expr: 'nB', falta: 'Contou os horários em que B estava mais quente ({nB}). Os pontos acima da diagonal têm B maior; a pergunta pede A maior.', paragrafo: 'mat-fa.p4.b2.s4' },
+    { expr: 'nB', falta: 'Contou os horários em que B estava mais quente ({nB}). Os pontos acima da diagonal imaginária A = B (p. 4, § 4) têm B maior; a pergunta pede A maior.', paragrafo: 'mat-fa.p4.b2.s4' },
     { expr: 'nA+nE', falta: 'Contou também {empates}, quando as duas cidades tinham a mesma temperatura.', paragrafo: 'mat-fa.p4.b2.s4' },
     { expr: 'nSobe', falta: 'Contou os horários em que A esquentou em relação ao horário anterior. A pergunta compara A com B no mesmo horário.', paragrafo: 'mat-fa.p4.b2.s4' },
     { expr: 'nA+nB', falta: 'Contou os horários em que A e B tinham temperaturas diferentes, sem ver qual era maior.', paragrafo: 'mat-fa.p4.b2.s3' },
   ],
-  explicacao: 'A está mais quente quando o ponto fica abaixo da diagonal, onde a temperatura de A passa a de B. Isso acontece em {nA} horários: {listaA}.',
+  explicacao: 'A está mais quente quando o ponto fica abaixo da diagonal imaginária A = B (p. 4, § 4), onde a temperatura de A passa a de B. Isso acontece em {nA} horários: {listaA}.',
   linhas: [
     { pontos: [
       { rotulo: '6 h', x: 18, y: 16, pos: 'd' }, { rotulo: '8 h', x: 20, y: 20, pos: 'd' },
@@ -337,7 +358,8 @@ function enem(id, a) {
     inep: q.inep, gabarito: q.gabarito, gabaritoConferido: true, conferidoITENS_PROVA: '2026-11-17',
     textoConferidoPDF: q.textoConferidoPDF || null, conferenciaPDF: q.conferenciaPDF || null, anulada: false,
     contexto: q.contexto, introducao: q.introducao, fonteMd: q.fonteMd, materialDeTerceiros: q.materialDeTerceiros,
-    alternativas: q.alternativas.map(x => (x.letra === q.gabarito ? { ...x } : { ...x, ...a.erradas[x.letra] })),
+    alternativas: q.alternativas.map(x => (x.letra === q.gabarito ? { ...x }
+      : { ...x, ...a.erradas[x.letra], falta: reaisJuntos(a.erradas[x.letra].falta) })),
     imagens: q.imagens,
     atribuicao: `INEP · Enem ${q.ano}, 2º dia, Caderno Azul, questão ${q.numero} · CC BY-ND 3.0`,
     transcricao: q.textoConferidoPDF
@@ -346,7 +368,7 @@ function enem(id, a) {
       : 'Transcrição do projeto enem.dev (commit 938c56f), em conferência com o PDF oficial.',
     licenca: LIC_ENEM, licencaUrl: LIC_ENEM_URL, origem: 'enem',
     capitulo: a.capitulo, papel: a.papel, blocos: a.blocos, modelo: a.modelo,
-    explicacao: a.explicacao, leitura: a.leitura || null, autoria: AUT,
+    explicacao: reaisJuntos(a.explicacao), leitura: a.leitura || null, autoria: AUT,
   };
 }
 
@@ -363,22 +385,22 @@ const Q_C1 = [
   }),
   enem('enem-2023-150', {
     capitulo: 'mat-fa.c1', papel: 'rodada', blocos: ['mat-fa.p2.b2'], modelo: 'mat-fa.p2.b2.m',
-    explicacao: '90% de q é 90/100 de q, isto é, 0,9 · q. Então C = 0,9q. Os outros 10% não estão no sangue nesse momento.',
+    explicacao: '90% de q é 90/100 de q, isto é, 0,9 × q. Então C = 0,9q. Os outros 10% não entram na conta.',
     erradas: {
-      B: { expr: '0.1*q', falta: 'Usou os 10% que não estão no sangue. A concentração é 90% de q, isto é, 0,9q.', paragrafo: 'mat-fa.p2.b2.s4' },
+      B: { expr: '0.1*q', falta: 'Usou os 10% que sobram. A concentração é 90% de q, isto é, 0,9q.', paragrafo: 'mat-fa.p2.b2.s4' },
       C: { expr: '1-0.1*q', falta: 'Tentou fazer “o todo menos 10%”, mas usou 1 como o todo. O todo aqui é q: q − 0,1q = 0,9q.', paragrafo: 'mat-fa.p2.b2.s4' },
       D: { expr: '1-0.9*q', falta: 'Achou os 90% (0,9q), mas subtraiu de 1. Para tomar 90% de q, basta multiplicar: C = 0,9q.', paragrafo: 'mat-fa.p2.b2.s4' },
-      E: { expr: 'q-10', falta: 'Tratou 10% como 10 unidades. Porcentagem multiplica: 90% de q é 0,9 · q.', paragrafo: 'mat-fa.p2.b2.s4' },
+      E: { expr: 'q-10', falta: 'Tratou 10% como 10 unidades. Porcentagem multiplica: 90% de q é 0,9 × q.', paragrafo: 'mat-fa.p2.b2.s4' },
     },
   }),
   enem('enem-2019-168', {
     capitulo: 'mat-fa.c1', papel: 'rodada', blocos: ['mat-fa.p1.b1', 'mat-fa.p2.b1'], modelo: 'mat-fa.p2.m',
-    explicacao: 'O gerente está entre os X funcionários, então os diaristas são X − 1. Cada diarista ganha 2 × 80 = 160 na semana. Y = 160(X − 1) + 1000 = 160X + 840.',
+    explicacao: 'O gerente está entre os X funcionários, então os diaristas são X − 1. Cada diarista ganha 2 × 80 = 160 na semana. Y = 160(X − 1) + 1 000 = 160X + 840.',
     erradas: {
       A: { expr: '80*(X-1)+1000', falta: 'Esqueceu que cada diarista trabalha 2 dias: na semana, cada um ganha 2 × 80 = 160.', paragrafo: 'mat-fa.p2.b1.s3' },
       B: { expr: '80*X+1000', falta: 'Esqueceu os 2 dias e contou o gerente como diarista.', paragrafo: 'mat-fa.p2.b1.s3' },
       C: { expr: '80*(X+1)+1000', falta: 'Esqueceu os 2 dias e somou o gerente aos diaristas em vez de tirá-lo: são X − 1, não X + 1.', paragrafo: 'mat-fa.p2.b1.s3' },
-      E: { expr: '160*X+1000', falta: 'Contou o gerente como diarista: ele recebe R$ 1000 fixos e não entra nos R$ 160.', paragrafo: 'mat-fa.p2.b1.s3' },
+      E: { expr: '160*X+1000', falta: 'Contou o gerente como diarista: ele recebe R$ 1 000 fixos e não entra nos R$ 160.', paragrafo: 'mat-fa.p2.b1.s3' },
     },
   }),
   // Reserva com quatro letras (d, n, L, s): a conferência do erro fica em exprTeste, porque o teste de
@@ -421,9 +443,9 @@ const Q_C2 = [
   enem('enem-2023-151', {
     capitulo: 'mat-fa.c2', papel: 'rodada', blocos: ['mat-fa.p4.b2'], modelo: 'mat-fa.p4.b2.m',
     leitura: 'Leitura da equipe, igual à descrição DOSVOX: A maior que B às 9, 12, 13 e 14 h; empate às 10 e 11 h; B maior que A às 15, 16 e 17 h.',
-    explicacao: 'Cada ponto é (valor de A; valor de B). A vale mais quando o primeiro número passa o segundo, isto é, quando o ponto fica abaixo da diagonal A = B: às 9 h (3 > 0,5), 12 h (5,5 > 3), 13 h (6 > 1,5) e 14 h (3,5 > 2). Às 10 h e às 11 h há empate. São 4 instantes.',
+    explicacao: 'Cada ponto é (valor de A; valor de B). A vale mais quando o primeiro número passa o segundo, isto é, quando o ponto fica abaixo da diagonal imaginária A = B: às 9 h (3 > 0,5), 12 h (5,5 > 3), 13 h (6 > 1,5) e 14 h (3,5 > 2). Às 10 h e às 11 h há empate. São 4 instantes.',
     erradas: {
-      A: { expr: '3', falta: 'Contou os instantes em que B valia mais (15 h, 16 h e 17 h): os pontos acima da diagonal. A pergunta pede A maior.', paragrafo: 'mat-fa.p4.b2.s4' },
+      A: { expr: '3', falta: 'Contou os instantes em que B valia mais (15 h, 16 h e 17 h): os pontos acima da diagonal imaginária A = B. A pergunta pede A maior.', paragrafo: 'mat-fa.p4.b2.s4' },
       C: { expr: '4+2', falta: 'Contou também os empates das 10 h e das 11 h, quando A e B valiam o mesmo.', paragrafo: 'mat-fa.p4.b2.s4' },
       D: { expr: '9-2', falta: 'Contou os instantes em que A e B eram diferentes, sem ver qual dos dois era maior.', paragrafo: 'mat-fa.p4.b2.s3' },
       E: { expr: '9', falta: 'Contou todos os instantes. Só valem aqueles em que o valor de A passa o de B.', paragrafo: 'mat-fa.p4.b2.s3' },
@@ -432,7 +454,7 @@ const Q_C2 = [
 ];
 
 // ------------------------------------------------------------------ cards (Decisão 1 do dono)
-const card = (id, tipo, bloco, paragrafo, frente, verso) => ({ id, tipo, frente, verso, bloco, paragrafo, autoria: AUT });
+const card = (id, tipo, bloco, paragrafo, frente, verso) => ({ id, tipo, frente: reaisJuntos(frente), verso: reaisJuntos(verso), bloco, paragrafo, autoria: AUT });
 
 const CARDS_C1 = [
   card('mat-fa.c1.card1', 'conceito', 'mat-fa.p1.b1', 'mat-fa.p1.b1.s1', 'Parte fixa de um preço',
@@ -480,7 +502,7 @@ export const capitulos12 = [
     paginas: [P1, P2],
     rodada: ['enem-2023-162', 'enem-2023-150', 'enem-2019-168'],   // b: 0,86 · 1,45 · 1,52
     reserva: ['enem-2021-141'],                                     // b: 1,59
-    irAlem: [KHAN, OBMEP],
+    irAlem: [KHAN_C1, OBMEP],
     cards: CARDS_C1,
     modelos: [M_P1, M_P2, M_P2B2].map(compatibilizar),
     questoes: Q_C1,
@@ -491,7 +513,7 @@ export const capitulos12 = [
     paginas: [P3, P4],
     rodada: ['enem-2023-156', 'enem-2020-164', 'enem-2023-151'],   // b: 0,38 · 0,44 · 0,86
     reserva: [],                                                    // a Prova usa variantes (g.2)
-    irAlem: [KHAN, OBMEP],
+    irAlem: [KHAN_C2, OBMEP],
     cards: CARDS_C2,
     modelos: [M_P3, M_P4, M_P4B2].map(compatibilizar),
     questoes: Q_C2,

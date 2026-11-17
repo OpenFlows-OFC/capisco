@@ -20,8 +20,10 @@
 
 // Autoria de todo texto da equipe nesta versão: rascunho por IA, revisão pendente (h.1).
 // "ia" segue o esquema e.2 (texto com ferramenta, versão e data); os outros campos são complemento.
+// Os créditos (Pack.creditos) escrevem "rascunho por IA (<ia>), revisão pendente": por isso o texto de "ia"
+// não repete a palavra "rascunho". O mesmo objeto vale para os Caps. 1 a 4 (_dev/c34_fonte.mjs o importa).
 export const AUTORIA_IA = Object.freeze({
-  ia: 'Claude Opus 5.5 (Anthropic), via Claude Code, rascunho em 17/11/2026',
+  ia: 'Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026',
   modelo: 'Claude Opus 5.5', ferramenta: 'Claude Opus 5.5 (Anthropic), via Claude Code',
   data: '2026-11-17', equipe: null, revisor: null, revisadoEm: null,
 });
@@ -86,6 +88,14 @@ export function fmtNum(n) {
   if (Number.isInteger(a) && a >= 10000) s = s.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   return (neg ? '−' : '') + s;
 }
+// Contas no texto corrido sem quebra de linha no meio: espaço não separável (U+00A0) dos dois lados de
+// + − × ÷ · e =, para a linha não terminar em "5 +" com "2 = 7" na seguinte. Só o espaço em volta do
+// operador muda; vírgulas e palavras continuam quebrando normalmente.
+const operadoresJuntos = html => String(html).replace(/ ([+−×÷·=]) (?=\S)/g, '\u00a0$1\u00a0');
+// "R$" e o valor na mesma linha ("R$ 0,05", e não "R$" no fim de uma linha e "0,05" na seguinte). Também
+// vale para o modelo antes de preencher ("R$ {F}"): ali a variável é sempre um número.
+export function reaisJuntos(t) { return t == null ? t : String(t).replace(/R\$ (?=[\d{])/g, 'R$' + String.fromCharCode(160)); }
+export const contasJuntas = html => reaisJuntos(operadoresJuntos(html));
 // a·v + b: "160X + 840", "0,9q", "1 − 0,7V", "V − 70". Com coeficiente negativo e termo independente
 // positivo, o termo vem primeiro, como o INEP escreve ("C = 1 − 0,1q"), e não "−0,7V + 1".
 export function fmtLinear(a, b, v) {
@@ -148,7 +158,7 @@ export const ANALISES = {
     const marcas = z.reduce((n, [a, f]) => n + Math.floor(f / passo) - Math.ceil(a / passo) + 1, 0);
     const [[a1, f1], [a2, f2]] = z, [c1, c2, vh] = horiz[0];
     return {
-      T: s[s.length - 1][0], z1: f1 - a1, z2: f2 - a2, z: f1 - a1 + f2 - a2,
+      T: s[s.length - 1][0], z1: f1 - a1, z2: f2 - a2, z: f1 - a1 + f2 - a2, zMaior: Math.max(f1 - a1, f2 - a2),
       a1, f1, a2, f2, marcas, h: c2 - c1, c1, c2, vh, inicio: a1, fim: f2,
     };
   },
@@ -272,7 +282,8 @@ export function altLinha(serie, g, extra = {}) {
 export function altPontos(pontos, g, extra = {}) {
   return `Descrição da equipe Prumo. Gráfico cartesiano sobre uma malha quadriculada. Eixo horizontal: ${g.xDescricao}; eixo vertical: ${g.yDescricao}; os dois de ${fmtNum(g.min)} a ${fmtNum(g.max)}.`
     + (extra.diagonal ? ' Uma linha tracejada liga os pontos em que os dois valores são iguais (a diagonal).' : '')
-    + ` Pontos, com o horário escrito ao lado: ${pontos.map(q => `${q.rotulo}: (${fmtNum(q.x)}; ${fmtNum(q.y)})`).join('; ')}.`;
+    + ` Pontos, com o horário escrito ao lado: ${pontos.map(q => `${q.rotulo}: (${fmtNum(q.x)}; ${fmtNum(q.y)})`).join('; ')}.`
+    + (g.ligar !== false ? ' Segmentos cinza ligam os pontos na ordem dos horários.' : '');
 }
 
 // Figura pronta (SVG embutido + texto alternativo) para uma linha de um modelo de gráfico.
@@ -313,7 +324,7 @@ function textoDe(m, expr, vars) {
 export function compatibilizar(m) {
   if (m.compativel) return m;
   const exprs = new Map();
-  const trocar = t => (t == null ? t : String(t).replace(/\{=([^}]+)\}/g, (_, e) => {
+  const trocar = t => (t == null ? t : reaisJuntos(t).replace(/\{=([^}]+)\}/g, (_, e) => {
     if (!exprs.has(e)) exprs.set(e, `_v${exprs.size + 1}`);
     return `{${exprs.get(e)}}`;
   }));

@@ -15,17 +15,17 @@ for (const pk of await packs()) {
     assert.equal(t.vm.bloco.ganho, 'Acerte duas seguidas, uma delas numa questão do Enem: o Cap. 1 entra em Aprendendo.');
     n.despachar('COMECAR');
     t = n.tela();
-    assert.equal(t.vm.rotulo, 'ANTES DE LER · P. 1');
+    assert.equal(t.vm.rotulo, 'Antes de ler a p. 1');
     assert.equal(t.vm.aviso, 'Tente antes de ler. Esta página responde.');
     assert.equal(n.despachar({ tipo: 'RESPONDER' }), false, 'guarda alt != null: sem botão "não sei"');
     responder(n, 'errada');
     t = n.tela();
     assert.equal(t.nome, 'leitura');
     assert.equal(t.vm.faixa, 'Resposta guardada.');
-    assert.equal(t.vm.jaSei.rotulo, 'Já sei isto · ir para a próxima pergunta');
+    assert.equal(t.vm.jaSei.rotulo, 'Já sei isto: ir para a próxima pergunta');
     n.despachar('TERMINEI_TRECHO');
     t = n.tela();
-    assert.equal(t.vm.rotulo, 'CONFIRA · P. 1');
+    assert.equal(t.vm.rotulo, 'Confira a p. 1');
     assert.equal(t.vm.avisoPrimeiraChecagem, 'Isso fica só no seu celular. Ninguém da escola vê.');
     responder(n, 'certa');
     t = n.tela();
@@ -34,19 +34,19 @@ for (const pk of await packs()) {
     assert.equal(t.vm.medidor.texto, 'Falta acertar uma questão do Enem');
     assert.equal(n.despachar('CONTINUAR'), false, 'intervalo deliberativo: Continuar só depois da pausa');
     continuar(n, rel);
-    assert.equal(n.tela().vm.rotulo, 'ANTES DE LER · P. 2');
+    assert.equal(n.tela().vm.rotulo, 'Antes de ler a p. 2');
     responder(n, 'errada');
     assert.equal(n.tela().vm.faixa, 'Resposta guardada. Na primeira revisão do capítulo você vê se acertou.');
     n.despachar('JA_SEI');
     t = n.tela();
     assert.equal(t.nome, 'pergunta');
-    assert.match(t.vm.rotulo, /^ANTES DO § \d+$/);
+    assert.match(t.vm.rotulo, /^Antes do parágrafo \d+$/);
     responder(n, 'certa');
     n.despachar('TERMINEI_TRECHO');
-    assert.equal(n.tela().vm.rotulo, 'CONFIRA · P. 2');
+    assert.equal(n.tela().vm.rotulo, 'Confira a p. 2');
     responder(n, 'certa'); continuar(n, rel);
     t = n.tela();
-    assert.equal(t.vm.rotulo, 'QUESTÃO DO ENEM');
+    assert.equal(t.vm.rotulo, 'Questão do Enem');
     const q162 = passo(n).id;
     assert.equal(q162, 'enem-2023-162');
     const teto0 = n.st.missao.rodada.teto;
@@ -55,7 +55,7 @@ for (const pk of await packs()) {
     assert.equal(t.vm.titulo, `Você marcou ${errada(n, q162, 'E')}. A certa é ${gabarito(n, q162)}.`);
     assert.ok(t.vm.falta);
     assert.match(t.vm.proxima, /^A próxima é uma questão da equipe sobre a p\. \d+, § \d+\.$/);
-    assert.match(t.vm.trecho.rotulo, /^Voltar ao trecho · p\. \d+, § \d+$/);
+    assert.match(t.vm.trecho.rotulo, /^Voltar ao parágrafo \d+$/);
     assert.equal(t.vm.medidor.texto, 'a contagem recomeça');
     assert.equal(n.st.missao.rodada.teto, teto0 + 1, 'a inserção soma 1 ao teto');
     n.despachar('VOLTAR_AO_TRECHO');
@@ -66,7 +66,7 @@ for (const pk of await packs()) {
     n.despachar('VOLTAR');
     continuar(n, rel);
     t = n.tela();
-    assert.equal(t.vm.rotulo, 'QUESTÃO DA EQUIPE');
+    assert.equal(t.vm.rotulo, 'Questão da equipe');
     assert.equal(t.vm.subrotulo, 'Texto e números da equipe Prumo · CC BY-SA 4.0');
     assert.equal(passo(n).papel, 'compreender');
     responder(n, 'certa'); continuar(n, rel);
@@ -79,9 +79,14 @@ for (const pk of await packs()) {
     continuar(n, rel);
     t = n.tela();
     assert.equal(t.nome, 'encerramento', 'a rodada fechou no último passo: sem tela de Fim da rodada');
-    assert.equal(t.vm.titulo, 'Pronto por hoje.');
+    assert.equal(t.vm.titulo, 'Pronto por hoje');
+    assert.match(t.vm.visto.data, /^\d\d\/\d\d\/\d{4}$/, 'o visto traz a data dd/mm/aaaa');
+    assert.equal(t.vm.visto.palavra, 'Visto');
+    assert.equal(t.vm.fecho, 'Por hoje é isso. Está tudo guardado neste aparelho.');
+    assert.ok(!('chama' in t.vm.constancia));
     assert.equal(t.vm.constancia.rotulo, '1 dia estudado');
-    assert.ok(t.vm.mudancas.some(x => x.texto.startsWith('Cap. 1 · ') && x.texto.endsWith('entrou em Aprendendo. Revisão: amanhã, qui 19/11.')));
+    assert.ok(t.vm.mudancas.some(x => x.texto === 'O Cap. 1 entrou em Aprendendo. Próxima revisão: amanhã, qui 19/11.'));
+    assert.ok(t.vm.mudancas.every(x => !/ · /.test(x.texto)), 'resumo em frases, sem cadeia de pontos');
     assert.ok(t.vm.mudancas.some(x => x.texto === 'Você tentou antes de ler em todos os trechos cobrados.'));
     assert.equal(t.vm.nivelAnimado.para, 1);
     assert.equal(t.vm.proxima.gancho, 'Amanhã você vê se acertou a pergunta de entrada da p. 2.');
@@ -89,7 +94,7 @@ for (const pk of await packs()) {
     n.despachar('FECHAR');
     t = n.tela();
     assert.equal(t.vm.estado, 'feito');
-    assert.equal(t.vm.feito.previa, 'Quinta, 19/11 · você vê se acertou a pergunta de entrada da p. 2.');
+    assert.equal(t.vm.feito.previa, 'Quinta, 19/11: você vê se acertou a pergunta de entrada da p. 2.');
   });
 
   test(`[${P}] g.8 · recarregar em cada estado da missão volta ao mesmo passo, sem registrar tentativa duas vezes`, () => {
@@ -134,7 +139,7 @@ for (const pk of await packs()) {
       vms.push(['hoje', JSON.stringify(n.hoje())], ['sumario', JSON.stringify(n.sumario())], ['erros', JSON.stringify(n.erros())], ['notas', JSON.stringify(n.notas())], ['cards', JSON.stringify(n.cardsDoCaderno())], ['plano', JSON.stringify(n.plano())]);
       const leituras = vms.filter(([e]) => e === 'leitura');
       assert.ok(leituras.length >= 2);
-      for (const [, vm] of leituras) assert.match(vm, /Já sei isto · ir para a próxima pergunta/);
+      for (const [, vm] of leituras) assert.match(vm, /Já sei isto: ir para a próxima pergunta/);
       return vms;
     });
     assert.deepEqual(corridas[0], corridas[1]);
@@ -164,7 +169,7 @@ for (const pk of await packs()) {
     if (b.n.st.missao.rodada) { b.n.st.missao.rodada.teto = 8; responder(b.n, 'errada'); assert.ok(!b.n.st.missao.rodada || b.n.st.missao.rodada.teto <= 8); }
   });
 
-  test(`[${P}] g.8 · "Encerrar por hoje" no meio da rodada não muda nível; "Parar e continuar mais tarde" volta a Hoje com "Continuar · passo N de M"`, () => {
+  test(`[${P}] g.8 · "Encerrar por hoje" no meio da rodada não muda nível; "Parar e continuar mais tarde" volta a Hoje com "Continuar do passo N de M"`, () => {
     const { n, rel } = novo(pk.dados);
     jogar(n, rel, { parar: x => x.estado() === 'pergunta' && passo(x).t === 'checagem' && passo(x).papel === 'compreender' });
     const i = n.st.missao.i, total = n.st.missao.passos.length;
@@ -172,7 +177,8 @@ for (const pk of await packs()) {
     let t = n.tela();
     assert.equal(t.nome, 'hoje');
     assert.equal(t.vm.estado, 'emCurso');
-    assert.equal(t.vm.acao.rotulo, `Continuar · passo ${i + 1} de ${total} (até a meia-noite)`);
+    assert.equal(t.vm.acao.rotulo, `Continuar do passo ${i + 1} de ${total}`);
+    assert.equal(t.vm.acao.nota, 'A missão fica aberta até a meia-noite.');
     n.despachar('CONTINUAR');
     assert.equal(n.estado(), 'pergunta');
     assert.equal(n.st.missao.i, i);
@@ -254,7 +260,7 @@ for (const pk of await packs()) {
     irPara(n, rel, '2026-11-19');
     jogar(n, rel, { parar: x => x.estado() === 'pergunta' && passo(x).t === 'revisao' });
     let t = n.tela();
-    assert.equal(t.vm.rotulo, 'REVISÃO · CAP. 1'); assert.equal(t.vm.subrotulo, 'Vale a primeira resposta.');
+    assert.equal(t.vm.rotulo, 'Revisão do Cap. 1'); assert.equal(t.vm.subrotulo, 'Vale a primeira resposta.');
     const pid = passo(n).id, antes = n.st.pre[pid].alt;
     assert.ok(pid.endsWith('#0'), 'a 1ª revisão traz a pergunta de entrada da 2ª página');
     responder(n, 'certa');
@@ -274,7 +280,7 @@ for (const pk of await packs()) {
     assert.equal(n.st.topicos['mat-fa.c1'].caixa, 1);
     jogar(n, rel);
     const pronto = n.prontoPorHoje();
-    assert.ok(pronto.mudancas.some(x => x.texto === 'Cap. 1 · revisão marcada para amanhã.'));
+    assert.ok(pronto.mudancas.some(x => x.texto === 'A revisão do Cap. 1 ficou para amanhã.'));
     n.despachar('FECHAR');
     assert.match(n.sumario().capitulos[0].estado, /^Aprendendo · revisar amanhã$/);
     for (const s of [...textos(pronto), ...textos(n.sumario()), ...textos(n.hoje())]) assert.ok(!/perdeu/i.test(s), s);

@@ -16,12 +16,12 @@ async function parteA(motor, tema) {
     await pg.goto(U.BASE); await U.pronto(pg);
     await pg.click('[data-acao="puExemplo"]');
     await pg.waitForSelector('.faixa-demo');
-    confere(await tem('Modo demonstração · dados de exemplo'), 'faixa do modo demonstração');
+    confere(await tem('Modo demonstração: dados de exemplo'), 'faixa do modo demonstração');
     confere((await pg.$('.faixa-demo [data-acao="sairDemo"]')) !== null, 'faixa com "Sair"');
     const vm = await pg.evaluate(() => window.__prumo.nucleo.tela().vm);
     console.log(`  [${motor} ${tema}] exemplo hoje: ${vm.estado} · ${vm.bloco && vm.bloco.titulo} · ${vm.bloco && vm.bloco.composicao} · ${vm.bloco && vm.bloco.atrasada}`);
     confere(/dias estudados/.test(await U.texto(pg)), 'constância com "N dias estudados"');
-    confere((await pg.$('.chama.acesa')) !== null, 'chama acesa (semanas com a meta no exemplo)');
+    confere((await pg.$('.linha-data .pr-risquinhos line')) !== null && (await pg.$('.chama')) === null, 'risquinhos (sem chama) na linha da data');
     await cap(pg, 'hoje-exemplo', true);
     if (vm.bloco && vm.bloco.atrasada) confere(await tem(vm.bloco.atrasada), 'linha da revisão atrasada');
 
@@ -32,8 +32,8 @@ async function parteA(motor, tema) {
       const e = await U.estado(pg);
       if (e === 'encerramento') break;
       if (e === 'pergunta') {
-        const rot = (await pg.textContent('.pergunta-cabeca .rotulo')) || '';
-        if (/REVISÃO/.test(rot) && !errouRevisao) {
+        const rot = (await pg.textContent('.pergunta-cabeca')) || '';
+        if (/Revisão do Cap/.test(rot) && !errouRevisao) {
           confere(await tem('Vale a primeira resposta.'), 'revisão: "Vale a primeira resposta."');
           await cap(pg, 'revisao-pergunta');
           await U.escolher(pg, await U.erradaDe(pg, 'E'));
@@ -61,7 +61,8 @@ async function parteA(motor, tema) {
           await pg.click('.barra [data-ev="AINDA_NAO"]');
           await pg.waitForSelector('.mao-pendente');
           confere(await tem('Este card volta uma vez no fim desta mão.'), '"Ainda não": volta uma vez');
-          confere(/ver o trecho · p\. \d+, § \d+/.test(await U.texto(pg)), '"ver o trecho · p. X, § Y"');
+          confere(/Ver o parágrafo \d+ da p\. \d+/.test(await U.texto(pg)), '"Ver o parágrafo N da p. P"');
+          confere(/^revisão [1-5] de 5$/.test((await pg.textContent('.ficha-frente .ficha-topo span:last-child')) || ''), 'ficha: "revisão N de 5"');
           await cap(pg, 'card-ainda-nao');
           await pg.click('.mao-pendente [data-ev="VER_TRECHO"]');
           await pg.waitForSelector('.par.ancora');
@@ -81,7 +82,8 @@ async function parteA(motor, tema) {
     confere(viuPendente && viuVolta, 'mão de cards completa (Ainda não + volta)');
     await pg.waitForSelector('.colofao');
     const tp = await U.texto(pg);
-    confere(/\d+ cards · \d+ lembrados/.test(tp), 'resumo da mão no Pronto por hoje');
+    confere(/Você lembrou \d+ de \d+ cards\./.test(tp), 'resumo da mão no Pronto por hoje');
+    confere((await pg.$('.pr-frases')) !== null && !/ · /.test(await pg.textContent('.pr-frases')), 'resumo em frases, sem cadeia de pontos');
     await cap(pg, 'pronto-exemplo', true);
     await pg.click('[data-ev="FECHAR"]');
     await pg.waitForSelector('.estado-texto');
@@ -141,12 +143,13 @@ async function parteA(motor, tema) {
     console.log(`  [${motor} ${tema}] estados vistos: ${Object.keys(vistos).join(', ')}`);
     confere(vistos.questaoDoDia || vistos.firme, 'estado Questão do dia visto');
     confere(vistos.folga, 'estado folga visto');
-    // Ajustes: régua no lugar da chama
-    await pg.evaluate(() => { window.__prumo.nucleo.definirSimbolo('regua'); window.__prumo.app.render(); });
-    await pg.waitForTimeout(100);
-    confere((await pg.$('.cabecalho .regua')) !== null, 'régua no cabeçalho quando escolhida em Ajustes');
-    await cap(pg, 'hoje-com-regua');
-    await pg.evaluate(() => { window.__prumo.nucleo.definirSimbolo('chama'); });
+    // Ajustes: sem "Símbolo da constância" (a chama saiu; os risquinhos são o único símbolo)
+    await pg.evaluate(() => { location.hash = '#/ajustes'; });
+    await pg.waitForTimeout(200);
+    confere(!(await tem('Símbolo da constância')) && !(await tem('Chama')), 'Ajustes sem a opção chama');
+    await cap(pg, 'ajustes', true);
+    await pg.evaluate(() => { location.hash = '#/hoje'; });
+    await pg.waitForTimeout(150);
     // Sair da demonstração
     await pg.click('.faixa-demo [data-acao="sairDemo"]');
     await pg.waitForTimeout(200);
@@ -171,7 +174,7 @@ async function parteB(motor, tema) {
     await pg.evaluate(() => {
       const n = window.__prumo.nucleo;
       n.concluirPrimeiroUso({ provaTipo: 'escola', prova: '2026-12-15', dias: [1, 2, 3, 4, 5], minutos: 25 });
-      n.definirSimbolo('regua');   // Decisão 3: a régua no lugar da chama (Ajustes)
+      n.st.config.simboloConstancia = 'chama';   // estado salvo antigo: a chama vira risquinhos
       n.definirSom(true);          // d.12: com som, nada pode quebrar
       n.despachar('COMECAR');
       for (let g = 0; g < 200; g++) {
@@ -230,7 +233,7 @@ async function parteB(motor, tema) {
     confere(viuImagem, 'questão do Enem com imagem vista');
     console.log(`  [${motor} ${tema}] fim da rodada visto: ${viuFim}`);
     await pg.waitForSelector('.colofao');
-    confere((await pg.$('.colofao .regua .traco-hoje, .colofao .regua line.traco')) !== null, 'Pronto por hoje com a régua e o traço de hoje');
+    confere((await pg.$('.colofao .pr-risquinhos line')) !== null && (await pg.$('.colofao .pr-visto')) !== null, 'Pronto por hoje com o visto e os risquinhos');
     confere(/2 dias estudados/.test(await U.texto(pg)), '"2 dias estudados"');
     await cap(pg, 'pronto-dia2', true);
   } catch (e) {

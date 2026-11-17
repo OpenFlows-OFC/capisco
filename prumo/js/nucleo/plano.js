@@ -2,7 +2,8 @@
    PRUMO · Plano e constância (núcleo, sem DOM)
    Dias de estudo, folga e pausa; "dias estudados"; semanas com a meta
    (resultado só depois que a semana termina, e gravado para nunca apagar);
-   régua e chama de constância (Decisão 3 do dono); agenda de 14 dias.
+   régua dos dias estudados (desenhada como risquinhos); agenda de 14 dias.
+   A chama (Decisão 3) saiu com o design system: o único símbolo são os risquinhos.
    ========================================================= */
 import * as R from './relogio.js';
 import { intervalos, retaFinal, prova as provaDe, horizonte, NIVEL } from './motor.js';
@@ -95,14 +96,6 @@ export function regua(st) {
     return { dia, n: i + 1, longo: (i + 1) % 5 === 0, latao: !!(w && w.cumprida && ultimoDaSemana[R.segundaDe(dia)] === dia) };
   });
 }
-/** Chama geométrica (versão B): acende na semana em que a meta foi cumprida, depois que a semana termina,
- *  e nunca apaga nem zera. Uma chama por semana com a meta. */
-export function chama(st) {
-  const semanas = Object.entries(st.semanas || {}).sort(([a], [b]) => (a < b ? -1 : 1))
-    .map(([inicio, w]) => ({ inicio, fim: R.addDias(inicio, 6), rotulo: `${R.fmtDiaMes(inicio)} a ${R.fmtDiaMes(R.addDias(inicio, 6))}`, dias: w.dias, total: w.total, meta: w.meta, acesa: w.cumprida }));
-  const acesas = semanas.filter(w => w.acesa);
-  return { acesa: acesas.length > 0, acesaDesde: acesas.length ? acesas[0].fim : null, acesas: acesas.length, semanas };
-}
 /** Linha do Pronto por hoje no 1º dia estudado de uma semana nova (sem palavra negativa). */
 export function linhaSemanaPassada(st, d) {
   const seg = R.segundaDe(d);
@@ -110,7 +103,7 @@ export function linhaSemanaPassada(st, d) {
   if (antes.length) return null;
   const w = st.semanas[R.addDias(seg, -7)];
   if (!w || !w.total) return null;
-  return `Semana passada: ${rotuloDias(w.dias)}${w.cumprida ? ' · meta cumprida' : ''}`;
+  return `Semana passada: ${rotuloDias(w.dias)}${w.cumprida ? ', com a meta cumprida' : ''}.`;
 }
 export function constancia(st, d) {
   const n = diasEstudados(st);
@@ -118,14 +111,13 @@ export function constancia(st, d) {
   const desde = R.addDias(d, -27);
   const comMeta = semanasComMeta(st);
   return {
-    simbolo: (st.config && st.config.simboloConstancia) || 'chama',
+    simbolo: 'risquinhos',
     diasEstudados: n, rotulo: rotuloDias(n),
     regua: r, miniRegua: r.filter(x => x.dia >= desde).slice(-28),
     semanasComMeta: comMeta, linhaMeta: `semanas com a meta: ${comMeta}`,
-    chama: chama(st),
     meta: st.perfil ? st.perfil.metaSemana : null,
-    vazio: n === 0 ? 'A régua ganha um traço a cada dia em que você responde pelo menos uma checagem, questão ou revisão.' : null,
-    regra: 'Dia estudado é o dia com pelo menos uma checagem, questão ou revisão respondida. O número só cresce: faltar um dia não apaga nada, só mexe na agenda das revisões. A semana com a meta ganha a marca de latão depois que termina.',
+    vazio: n === 0 ? 'Cada dia em que você responde pelo menos uma checagem, questão ou revisão ganha um risquinho.' : null,
+    regra: 'Dia estudado é o dia com pelo menos uma checagem, questão ou revisão respondida. Os risquinhos só crescem: faltar um dia não apaga nada, só mexe na agenda das revisões.',
   };
 }
 

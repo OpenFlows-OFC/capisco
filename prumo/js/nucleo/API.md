@@ -15,7 +15,7 @@ nucleo.despachar({ tipo: 'COMECAR' });          // evento → true se houve tran
 ```
 
 - `criarNucleo({ pack, storage })`: `storage` é opcional (padrão: `localStorage`; nos testes, `memoria()` de `estado.js`).
-- `nucleo.tela()` devolve `{ nome, vm, faixas }`. `nome` é o estado da máquina (seção 3); `vm` é o view model dele; `faixas` traz as faixas fixas: `demo` (modo demonstração: `{ texto, dataSimulada, sair }`), `falhaSalvar` (`{ texto, acao }`, quando o `localStorage` falhou) e `carga`.
+- `nucleo.tela()` devolve `{ nome, vm, faixas }`. `nome` é o estado da máquina (seção 3); `vm` é o view model dele; `faixas` traz as faixas fixas: `demo` (modo demonstração: `{ texto, dataSimulada, sair, rotulo: 'Modo demonstração', frase: 'dados de exemplo, data simulada 18/11.' }`; a tela usa `rotulo` + `frase`, no formato do Recado), `falhaSalvar` (`{ texto, acao }`, quando o `localStorage` falhou) e `carga`.
 - Todo efeito acontece dentro da transição e é salvo na hora. Recarregar a página volta ao mesmo passo: a tela não precisa guardar nada.
 - Ao voltar para o app (`visibilitychange`) e perto da meia-noite, chame `nucleo.conferirData()`: com a missão pela metade, ela fecha a de ontem, mostra a faixa "Ontem você parou no passo N de M. Ficou registrado." e monta a de hoje.
 
@@ -65,27 +65,28 @@ Fechar o app tem o efeito de `PAUSAR` (o estado já está salvo). `POR_QUE`, `EN
 Todos os textos já vêm prontos. Campos com `evento` são ações: mande `{ tipo: evento }`.
 
 ### `hoje()` (estados `hoje` e `feito`)
-- `data` ("QUARTA, 18 DE NOVEMBRO"), `constancia: { simbolo: 'chama'|'regua', diasEstudados, rotulo: "24 dias estudados", miniRegua: [{dia, n, longo, latao}], chama: { acesa, acesas } }`.
+- `data` ("Quarta, 18 de novembro", caixa normal: `relogio.fmtTitulo`), `constancia: { simbolo: 'risquinhos', diasEstudados, rotulo: "24 dias estudados" }` (design system: os risquinhos são o único símbolo; a chama saiu).
+- `recado`: o aviso de ontem no formato do Recado, `{ rotulo: 'Ontem', texto: 'você parou no passo 4 de 5. Ficou registrado.' }` (ou `null`); `faixa` continua com a frase inteira.
 - `estado`: `primeiroDia` · `missao` · `emCurso` · `feito` · `encerradoAntes` · `folga` · `retorno` · `questaoDoDia` · `hojeNao` · `pausa` · `reta` · `firme` · `provaPassou`.
 - `texto` (a frase do estado, quando há), `faixa` ("Ontem você parou…"), `acao: { evento, rotulo, nota? }` (botão principal no fluxo).
-- `bloco` (a folha de rosto da missão; `null` no feito/folga/pausa): `rotulo` ("Missão 1"), `titulo` ("Cap. 2 · Ler o gráfico"), `linhaFina` ("p. 3–4 · ≈ 20 min · termina em \"Pronto por hoje\""), `composicao` ("2 páginas · até 3 questões do Enem · 1 revisão · 5 cards"), `atrasada` ("1 revisão atrasada vem primeiro." ou `null`), `ganho` (frase de `regraDaFila`), `esmaecido` (Hoje não), `passos` (para "ver passos": `[{ n: '9 a 11', texto, nota?, pagina: 'p. 3' }]`).
+- `bloco` (a folha de rosto da missão; `null` no feito/folga/pausa): `rotulo` ("Missão 1"), `titulo` ("Cap. 2: Ler o gráfico", "Revisão do Cap. 1"), `cabecalho` (o Cabeçalho de prova, sem Data: `[{ rotulo: 'Capítulo', valor: '1' }, { rotulo: 'Páginas', valor: '1–2' }, { rotulo: 'Tempo', valor: '25', unidade: 'min' }]`; o valor só tem dígitos e vai em Mono), `regra` (o ganho anunciado, com o nome do nível explicado na primeira vez e a data exata, e "No fim, o visto do dia."), `linhaFina` (legado; a tela não mostra), `composicao` (frase: "2 páginas, até 3 questões do Enem e 5 cards."), `atrasada` ("1 revisão atrasada vem primeiro." ou `null`), `ganho` (frase de `regraDaFila`), `esmaecido` (Hoje não), `passos` (para "Ver os passos": `[{ n: '9 a 11', texto, nota?, pagina: 'p. 3' }]`).
 - `links`: "ver passos", "Por que esta missão?", "Hoje não" (`HOJE_NAO`) ou aba a abrir (`{ rotulo, aba }`).
 - `prova`: oferta da Prova do caderno (`{ titulo, texto, regra, acao: { evento: 'FAZER_PROVA', rotulo: 'ver a regra' } }`) ou `null`. Só aparece antes de começar a missão do dia ou numa folga; nunca no feito.
 - `feito: { previa, proxima: { texto, gancho, porque } }` no estado feito; `porqueEstudo` ("Por que eu estudo: …") no "Bem-vindo de volta", quando o aluno escreveu a frase.
 - `porQue: { frase, regra, verARegra: { linhas, revisoes, lembranca, questoes, texto, oQueE } }`: folha "Por que esta missão?". A lembrança estimada (percentual) existe **só** aqui.
 
 ### `passoAtual()` (estados da missão; `tela()` já escolhe)
-- `pergunta`: `{ tipo: 'pre'|'preBloco'|'checagem'|'enem'|'equipe'|'revisao'|'dia'|'antecipada', rotulo ("ANTES DE LER · P. 1", "CONFIRA · P. 1", "QUESTÃO DO ENEM", "REVISÃO · CAP. 1"…), subrotulo, aviso ("Tente antes de ler. Esta página responde."), avisoPrimeiraChecagem, inserida, avisoInserida ("Depois do erro: uma questão da equipe sobre a p. 1, § 2." na questão inserida pelo Pilar III; `null` nas outras), item: { enunciado (HTML), introducao, imagens, figura, alternativas: [{letra, texto, imagem}], rodape (atribuição com o link da licença), imagemFalhou }, topo, acao }`. A pergunta **não** traz gabarito.
-- `topo`: `{ etapa ("Leitura · p. 3"), encerrar, passo: {n, total}, progresso (0–1, sem total escrito na tela), medidor, regra: { texto, mostrarAgora, rotulo: 'ver a regra' } }`.
+- `pergunta`: `{ tipo: 'pre'|'preBloco'|'checagem'|'enem'|'equipe'|'revisao'|'dia'|'antecipada', rotulo (caixa normal: "Antes de ler a p. 1", "Antes do parágrafo 4", "Confira a p. 1", "Questão do Enem", "Revisão do Cap. 1"…), subrotulo, aviso ("Tente antes de ler. Esta página responde."), avisoPrimeiraChecagem, inserida, avisoInserida ("Depois do erro: uma questão da equipe sobre a p. 1, § 2." na questão inserida pelo Pilar III; `null` nas outras), item: { enunciado (HTML), introducao, imagens, figura, alternativas: [{letra, texto, imagem}], rodape (atribuição com o link da licença), cabecalho: { num: 'Questão 162' | 'Questão da equipe', fonte: 'Enem 2023, 2º dia' | 'p. 1' } (o cabeçalho do caderno impresso; a tela põe o número em maiúsculas, como no papel), imagemFalhou }, topo, acao }`. A pergunta **não** traz gabarito.
+- `topo`: `{ etapa ("Leitura da p. 3"), encerrar, passo: {n, total}, progresso (0–1), legenda: { passo: 'passo 3 de 5', falta: 'faltam 2 questões' | 'faltam até 3 questões' | null } (legenda da Régua; nunca tempo), medidor, regra: { texto, mostrarAgora, rotulo: 'ver a regra' } }`.
 - `medidor` (só nos passos que contam): `{ casas: [{cheia, rotulo}, {cheia, rotulo}], texto ("Falta acertar uma questão do Enem" | "Falta mais um acerto seguido" | "a contagem recomeça" | null), regra }`.
 - `leitura`: `{ cabeco ("Matemática · Funções afins · Cap. 1"), pagina: {n, titulo, pe}, blocos: [{id, paragrafos: [{id, n (§), html, figura, notas}]}], faixa ("Resposta guardada." — igual para resposta certa ou errada), jaSei: { evento: 'JA_SEI', rotulo }, botao: { evento: 'TERMINEI_TRECHO', rotulo ("Terminei de ler" ou "Continuar: pergunta antes do § 4") }, nota: { prompt, texto, evento: 'SALVAR_NOTA' } | null }`.
-- `feedback()`: `{ certa, titulo ("Certa." | "Você marcou E. A certa é D."), porque, falta, alternativas: [{letra, texto, marca: 'sua'|'certa'|'sua-certa'|null}], item, trecho: { evento, rotulo: "Voltar ao trecho · p. 2, § 3" }, resolucao: { evento, rotulo, aberta, texto }, proxima ("A próxima é uma questão da equipe sobre a p. 2, § 3."), revisao: { texto, antesDepois, nivel: {de, para, animar} }, fimRodada, medidor, continuar: { evento, rotulo, texto: 'Leia a explicação', pausaMs, liberaEm, restanteMs }, som: 'acerto'|'erro'|'nivel'|null }`. Nível que desce: `animar: false` e `som: null`.
-- `trecho`: `{ cabeco, pagina, blocos, ancora (id do parágrafo do fio de prumo), rotulo, feedback, acao }`.
+- `feedback()`: `{ certa, titulo ("Certa." | "Você marcou E. A certa é D."), porque, falta, alternativas: [{letra, texto, marca: 'sua'|'certa'|'sua-certa'|null}], item, trecho: { evento, rotulo: "Voltar ao parágrafo 3" }, resolucao: { evento, rotulo, aberta, texto }, proxima ("A próxima é uma questão da equipe sobre a p. 2, § 3."), revisao: { texto, antesDepois, nivel: {de, para, animar} }, fimRodada, medidor, continuar: { evento, rotulo, texto: 'Leia a explicação', pausaMs, liberaEm, restanteMs }, som: 'acerto'|'erro'|'nivel'|null }`. Nível que desce: `animar: false` e `som: null`.
+- `trecho`: `{ cabeco ("Funções afins, Cap. 1"), pagina, blocos, ancora (id do parágrafo do fio de prumo), rotulo ("p. 2, § 3"), titulo ("p. 2, parágrafo 3", título da folha), feedback, acao }`. A tela põe o marca-texto no parágrafo da âncora só quando `feedback.certa` é falso.
 - `fimDaRodada()`: `{ variante: 'venceu'|'teto'|'tetoPrereq'|'naoFecha', texto, nivel: {de, para, nome, animar}, som, cards, acao }`.
-- `mao()` (cards): `{ id, frente, verso, virado, caixa: {n, nome}, repeticao, rotulo, posicao ("3 de 5"), acoes, pendente: { texto, trecho } | null, trecho: { rotulo: "ver o trecho · p. 1, § 2", evento: 'VER_TRECHO' }, animacaoMs: 180, regra }`. A virada é de ~180 ms; com `prefers-reduced-motion`, sem animação.
+- `mao()` (cards): `{ id, frente, verso, virado, caixa: {n, nome, rotulo: 'revisão 2 de 5'}, cap ('Cap. 1'), repeticao, rotulo ('Card' | 'Card de volta'), posicao ("3 de 5"), acoes, pendente: { texto, trecho } | null, trecho: { rotulo: "Ver o parágrafo 2 da p. 1", evento: 'VER_TRECHO' }, animacaoMs: 180, regra }`. A virada é de ~180 ms; com `prefers-reduced-motion`, sem animação. Resumo da mão: "Você lembrou 4 de 5 cards. O outro volta em sex 20/11."
 
 ### `prontoPorHoje()` (estado `encerramento`)
-`{ titulo: 'Pronto por hoje.', data, constancia: { rotulo, regua, tracoDeHoje, chama, simbolo }, semanaPassada, mudancas: [{tipo, texto, nivel?}], nivelAnimado, parcial, vazio, naoContou, proxima: { texto, gancho, porque, rotuloPorque }, copia (linha semanal), som, acao: { evento: 'FECHAR' } }`. Não há oferta de nada (limite diário).
+`{ titulo: 'Pronto por hoje', data, visto: { palavra: 'Visto', data: '17/11/2026', obs: 'Cap. 1 em Firme' | null, rotulo (para o leitor de tela) } | null (só quando o dia contou como estudado), fecho ('Por hoje é isso. Está tudo guardado neste aparelho.'), constancia: { simbolo: 'risquinhos', diasEstudados, rotulo, tracoDeHoje }, semanaPassada, mudancas: [{tipo, texto (frase, sem cadeia de pontos: "O Cap. 1 entrou em Aprendendo. Próxima revisão: amanhã, qui 19/11."), nivel?}], nivelAnimado, parcial, vazio, naoContou, proxima: { texto ("Quinta, 19/11: Cap. 2 (novo) e revisão do Cap. 1."), gancho, porque, rotuloPorque }, copia (linha semanal), som, acao: { evento: 'FECHAR' } }`. Não há oferta de nada (limite diário).
 
 ### `prova()` (estados `prova*`)
 Abertura: `{ titulo, regra, tamanho, aviso, trofeu, reaproveita, acoes }`. Em curso: `topo: { casas: [{cap, rotulo, cheia}], tentativa: "tentativa 5 de 12", eventoEncerrar: 'ENCERRAR_PROVA', avisoEncerrar }`. Resultado: `{ venceu, titulo, texto, trofeu, selo }` ou `{ venceu: false, texto, linhaRevisar, volta }`.
@@ -98,8 +99,8 @@ Abertura: `{ titulo, regra, tamanho, aviso, trofeu, reaproveita, acoes }`. Em cu
 - `cardsDoCaderno()` (aba "Cards"): `{ capitulos: [{ titulo, recebidoEm, cards: [{ frente, verso, caixaNome, proxima, proximaTexto, trecho }], aviso }], regra, aviso }`. Consultar é livre; jogar, só na missão.
 - `plano()`: `{ prova: {texto, faltam, horizonte, retaFinal}, tiposProva, dias: {valor, texto}, minutos, meta: {valor, texto, regra}, pausa, lembrete: {texto: "Prumo · seg, ter, qua, qui · 19:00", como}, agenda: agenda(), constancia: constancia(), intervalos: { porNivel, verARegra } }` (o texto de `verARegra` vai só em "ver a regra").
 - `agenda()`: 14 dias `[{ dia, rotulo, tipo: 'estudo'|'folga'|'pausa', itens, texto: "qui 19/11 · Cap. 2 (novo) + revisão do Cap. 1" }]`, `tudoFirme`, `porQueEstaOrdem`.
-- `constancia()`: `{ simbolo, diasEstudados, rotulo, regua: [{dia, n, longo, latao}], miniRegua (últimas 4 semanas), semanasComMeta, linhaMeta ("semanas com a meta: 3"), chama: { acesa, acesas, semanas: [{inicio, fim, rotulo, dias, meta, acesa}] }, vazio, regra }`. A régua (A) e a chama (B) usam o mesmo rótulo "N dias estudados"; nenhuma conta a semana em andamento.
-- `ajustes()`: som, `simbolo` ("Símbolo da constância: Chama · Régua", padrão Chama), dados (cópia, CSV, restaurar, copiar dados, apagar com confirmação), demo.
+- `constancia()`: `{ simbolo: 'risquinhos', diasEstudados, rotulo, regua: [{dia, n, longo, latao}], miniRegua (últimas 4 semanas), semanasComMeta, linhaMeta ("semanas com a meta: 3"), vazio, regra }`. Os risquinhos (grupos de 5) saem de `diasEstudados` e só crescem; a chama saiu (decisão do dono).
+- `ajustes()`: som, dados (cópia, CSV, restaurar, copiar dados, apagar com confirmação), demo. Não há mais "Símbolo da constância".
 - `creditos()`: créditos do pack item a item (licença, autoria, "rascunho por IA, revisão pendente", terceiros) mais fontes do app e a nota de IA. `naoTem()`: "O que o Prumo não tem".
 - `primeiroUso()`: opções e textos de c.1, `alarme(dias, horario)` com o texto pronto do alarme.
 
@@ -117,7 +118,7 @@ Abertura: `{ titulo, regra, tamanho, aviso, trofeu, reaproveita, acoes }`. Em cu
 | `csv()` | `{ nome: 'prumo-tentativas.csv', conteudo, tipo }` (inclui os cards) |
 | `restaurar(texto)` | `{ ok, mensagem }`; arquivo inválido ou do Capisco: "Este arquivo não é uma cópia do Prumo (ou é de outra versão). Nada foi alterado." |
 | `apagarTudo()` | volta ao Primeiro uso |
-| `definirSom(bool)`, `definirSimbolo('chama'|'regua')`, `definirAlarme('criado'|'agora-nao')` | ajustes |
+| `definirSom(bool)`, `definirAlarme('criado'|'agora-nao')` | ajustes (`definirSimbolo` saiu com a chama) |
 | `carregarExemplo()` | modo demonstração com o estado de exemplo; o estado real fica guardado |
 | `sairDaDemonstracao()` | volta ao estado real (ou ao Primeiro uso) |
 | `avancarDias(n)` | modo demonstração: avança a data simulada |
@@ -146,7 +147,7 @@ Esquema de e.4, com os acréscimos das decisões do dono:
   marcos: { 'm.primeiroCap': dia, ... }, chefes: { 'mat-fa': { dia, tentativas, venceu } }, selos: ['mat'], chefeAvisado: {},
   historico: [{ dia, regra, tipo, passos, feitos, parcial, fechada, viradaDeData }],
   refazer: null | { erro, item, dia, estado, alt, res },
-  config: { som: false, nivelMaximo: 3, ultimaCopia, simboloConstancia: 'chama'|'regua', alarme, demo: { ativo, offset, exemplo, guardado } },
+  config: { som: false, nivelMaximo: 3, ultimaCopia, simboloConstancia: 'risquinhos' /* 'chama' ou 'regua' salvos antes viram 'risquinhos' na leitura */, alarme, demo: { ativo, offset, exemplo, guardado } },
 }
 ```
 

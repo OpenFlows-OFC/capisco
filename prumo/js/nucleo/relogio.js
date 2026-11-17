@@ -76,8 +76,10 @@ export const fmtCurta = s => `${SEMANA_CURTA[diaDaSemana(s)]} ${fmtDiaMes(s)}`;
 export const fmtDiaSemana = s => { const w = SEMANA_LONGA[diaDaSemana(s)]; return `${w[0].toUpperCase()}${w.slice(1)}, ${fmtDiaMes(s)}`; };
 /** "quinta, 19 de novembro" */
 export const fmtLonga = s => { const d = parse(s); return `${SEMANA_LONGA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`; };
-/** "QUINTA, 19 DE NOVEMBRO" (linha de data de Hoje) */
+/** "QUINTA, 19 DE NOVEMBRO" (antiga linha de data de Hoje; o design system pede caixa normal: use fmtTitulo) */
 export const fmtCabecalho = s => fmtLonga(s).toUpperCase();
+/** "Quinta, 19 de novembro" (linha de data de Hoje) */
+export const fmtTitulo = s => { const t = fmtLonga(s); return t.charAt(0).toUpperCase() + t.slice(1); };
 /** "15/12/2026" */
 export const fmtCompleta = s => { const d = parse(s); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`; };
 /** Data relativa a uma referência: "hoje", "amanhã, qui 19/11", "ontem", ou "sex 20/11". */

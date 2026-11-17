@@ -5,19 +5,24 @@
 // do INEP), gera as variantes, roda os testes e escreve conteudo/mat-fa-c34.js.
 // Edite aqui, nunca no arquivo gerado.
 
-export const AUTORIA = Object.freeze({
-  ia: true,
-  modelo: 'Claude Opus 5.5',
-  ferramenta: 'Claude Opus 5.5 (Anthropic), via Claude Code',
-  data: '2026-11-17',
-  equipe: null,
-  revisor: null,
-  revisadoEm: null,
-});
+// Autoria (e.2): "ia" é texto (ferramenta, versão e data), o mesmo objeto dos Caps. 1 e 2 e de
+// pack.autoriaPadrao (AUTORIA_IA, conteudo/gerador.js). Nos créditos: "rascunho por IA (...), revisão pendente".
+import { AUTORIA_IA } from '../conteudo/gerador.js';
+export const AUTORIA = AUTORIA_IA;
 
-const KHAN_UNIDADE = 'https://pt.khanacademy.org/math/1-serie-em-mat-sp/x82b03a9b6c8af113:2-bimestre-2026';
+// Links "Ir além" conferidos no navegador em 17/11/2026 (Playwright): a Unidade 3 do curso da Khan
+// (2º Bimestre) tem "Retomando equações do 1º grau" e "Lei de Formação da Função Afim"; a Unidade 4
+// (3º Bimestre) abre com a lição "Taxa de variação de uma função afim". O módulo 35 do Portal da OBMEP
+// é "Função Afim" (videoaulas, exercícios resolvidos e caderno de exercícios), o mesmo link dos Caps. 1 e 2.
+const KHAN_UNIDADE_3 = 'https://pt.khanacademy.org/math/1-serie-em-mat-sp/x82b03a9b6c8af113:2-bimestre-2026';
+const KHAN_UNIDADE_4 = 'https://pt.khanacademy.org/math/1-serie-em-mat-sp/x82b03a9b6c8af113:3-bimestre-2026';
 const KHAN_AVISO = 'Todo o conteúdo da Khan Academy está disponível gratuitamente em www.khanacademy.org. O Prumo não é oficial nem endossado pela Khan Academy.';
-const OBMEP = { tipo: 'obmep', rotulo: 'Portal da OBMEP: módulos do 1º ano do ensino médio', url: 'https://portaldaobmep.impa.br/index.php/modulo/index?a=1', aviso: 'Site do Portal da OBMEP (IMPA). Não há licença aberta indicada; o Prumo só aponta para ele.' };
+const OBMEP = {
+  tipo: 'obmep', rotulo: 'Portal da OBMEP: módulo Função Afim (videoaulas e exercícios)',
+  url: 'https://portaldaobmep.impa.br/index.php/modulo/ver?modulo=35',
+  aviso: 'Abre o Portal da OBMEP (IMPA) em outra aba. O Prumo só aponta o link; o conteúdo do portal não é copiado.',
+  conferidoEm: '2026-11-17',
+};
 // O link do MEC Enem fica no nível do pack (META.irAlem em conteudo/mat-fa.js), como nos Caps. 1 e 2.
 
 // ---------------------------------------------------------------------------
@@ -31,9 +36,7 @@ export const CAPITULOS = [
     rodada: ['enem-2019-143', 'enem-2020-175', 'enem-2019-179'],
     reserva: [],
     irAlem: [
-      // A Unidade 4 (3º Bimestre) do curso tem "Taxa de variação de uma função afim", mais perto deste
-      // capítulo, mas o endereço dela ainda não foi conferido no navegador: por ora, a Unidade 3, com rótulo exato.
-      { tipo: 'khan', rotulo: 'Para revisar função afim e seus gráficos no curso da Khan que a sua escola usa (Unidade 3, 2º Bimestre)', url: KHAN_UNIDADE, aviso: KHAN_AVISO },
+      { tipo: 'khan', rotulo: 'Taxa de variação de uma função afim, no curso da Khan para a 1ª série do Ensino Médio de SP (Unidade 4, 3º Bimestre)', url: KHAN_UNIDADE_4, aviso: KHAN_AVISO, conferidoEm: '2026-11-17' },
       OBMEP,
     ],
     paginas: [
@@ -47,7 +50,7 @@ export const CAPITULOS = [
             'O maior total não é, sozinho, a maior taxa. Bia pedalou 15 km em 60 minutos; Caio, 10 km em 25 minutos. Bia andou mais, mas Caio foi mais rápido: 10 ÷ 25 = 0,4 km por minuto, contra 15 ÷ 60 = 0,25. Para comparar, divida cada total pelo próprio tempo. Somar os dois, multiplicar ou ficar com o maior número não compara taxas.',
           ] },
           { id: 'mat-fa.p5.b2', papel: 'apoio', paragrafos: [
-            'No gráfico, a taxa vira inclinação. Quando a conta começa do zero, ligue a origem a cada ponto: quanto mais em pé o segmento, maior a taxa. Antes, confira se os dois eixos começam em 0. Se um deles não começa, o canto do gráfico não é a origem: faça a divisão. Dois pontos na mesma altura têm o mesmo total, mas o que está mais à direita levou mais tempo e tem taxa menor. É o <em>a</em> de y = ax + b, da p. 2: quanto y muda quando x anda 1.',
+            'No gráfico, a taxa vira inclinação. Se os dois eixos começam em 0, ligue o ponto (0; 0) a cada ponto: quanto mais em pé o segmento, maior a taxa. Se um dos eixos não começa em 0, o canto do gráfico não é o ponto (0; 0), e a inclinação engana: faça a divisão de cada ponto. Dois pontos na mesma altura têm o mesmo total, mas o que está mais à direita levou mais tempo e tem taxa menor. É o <em>a</em> de y = ax + b, da p. 2: quanto y muda quando x anda 1.',
           ] },
         ],
       },
@@ -57,7 +60,7 @@ export const CAPITULOS = [
         blocos: [
           { id: 'mat-fa.p6.b1', papel: 'nucleo', paragrafos: [
             'Alguns gráficos e tabelas mostram um <strong>total acumulado</strong>: cada valor é tudo o que já foi somado desde o começo. O hodômetro do carro e o consumo do mês no aplicativo de internet funcionam assim. Quando só se soma, como no hodômetro, um total acumulado nunca desce. No máximo, fica parado.',
-            'O que aconteceu num trecho é a <strong>subida</strong> do trecho: valor no fim menos valor no começo. Se o trecho dura 1 minuto, essa subida já é a taxa daquele minuto. O 4º minuto vai de t = 3 a t = 4, e não de 0 a 4. Cada minuto tem a sua subida, e um total final que bate não garante que cada trecho bate. Confira um por um.',
+            'O que aconteceu num trecho é a <strong>subida</strong> do trecho: valor no fim menos valor no começo. Se o trecho dura 1 minuto, essa subida já é a taxa daquele minuto. O 4º minuto vai de t = 3 a t = 4, e não de 0 a 4. Cada minuto tem a sua subida. Uma sequência cujo total confere com o fim do gráfico ainda pode errar minuto a minuto: confira um por um.',
           ] },
           { id: 'mat-fa.p6.b2', papel: 'cobrado', prePergunta: 'mat-fa.p6.b2.m', paragrafos: [
             'Às vezes a pergunta é a <strong>diferença</strong> entre duas curvas no mesmo ponto do eixo horizontal. Lucro é receita menos custo, nessa ordem. Em cada valor do eixo horizontal, pegue a altura da receita e tire a altura do custo. O resultado é uma terceira curva, diferente das duas.',
@@ -71,10 +74,10 @@ export const CAPITULOS = [
       { tipo: 'conceito', frente: 'O que é taxa de variação?', verso: 'Quanto uma grandeza muda a cada unidade da outra: o quanto mudou, dividido pelo intervalo.', bloco: 'mat-fa.p5.b1', paragrafo: 'mat-fa.p5.b1.s1' },
       { tipo: 'palavra-pista', frente: 'Em “km por minuto”, o que vai embaixo na divisão?', verso: 'O minuto. O que vem depois de “por” é o divisor: km ÷ minutos.', bloco: 'mat-fa.p5.b1', paragrafo: 'mat-fa.p5.b1.s2' },
       { tipo: 'armadilha', frente: 'Quem fez o maior total foi o mais rápido?', verso: 'Não necessariamente. Divida cada total pelo próprio tempo antes de comparar.', bloco: 'mat-fa.p5.b1', paragrafo: 'mat-fa.p5.b1.s3' },
-      { tipo: 'procedimento', frente: 'No gráfico que começa do zero, como achar a maior taxa?', verso: 'Ligue o ponto (0; 0) a cada ponto: o segmento mais inclinado tem a maior taxa. Se um eixo não começa em 0, divida.', bloco: 'mat-fa.p5.b2', paragrafo: 'mat-fa.p5.b2.s4' },
+      { tipo: 'procedimento', frente: 'Como achar a maior taxa num gráfico de pontos?', verso: 'Se os dois eixos começam em 0, ligue (0; 0) a cada ponto: o segmento mais inclinado tem a maior taxa. Se não, divida.', bloco: 'mat-fa.p5.b2', paragrafo: 'mat-fa.p5.b2.s4' },
       { tipo: 'conceito', frente: 'O que mostra um total acumulado?', verso: 'Em cada ponto, tudo o que foi somado desde o começo. Se só se soma, ele nunca desce.', bloco: 'mat-fa.p6.b1', paragrafo: 'mat-fa.p6.b1.s1' },
       { tipo: 'procedimento', frente: 'Num total acumulado, como achar o que houve no 4º minuto?', verso: 'Valor em t = 4 menos valor em t = 3. O 4º minuto vai de 3 a 4.', bloco: 'mat-fa.p6.b1', paragrafo: 'mat-fa.p6.b1.s2' },
-      { tipo: 'armadilha', frente: 'O total final bateu. Então a sequência está certa?', verso: 'Não basta. Confira a subida de cada trecho, um por um.', bloco: 'mat-fa.p6.b1', paragrafo: 'mat-fa.p6.b1.s2' },
+      { tipo: 'armadilha', frente: 'A soma das potências deu o total do gráfico. Então a sequência está certa?', verso: 'Não basta. Confira a subida de cada trecho, um por um.', bloco: 'mat-fa.p6.b1', paragrafo: 'mat-fa.p6.b1.s2' },
       { tipo: 'procedimento', frente: 'Como montar o lucro a partir das curvas de receita e custo?', verso: 'Ponto a ponto: receita − custo, nessa ordem. Onde o custo fica acima, o lucro é negativo.', bloco: 'mat-fa.p6.b2', paragrafo: 'mat-fa.p6.b2.s3' },
     ],
   },
@@ -86,7 +89,7 @@ export const CAPITULOS = [
     rodada: ['enem-2021-164', 'mat-fa.c4.ap#0', 'enem-2023-175'],
     reserva: [],
     irAlem: [
-      { tipo: 'khan', rotulo: 'Para revisar equações de 1º grau no curso da Khan que a sua escola usa (Unidade 3, 2º Bimestre)', url: KHAN_UNIDADE, aviso: KHAN_AVISO },
+      { tipo: 'khan', rotulo: 'Para revisar equações de 1º grau, no curso da Khan para a 1ª série do Ensino Médio de SP (Unidade 3, 2º Bimestre)', url: KHAN_UNIDADE_3, aviso: KHAN_AVISO, conferidoEm: '2026-11-17' },
       OBMEP,
     ],
     paginas: [
@@ -96,24 +99,24 @@ export const CAPITULOS = [
         blocos: [
           { id: 'mat-fa.p7.b1', papel: 'nucleo', paragrafos: [
             'Um problema com dois valores desconhecidos precisa de duas informações. Dê uma letra para cada valor e diga o que ela é: c = preço de uma coxinha, em reais; s = preço de um suco, em reais. Cada condição do texto vira uma equação. Duas condições sobre as mesmas letras formam um <strong>sistema</strong>.',
-            'Traduza a frase inteira, sem pular pedaço. “A coxinha custa R$ 2 a mais que o suco” é c = s + 2. “A coxinha custa R$ 2 a mais que o dobro do suco” é c = 2s + 2. E “a coxinha menos o suco dá o suco mais R$ 2” é c − s = s + 2, que também vira c = 2s + 2. Ler só o “2 a mais” troca o problema.',
+            'Traduza a frase inteira, sem pular pedaço. “A coxinha custa R$ 2 a mais que o suco” é c = s + 2. “A coxinha custa R$ 2 a mais que o dobro do suco” é c = 2s + 2. E “a coxinha menos o suco dá o suco mais R$ 2” é c − s = s + 2, que também vira c = 2s + 2. Ler só o “2 a mais” muda o problema.',
             'Cuide das quantidades e das unidades. Se a coxinha vem em bandeja de 6, uma bandeja custa 6c, e três bandejas custam 3 × 6c = 18c. Centavos viram reais com vírgula: 5 centavos são R$ 0,05; 50 centavos são R$ 0,50. Um zero fora do lugar muda a resposta.',
           ] },
           // Apoio (b.5): a 2023 Q175 e a mat-fa.c4.ap pedem a substituição deste §, mas a pré-pergunta do
           // núcleo (mat-fa.p7.m, linha 0) já exige resolver um sistema antes da leitura.
           { id: 'mat-fa.p7.b2', papel: 'apoio', paragrafos: [
-            'Com as duas equações, use a <strong>substituição</strong>: isole uma letra numa equação e leve para a outra. Se c = 2s + 2 e 3c + s = 27, troque c: 3(2s + 2) + s = 27, então 7s + 6 = 27 e s = 3. Volte: c = 2 · 3 + 2 = 8. Confira nas duas: 8 = 2 · 3 + 2 e 3 · 8 + 3 = 27.',
+            'Com as duas equações, use a <strong>substituição</strong>: isole uma letra numa equação e leve para a outra. Se uma equação é c = 2s + 2 e a outra é 3c + s = 27, troque c na segunda: 3(2s + 2) + s = 27, então 7s + 6 = 27 e s = 3. Volte à primeira: c = 2 × 3 + 2 = 8. Confira nas duas. Na primeira, 8 = 2 × 3 + 2; na segunda, 3 × 8 + 3 = 27.',
           ] },
         ],
       },
       {
         id: 'mat-fa.p8', n: 8, titulo: 'Comparar as duas condições', modelo: 'mat-fa.p8.m', nucleo: 'mat-fa.p8.b1',
-        notaPrompt: 'Com suas palavras: o que a comparação entre os dois pedidos te conta?',
+        notaPrompt: 'Com suas palavras: o que a comparação entre os dois pedidos mostra?',
         blocos: [
           { id: 'mat-fa.p8.b1', papel: 'nucleo', paragrafos: [
             'Quando duas situações dão o mesmo total, compare uma com a outra. Dois pedidos de R$ 28 numa pastelaria: o primeiro com 2 pastéis e 3 caldos de cana; o segundo com 3 pastéis e 1 caldo. Do primeiro para o segundo, entrou 1 pastel e saíram 2 caldos, e o total não mudou.',
-            'Se o total não mudou, o que entrou vale o mesmo que o que saiu: 1 pastel vale 2 caldos. É a <strong>troca</strong> que equilibra. Isso é o mesmo que subtrair uma condição da outra: o que é igual nas duas some, e sobra a troca. Conte por tipo de item, e não pelo total de itens: o pedido ficou com 1 item a menos, mas o que vale é 1 pastel no lugar de 2 caldos.',
-            'Com a troca, dá para montar uma terceira situação sem descobrir cada preço. Quer um pedido de R$ 28 com 1 pastel só? Parta do primeiro (2 pastéis e 3 caldos) e troque 1 pastel por 2 caldos: fica 1 pastel e 5 caldos. Aplique a troca quantas vezes for preciso, nem uma a mais, nem uma a menos.',
+            'Se o total não mudou, o que entrou vale o mesmo que o que saiu: 1 pastel vale 2 caldos. É a <strong>troca</strong> que equilibra. Isso é o mesmo que subtrair uma condição da outra: o que é igual nas duas se cancela, e sobra a troca. Conte por tipo de item, e não pelo total de itens: o pedido ficou com 1 item a menos, mas o que vale é 1 pastel no lugar de 2 caldos.',
+            'Com a troca, dá para montar uma terceira situação sem descobrir cada preço. Quer um pedido de R$ 28 com 1 pastel só? Parta do primeiro (2 pastéis e 3 caldos) e troque 1 pastel por 2 caldos: ficam 1 pastel e 5 caldos. Aplique a troca quantas vezes for preciso, nem uma a mais, nem uma a menos.',
           ] },
           { id: 'mat-fa.p8.b2', papel: 'cobrado', prePergunta: 'mat-fa.p8.b2.m', paragrafos: [
             'No fim, responda exatamente o que foi pedido. Se a pergunta é “quantos caldos”, não some os pastéis. Se uma parte já está ocupada por outros itens, desconte esses itens antes de contar o resto. E confira: a situação nova tem de dar o mesmo total das duas condições.',
@@ -128,8 +131,8 @@ export const CAPITULOS = [
       { tipo: 'armadilha', frente: 'Quanto são 5 centavos em reais?', verso: 'R$ 0,05. Já 50 centavos são R$ 0,50: a casa do 5 muda a resposta.', bloco: 'mat-fa.p7.b1', paragrafo: 'mat-fa.p7.b1.s3' },
       { tipo: 'procedimento', frente: 'Como resolver um sistema por substituição?', verso: 'Isole uma letra numa equação, leve para a outra, resolva e volte para achar a segunda letra.', bloco: 'mat-fa.p7.b2', paragrafo: 'mat-fa.p7.b2.s4' },
       { tipo: 'conceito', frente: 'Duas situações com o mesmo total: o que a diferença entre elas mostra?', verso: 'Uma troca que equilibra: o que entrou vale o mesmo que o que saiu.', bloco: 'mat-fa.p8.b1', paragrafo: 'mat-fa.p8.b1.s2' },
-      { tipo: 'procedimento', frente: 'Como chegar a uma terceira situação sem achar cada preço?', verso: 'Parta de uma das situações e aplique a troca quantas vezes for preciso, nem uma a mais.', bloco: 'mat-fa.p8.b1', paragrafo: 'mat-fa.p8.b1.s3' },
-      { tipo: 'armadilha', frente: 'Achou um número. O que conferir antes de marcar?', verso: 'Se ele responde o que foi pedido, se você descontou o que vai junto e se fecha as duas condições.', bloco: 'mat-fa.p8.b2', paragrafo: 'mat-fa.p8.b2.s4' },
+      { tipo: 'procedimento', frente: 'Como chegar a uma terceira situação sem achar cada preço?', verso: 'Parta de uma das situações e aplique a troca quantas vezes for preciso, nem uma a mais, nem uma a menos.', bloco: 'mat-fa.p8.b1', paragrafo: 'mat-fa.p8.b1.s3' },
+      { tipo: 'armadilha', frente: 'Achou um número. O que conferir antes de marcar?', verso: 'Se ele responde o que foi pedido, se você descontou o que já ocupa parte do total e se ele satisfaz as duas condições.', bloco: 'mat-fa.p8.b2', paragrafo: 'mat-fa.p8.b2.s4' },
     ],
   },
 ];
@@ -242,7 +245,7 @@ export const MODELOS = [
       { expr: 'q*s + (1 - q)*(2*s + d)', falta: 'Achou o preço {doOutro}. A pergunta é o preço {doPedido}.', paragrafo: 'mat-fa.p7.b1.s1' },
       { expr: 'q*(2*(T - d)/(2 + n2) + d) + (1 - q)*(T - d)/(2 + n2)', falta: 'Contou um salgado só. São {n1} salgados: a conta tem {n1} × (2 × suco + {dReais}).', paragrafo: 'mat-fa.p7.b1.s3' },
     ],
-    explicacao: 'Com s = preço do suco, {traducaoTexto} Então {n1} × (2s + {dNum}) + {n2} × s = {Tt}, ou seja, {coefS}s + {n1dTexto} = {Tt}. Daí {coefS}s = {restoTexto} e s = {sTexto}.{fimTexto}',
+    explicacao: 'Chame de g o preço de um salgado e de s o de um suco, em reais. {traducaoTexto} Então {n1}(2s + {dNum}) + {n2s} = {Tt}, ou seja, {coefS}s + {n1dTexto} = {Tt}. Daí {coefS}s = {restoTexto} e s = {sTexto}.{fimTexto}',
     deriva: l => {
       if (l.forma !== 'dif' && l.forma !== 'dobro') throw new Error('mat-fa.p7.m: forma tem de ser "dif" ou "dobro"');
       const d = l.dc / 100, s = l.s, T = l.n1 * (2 * s + d) + l.n2 * s, dif = l.forma === 'dif';
@@ -256,12 +259,12 @@ export const MODELOS = [
           ? `Leu como “o salgado custa ${dTexto} a mais que o suco”. A frase diz salgado − suco = suco + ${dReais}, ou seja, salgado = 2 × suco + ${dReais}.`
           : `Traduziu só “${dTexto} a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + ${dReais}.`,
         traducaoTexto: dif
-          ? `a frase diz salgado − s = s + ${reais(d)}, ou seja, o salgado custa 2s + ${reais(d)}.`
-          : `o salgado custa 2s + ${reais(d)}.`,
-        n1t: plural(l.n1, 'salgado', 'salgados'), n2t: plural(l.n2, 'suco', 'sucos'), nItens: l.n1 + l.n2,
+          ? `A frase diz g − s = s + ${reais(d)}, ou seja, g = 2s + ${reais(d)}.`
+          : `A frase diz g = 2s + ${reais(d)}.`,
+        n2s: l.n2 === 1 ? 's' : `${l.n2}s`, n1t: plural(l.n1, 'salgado', 'salgados'), n2t: plural(l.n2, 'suco', 'sucos'), nItens: l.n1 + l.n2,
         umPedido: l.q ? 'um salgado' : 'um suco', doPedido: l.q ? 'do salgado' : 'do suco', doOutro: l.q ? 'do suco' : 'do salgado',
         coefS: 2 * l.n1 + l.n2, n1dTexto: reais(l.n1 * d), restoTexto: reais(T - l.n1 * d), sTexto: reais(s),
-        fimTexto: l.q ? ` O salgado custa 2 × ${reais(s)} + ${reais(d)} = R$ ${reais(2 * s + d)}.` : '',
+        fimTexto: l.q ? ` O salgado custa g = 2 × ${reais(s)} + ${reais(d)} = R$ ${reais(2 * s + d)}.` : '',
       };
     },
     linhas: [
@@ -347,7 +350,7 @@ export const MODELOS = [
     ],
     // A resolução usa só o que as p. 7 e 8 ensinam: subtrair uma condição da outra (p. 8, § 2) e
     // substituir (p. 7, § 4). Por isso todo kit 1 tem 1 caderno a mais e 1 caneta a menos que o kit 2.
-    explicacao: 'Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ {difTexto}. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = {difTexto}, ou seja, caderno = caneta + {difTexto}. Substitua no kit 2: {b} × (caneta + {difTexto}) + {a} × caneta = {T2t}, então {ab} × caneta + {bdTexto} = {T2t} e caneta = R$ {kTexto}. Caderno = {kTexto} + {difTexto} = R$ {cTexto}.',
+    explicacao: 'Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ {difTexto}. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = {difTexto}, ou seja, caderno = caneta + {difTexto}. Substitua no kit 2: {b} × (caneta + {difTexto}) + {a} × caneta = {T2t}, então {ab} × caneta + {bdTexto} = {T2t} e caneta = R$ {kTexto}. Caderno = {kTexto} + {difTexto} = R$ {cTexto}.',
     deriva: l => {
       if (l.a - l.b !== 1 || !(l.c > l.k)) throw new Error('mat-fa.c4.ap: cada linha precisa de a = b + 1 e caderno mais caro que a caneta');
       const T1 = l.a * l.c + l.b * l.k, T2 = l.b * l.c + l.a * l.k;
@@ -376,40 +379,46 @@ export const MODELOS = [
 // blocos (N:M), modelo ligado, explicação, "o que faltou" de cada alternativa errada,
 // a expressão que reproduz o erro (teste de d.6) e o texto alternativo das imagens.
 // ---------------------------------------------------------------------------
-const ALT = 'Descrição da equipe Prumo: ';
+// Mesmo começo dos textos alternativos dos Caps. 1 e 2 (altLinha e altPontos de gerador.js): ponto e maiúscula.
+const ALT = 'Descrição da equipe Prumo. ';
 
 export const QUESTOES = {
   'enem-2019-143': {
     capitulo: 'mat-fa.c3', blocos: ['mat-fa.p5.b1'], modelo: 'mat-fa.p5.m',
-    imagens: { 'ef507c14-34a0-479e-a532-193bf38c48ba.png': { arquivo: 'enem-2019-143.png', alt: ALT + 'gráfico de pontos. Eixo horizontal: tempo, em minutos, marcado de 5 em 5, de 5 a 30. Eixo vertical: kcal, de 20 em 20, de 0 a 140. Ponto I: 10 minutos e 20 kcal. Ponto II: 15 minutos e 100 kcal. Ponto III: 20 minutos e 120 kcal. Ponto IV: 25 minutos e 100 kcal. Ponto V: 30 minutos e 80 kcal.' } },
+    imagens: { 'ef507c14-34a0-479e-a532-193bf38c48ba.png': { arquivo: 'enem-2019-143.png', alt: ALT + 'Gráfico de pontos sobre uma grade. Eixo horizontal: tempo, em minutos, marcado de 5 em 5, de 5 a 30. Eixo vertical: kcal, marcado de 20 em 20, de 20 a 140. Ponto I: 10 minutos e 20 kcal. Ponto II: 15 minutos e 100 kcal. Ponto III: 20 minutos e 120 kcal. Ponto IV: 25 minutos e 100 kcal. Ponto V: 30 minutos e 80 kcal.' } },
     explicacao: 'Taxa é kcal ÷ minutos, ponto a ponto. I: 20 ÷ 10 = 2. II: 100 ÷ 15 ≈ 6,7. III: 120 ÷ 20 = 6. IV: 100 ÷ 25 = 4. V: 80 ÷ 30 ≈ 2,7. A maior taxa é a de II, mesmo com III tendo o maior total.',
     teste: { pontos: { I: { t: 10, k: 20 }, II: { t: 15, k: 100 }, III: { t: 20, k: 120 }, IV: { t: 25, k: 100 }, V: { t: 30, k: 80 } } },
     exprCerta: 'maior(r => r.k / r.t)',
     erradas: {
       A: { exprTeste: 'maior(r => r.t / r.k)', falta: 'Inverteu a divisão: fez minutos ÷ kcal, e a maior conta assim é a de I (10 ÷ 20 = 0,5). Isso mede minutos por kcal; a pergunta é kcal por minuto.', paragrafo: 'mat-fa.p5.b1.s2' },
       C: { exprTeste: 'maior(r => r.k)', falta: 'Escolheu o maior total, 120 kcal. Mas III levou 20 minutos: 120 ÷ 20 = 6 kcal por minuto, menos que os 6,7 de II.', paragrafo: 'mat-fa.p5.b1.s3' },
-      D: { exprTeste: 'maior(r => r.k * r.t)', falta: 'Multiplicou kcal por minutos (100 × 25 = 2.500 é o maior produto). Taxa é divisão: 100 ÷ 25 = 4 kcal por minuto.', paragrafo: 'mat-fa.p5.b1.s1' },
+      D: { exprTeste: 'maior(r => r.k * r.t)', falta: 'Multiplicou kcal por minutos (100 × 25 = 2 500 é o maior produto). Taxa é divisão: 100 ÷ 25 = 4 kcal por minuto.', paragrafo: 'mat-fa.p5.b1.s1' },
       E: { exprTeste: 'maior(r => r.t)', falta: 'Escolheu a atividade mais longa, de 30 minutos. Mais tempo não quer dizer mais gasto por minuto: 80 ÷ 30 ≈ 2,7.', paragrafo: 'mat-fa.p5.b1.s3' },
     },
   },
   'enem-2020-175': {
     capitulo: 'mat-fa.c3', blocos: ['mat-fa.p6.b2'], modelo: 'mat-fa.p6.b2.m',
     imagens: {
-      '33aa811b-1dc7-4083-a8c0-2aeeb9fd52d6.png': { arquivo: 'enem-2020-175.png', alt: ALT + 'gráfico com duas curvas. Eixo horizontal: quantidade de itens produzidos, de 0 a 30. Eixo vertical: R$, de 0 a 55. A curva Receita começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 25 itens e desce para cerca de 45 com 30 itens. A curva Custo começa perto de 5 com 5 itens, sobe rápido até cerca de 45 com 10 itens, desce até cerca de 10 com 25 itens e sobe para cerca de 35 com 30 itens. As curvas se encontram com 5 itens e se cruzam perto de 15 itens, na altura de 40.' },
-      'b3298ba7-589f-4ca3-a510-3cebdb9903cd.png': { arquivo: 'enem-2020-175-a.png', letra: 'A', alt: ALT + 'curva que começa em 0 com 5 itens, desce até cerca de −20 perto de 8 itens, volta a 0 perto de 15 itens, sobe até cerca de 40 perto de 25 itens e cai para cerca de 10 com 30 itens.' },
-      'fdcc74b5-e93d-42c8-9cce-7e018e43eb67.png': { arquivo: 'enem-2020-175-b.png', letra: 'B', alt: ALT + 'curva que começa em 0 com 5 itens, sobe até cerca de 20 perto de 8 itens, volta a 0 perto de 15 itens, desce até cerca de −40 perto de 23 itens e sobe para cerca de −10 com 30 itens.' },
-      '8d380a8c-6b10-40a5-bafa-cfe75141c412.png': { arquivo: 'enem-2020-175-c.png', letra: 'C', alt: ALT + 'curva que nunca fica abaixo de 0: começa em 0 com 5 itens, sobe até cerca de 18 perto de 10 itens, volta a 0 perto de 15 itens, sobe até cerca de 40 perto de 25 itens e cai para cerca de 10 com 30 itens.' },
-      '5c8b1402-d364-4c5f-beaa-559cb23d0891.png': { arquivo: 'enem-2020-175-d.png', letra: 'D', alt: ALT + 'curva que começa perto de 5 com 5 itens, sobe até cerca de 47 perto de 10 itens, desce até cerca de 12 perto de 23 itens e sobe para cerca de 37 com 30 itens.' },
-      'f718a2fc-7a30-4e17-b4b3-28dfb028a6f5.png': { arquivo: 'enem-2020-175-e.png', letra: 'E', alt: ALT + 'curva que começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 23 itens e desce um pouco, para cerca de 46, com 30 itens.' },
+      '33aa811b-1dc7-4083-a8c0-2aeeb9fd52d6.png': { arquivo: 'enem-2020-175.png', alt: ALT + 'Gráfico com duas curvas, sobre uma grade tracejada. Eixo horizontal: quantidade de itens produzidos, de 5 em 5, até 30. Eixo vertical: R$, de 5 em 5, de 0 a 55. A curva Receita, mais grossa, começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 25 itens e desce para cerca de 45 com 30 itens. A curva Custo, mais fina, começa perto de 5 com 5 itens, sobe rápido até cerca de 45 com 10 itens, desce até cerca de 10 com 25 itens e sobe para cerca de 35 com 30 itens. As curvas se encontram com 5 itens e se cruzam perto de 15 itens, na altura de 40.' },
+      'b3298ba7-589f-4ca3-a510-3cebdb9903cd.png': { arquivo: 'enem-2020-175-a.png', letra: 'A', alt: ALT + 'Gráfico com eixo vertical em R$, de −20 a 40, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 0 com 5 itens, desce até −20 com 10 itens, volta a 0 com 15 itens, sobe até 40 com 25 itens e cai para 10 com 30 itens.' },
+      'fdcc74b5-e93d-42c8-9cce-7e018e43eb67.png': { arquivo: 'enem-2020-175-b.png', letra: 'B', alt: ALT + 'Gráfico com eixo vertical em R$, de −40 a 20, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 0 com 5 itens, sobe até cerca de 19 perto de 9 itens, volta a 0 com 15 itens, desce até um pouco abaixo de −40 perto de 24 itens e sobe para −10 com 30 itens.' },
+      '8d380a8c-6b10-40a5-bafa-cfe75141c412.png': { arquivo: 'enem-2020-175-c.png', letra: 'C', alt: ALT + 'Gráfico com eixo vertical em R$, de −5 a 55, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva nunca fica abaixo de 0: começa em 0 com 5 itens, sobe até cerca de 18 perto de 10 itens, volta a 0 com 15 itens, sobe até cerca de 40 perto de 24 itens e cai para 10 com 30 itens.' },
+      '5c8b1402-d364-4c5f-beaa-559cb23d0891.png': { arquivo: 'enem-2020-175-d.png', letra: 'D', alt: ALT + 'Gráfico com eixo vertical em R$, de −5 a 55, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 5 com 5 itens, sobe até cerca de 47 perto de 11 itens, desce até 10 com 25 itens e sobe para 35 com 30 itens.' },
+      'f718a2fc-7a30-4e17-b4b3-28dfb028a6f5.png': { arquivo: 'enem-2020-175-e.png', letra: 'E', alt: ALT + 'Gráfico com eixo vertical em R$, de −5 a 55, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 5 com 5 itens, sobe até 50 perto de 24 itens e desce um pouco, para 45, com 30 itens.' },
     },
     explicacao: 'Lucro = receita − custo, em cada quantidade. Com 5 itens as curvas se encontram: lucro 0. Entre 5 e 15 itens o custo fica acima: lucro negativo, perto de −20 com 10 itens. Perto de 15 itens elas se cruzam: 0 de novo. Depois a receita fica acima: o lucro chega a cerca de 40 com 25 itens e cai para perto de 10 com 30. Só o gráfico A tem esse desenho.',
-    // Leitura da equipe, nos pontos 5, 10, 15, 20, 25 e 30 (tolerância de 8 reais, leitura de imagem).
+    // Leitura das curvas nos pontos 5, 10, 15, 20, 25 e 30, feita nos vetores do PDF oficial (página 29: as
+    // curvas são caminhos de Bézier, convertidos pela escala dos rótulos de cada eixo) em 17/11/2026.
+    // Tolerância de 3 reais: a leitura de cada alternativa errada não serve para a certa.
     teste: {
       x: [5, 10, 15, 20, 25, 30],
-      R: [5, 27, 40, 47, 50, 45],
-      C: [5, 45, 40, 22, 10, 35],
-      leitura: { A: [0, -17, 0, 28, 39, 8], B: [0, 17, 0, -28, -40, -12], C: [0, 18, 0, 28, 39, 10], D: [5, 47, 38, 22, 12, 37], E: [5, 27, 39, 46, 50, 46] },
-      tolerancia: 8,
+      R: [5.7, 25.3, 39.5, 47.3, 49.9, 45.1],
+      C: [5.6, 45, 39.8, 19.7, 10.5, 35.1],
+      leitura: {
+        A: [-0.2, -20.2, -0.1, 28, 40.3, 9.8], B: [0, 18.3, -0.2, -27.9, -40.6, -10], C: [0.3, 18.3, 1.2, 29.4, 39.4, 9.9],
+        D: [5, 46, 37.9, 19.8, 9.9, 34.9], E: [4.8, 26.4, 40.4, 48.2, 49.8, 45],
+      },
+      tolerancia: 3,
     },
     exprCerta: 'R - C',
     erradas: {
@@ -421,41 +430,41 @@ export const QUESTOES = {
   },
   'enem-2019-179': {
     capitulo: 'mat-fa.c3', blocos: ['mat-fa.p6.b1'], modelo: 'mat-fa.p6.m',
-    imagens: { '3c23edf9-5531-4ae5-b328-9b0a6b31fdc1.png': { arquivo: 'enem-2019-179.png', alt: ALT + 'à esquerda, gráfico de linha. Eixo horizontal: tempo, em minutos. Eixo vertical: energia, em W·min. A linha liga os pontos (0; 0), (1; 20), (2; 35), (3; 40), (4; 55), (5; 75), (6; 85), (7; 105) e (8; 120). À direita, planta baixa da casa com seis cômodos numerados: 1, sala, lâmpada de 20 W, onde fica a entrada; 2, quarto, 13 W; 3, banheiro, 2 W; 4, suíte, 15 W; 5, banheiro da suíte, 5 W; 6, cozinha, 10 W.' } },
-    explicacao: 'No gráfico acumulado, a subida de cada minuto é a potência da lâmpada acesa naquele minuto. As subidas são 20, 15, 5, 15, 20, 10, 20 e 15. Pela planta, 20 W é a sala (1), 15 W a suíte (4), 5 W o banheiro da suíte (5) e 10 W a cozinha (6). Sequência: 1 (sala) → 4 (suíte) → 5 (banheiro da suíte) → 4 → 1 → 6 (cozinha) → 1 → 4.',
+    imagens: { '3c23edf9-5531-4ae5-b328-9b0a6b31fdc1.png': { arquivo: 'enem-2019-179.png', alt: ALT + 'Em cima, gráfico de linha. Eixo horizontal: tempo, em minutos. Eixo vertical: energia, em W·min. A linha liga os pontos (0; 0), (1; 20), (2; 35), (3; 40), (4; 55), (5; 75), (6; 85), (7; 105) e (8; 120). Embaixo, planta baixa da casa com seis cômodos numerados: 1, sala, lâmpada de 20 W, onde fica a entrada; 2, quarto, 13 W; 3, banho, 2 W; 4, suíte, 15 W; 5, banho, 5 W; 6, cozinha, 10 W.' } },
+    explicacao: 'No gráfico acumulado, a subida de cada minuto é a potência da lâmpada acesa naquele minuto. As subidas são 20, 15, 5, 15, 20, 10, 20 e 15. Pela planta, 20 W é a sala (1), 15 W a suíte (4), 5 W o banho do cômodo 5 e 10 W a cozinha (6). Sequência: 1 (sala) → 4 (suíte) → 5 (banho) → 4 → 1 → 6 (cozinha) → 1 → 4.',
     teste: { acumulado: [0, 20, 35, 40, 55, 75, 85, 105, 120], potencia: { 1: 20, 2: 13, 3: 2, 4: 15, 5: 5, 6: 10 } },
     exprCerta: 'sequenciaPelasSubidas()',
     erradas: {
       B: { exprTeste: '[somaPotencias(alt), comodos(alt), primeiroMinutoDiferente(alt)]', esperado: [120, 8, 2], falta: 'Conferiu só o total: as lâmpadas somam 120, igual ao fim do gráfico. Minuto a minuto não bate: no 2º minuto o gráfico sobe 15 (de 20 para 35), e o quarto (2) tem 13 W.', paragrafo: 'mat-fa.p6.b1.s2' },
       C: { exprTeste: '[somaPotencias(alt), comodos(alt), primeiroMinutoDiferente(alt)]', esperado: [120, 9, 8], falta: 'A sequência tem 9 paradas, mas o gráfico vai até t = 8: são 8 minutos, uma parada por minuto. O último minuto sobe 15 de uma vez (de 105 para 120): é uma lâmpada só, de 15 W, e não 13 + 2.', paragrafo: 'mat-fa.p6.b1.s2' },
-      D: { exprTeste: '[somaPotencias(alt), comodos(alt), primeiroMinutoDiferente(alt)]', esperado: [120, 9, 2], falta: 'São 9 paradas (uma por minuto) para 8 minutos. O 2º minuto sobe 15 de uma vez (de 20 para 35): é a suíte, de 15 W, e não o quarto e o banheiro em dois minutos (13 + 2).', paragrafo: 'mat-fa.p6.b1.s2' },
+      D: { exprTeste: '[somaPotencias(alt), comodos(alt), primeiroMinutoDiferente(alt)]', esperado: [120, 9, 2], falta: 'São 9 paradas (uma por minuto) para 8 minutos. O 2º minuto sobe 15 de uma vez (de 20 para 35): é a suíte, de 15 W, e não o quarto (2) e o banho (3) em dois minutos (13 + 2).', paragrafo: 'mat-fa.p6.b1.s2' },
       E: { exprTeste: '[somaPotencias(alt), comodos(alt), primeiroMinutoDiferente(alt)]', esperado: [120, 9, 3], falta: 'São 9 paradas (uma por minuto) para 8 minutos. No 3º e no 4º minutos o gráfico sobe 5 e depois 15, 20 no total; a sequência põe ali três cômodos, 13 + 2 + 5 = 20, no lugar de dois.', paragrafo: 'mat-fa.p6.b1.s2' },
     },
   },
   'enem-2021-164': {
     capitulo: 'mat-fa.c4', blocos: ['mat-fa.p8.b1', 'mat-fa.p8.b2'], modelo: 'mat-fa.p8.m',
-    imagens: { 'eab2c90e-a45f-482b-997d-a5c2f6931726.png': { arquivo: 'enem-2021-164.png', alt: ALT + 'tabela com as colunas Viagem, Camisetas, Calças e Sapatos. Viagem I: 12 camisetas, 4 calças e 3 sapatos. Viagem II: 18 camisetas, 3 calças e 2 sapatos.' } },
+    imagens: { 'eab2c90e-a45f-482b-997d-a5c2f6931726.png': { arquivo: 'enem-2021-164.png', alt: ALT + 'Tabela com as colunas Viagem, Camisetas, Calças e Sapatos. Viagem I: 12 camisetas, 4 calças e 3 sapatos. Viagem II: 18 camisetas, 3 calças e 2 sapatos.' } },
     explicacao: 'Da viagem I para a II entraram 6 camisetas e saíram 1 calça e 1 sapato, e a massa continuou 10 kg: 1 calça + 1 sapato pesam o mesmo que 6 camisetas. A mala nova tem 2 calças e 1 sapato, ou seja, 1 calça e 1 sapato a menos que na viagem II. Mais uma troca: 18 + 6 = 24 camisetas. Pela viagem I dá o mesmo: tirar 2 calças e 2 sapatos libera 12 camisetas, e 12 + 12 = 24.',
     teste: {},
     exprCerta: '18 + (18 - 12)',
     erradas: {
       A: { expr: '18 + ((18 + 3 + 2) - (12 + 4 + 3))', falta: 'Contou o total de peças: da viagem I para a II ele sobe 4 (de 19 para 23), e 18 + 4 = 22. A troca é por tipo: entram 6 camisetas no lugar de 1 calça e 1 sapato.', paragrafo: 'mat-fa.p8.b1.s2' },
-      C: { expr: '18 + (18 - 12) + 2', falta: 'Somou as 2 calças às 24 camisetas. A pergunta é só de camisetas.', paragrafo: 'mat-fa.p8.b2.s4' },
-      D: { expr: '12 + 3*(4 + 3)', falta: 'Passou a mala da viagem I toda para camisetas (com calça e sapato valendo 3 camisetas cada: 12 + 7 × 3 = 33) e esqueceu que a mala nova ainda leva 2 calças e 1 sapato. Descontando esses 3 itens (9 camisetas): 33 − 9 = 24.', paragrafo: 'mat-fa.p8.b2.s4' },
-      E: { expr: '12 + 3*(4 + 3) + 6', falta: 'Somou a troca duas vezes. Se calça e sapato valessem 3 camisetas cada (1 calça + 1 sapato = 6 camisetas), a mala da viagem I inteira valeria 12 + 7 × 3 = 33 camisetas; somar mais 6 conta a mesma troca de novo. A troca entra uma vez só, a partir da viagem II: 18 + 6 = 24.', paragrafo: 'mat-fa.p8.b1.s3' },
+      C: { expr: '18 + (18 - 12) + 2', falta: 'Achou as 24 camisetas e somou as 2 calças, como se a pergunta fosse de peças de roupa: 24 + 2 = 26. A pergunta é só de camisetas.', paragrafo: 'mat-fa.p8.b2.s4' },
+      D: { expr: '12 + 3*(4 + 3)', falta: 'Trocou por camisetas todas as calças e sapatos da viagem I (12 + 7 × 3 = 33). A mala nova ainda leva 2 calças e 1 sapato: parta da viagem II e faça uma troca só.', paragrafo: 'mat-fa.p8.b2.s4' },
+      E: { expr: '18 + 3*(4 + 3)', falta: 'Misturou as viagens: as camisetas da II com as calças e os sapatos da I (18 + 7 × 3 = 39). Parta de uma viagem só e faça a troca uma vez.', paragrafo: 'mat-fa.p8.b1.s3' },
     },
   },
   'enem-2023-175': {
     capitulo: 'mat-fa.c4', blocos: ['mat-fa.p7.b1'], modelo: 'mat-fa.p7.m',
     imagens: {},
-    explicacao: 'Cada cartela tem 9 tíquetes. Duas cartelas azuis e uma vermelha: 18a + 9v = 32,40, então 2a + v = 3,60. A frase da diferença: a − v = v + 0,05, ou seja, a = 2v + 0,05. Substituindo: 2(2v + 0,05) + v = 3,60, então 5v + 0,10 = 3,60 e v = 0,70. A cartela vermelha custa 9 × 0,70 = R$ 6,30. Confere: a = 1,45 e 18 × 1,45 + 9 × 0,70 = 26,10 + 6,30 = 32,40.',
+    explicacao: 'Chame de a o valor, em reais, de cada tíquete azul, e de v o de cada tíquete vermelho. Cada cartela tem 9 tíquetes. Duas cartelas azuis e uma vermelha: 18a + 9v = 32,40, então 2a + v = 3,60. A frase da diferença: a − v = v + 0,05, ou seja, a = 2v + 0,05. Substituindo: 2(2v + 0,05) + v = 3,60, então 5v + 0,10 = 3,60 e v = 0,70. A cartela vermelha custa 9 × 0,70 = R$ 6,30. Confere: a = 1,45 e 18 × 1,45 + 9 × 0,70 = 26,10 + 6,30 = 32,40.',
     teste: {},
     exprCerta: '9*((3.60 - 2*0.05)/5)',
     erradas: {
-      A: { expr: '9*((3.60 - 2*0.50)/5)', falta: 'Leu cinco centavos como R$ 0,50: com a = 2v + 0,50 sai v = 0,52, e 9 × 0,52 = 4,68. Cinco centavos são R$ 0,05.', paragrafo: 'mat-fa.p7.b1.s3' },
-      C: { expr: '9*((3.60 - 0.50)/3)', falta: 'Contou uma cartela azul só e ainda leu cinco centavos como R$ 0,50. São duas cartelas azuis (2a + v = 3,60), e cinco centavos são R$ 0,05.', paragrafo: 'mat-fa.p7.b1.s3' },
-      D: { expr: '9*((3.60 - 2*0.05)/3)', falta: 'Traduziu como se o azul custasse só 5 centavos a mais que o vermelho (a = v + 0,05). A frase diz que a diferença a − v é igual a v + 0,05: a = 2v + 0,05.', paragrafo: 'mat-fa.p7.b1.s2' },
-      E: { expr: '9*((3.60 - 0.05)/3)', falta: 'Contou uma cartela azul só: com a + v = 3,60 sai v ≈ 1,18 e 9v = 10,65. São duas cartelas azuis: 2a + v = 3,60.', paragrafo: 'mat-fa.p7.b1.s3' },
+      A: { expr: '9*((3.60 - 2*0.50)/5)', falta: 'Leu cinco centavos como R$ 0,50. Cinco centavos são R$ 0,05.', paragrafo: 'mat-fa.p7.b1.s3' },
+      C: { expr: '9*((3.60 - 0.50)/3)', falta: 'Contou uma cartela azul só e leu cinco centavos como R$ 0,50. São duas cartelas azuis, e cinco centavos são R$ 0,05.', paragrafo: 'mat-fa.p7.b1.s3' },
+      D: { expr: '9*((3.60 - 2*0.05)/3)', falta: 'Leu como “azul = vermelho + 5 centavos”. A frase diz azul − vermelho = vermelho + 0,05, ou seja, azul = 2 × vermelho + 0,05.', paragrafo: 'mat-fa.p7.b1.s2' },
+      E: { expr: '9*((3.60 - 0.05)/3)', falta: 'Contou uma cartela azul só. A compra tem duas cartelas azuis e uma vermelha.', paragrafo: 'mat-fa.p7.b1.s3' },
     },
   },
 };

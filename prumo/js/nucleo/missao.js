@@ -95,18 +95,18 @@ export class Missao {
       i: 0, estado: 'hoje', iniciada: false, hojeNao: false, retomar: null,
       rodada: null, ultima: null, ultimaPre: null, feedbackEm: null, resolucaoAberta: false, fimRodada: null, mao: null,
       fechada: false, parcial: false, encerradoNoPasso: null, rev: 0, resumo: novoResumo(),
-      faixa: extra.faixa || null, prova: null, provaFeitaHoje: !!extra.provaFeitaHoje,
+      faixa: extra.faixa || null, recado: extra.recado || null, prova: null, provaFeitaHoje: !!extra.provaFeitaHoje,
     };
   }
   /** Remonta a missão de hoje se ela ainda não começou (o plano mudou). */
   remontarSeNaoIniciada() {
     const m = this.m;
     if (!this.st.perfil || !m || m.iniciada || m.fechada) return false;
-    return this.transicao(() => { this.st.missao = this.novaMissao(R.hoje(), { faixa: m.faixa, estudarMesmoAssim: m.estudarMesmoAssim, provaFeitaHoje: m.provaFeitaHoje }); return 'hoje'; });
+    return this.transicao(() => { this.st.missao = this.novaMissao(R.hoje(), { faixa: m.faixa, recado: m.recado, estudarMesmoAssim: m.estudarMesmoAssim, provaFeitaHoje: m.provaFeitaHoje }); return 'hoje'; });
   }
   virarDia() {
     const d = R.hoje(), st = this.st, m = this.m;
-    let faixa = null;
+    let faixa = null, recado = null;
     if (m && m.dia !== d) {
       if (m.iniciada && !m.fechada) {
         const passo = Math.min(m.i + 1, m.passos.length), total = m.passos.length;
@@ -115,11 +115,13 @@ export class Missao {
         st.historico.push({ dia: m.dia, regra: m.regra, tipo: m.tipo, passos: total, feitos: m.i, parcial: true, fechada: true, viradaDeData: true });
         const quando = R.diff(m.dia, d) === 1 ? 'Ontem' : `Em ${R.fmtCurta(m.dia)}`;
         faixa = `${quando} você parou no passo ${passo} de ${total}. Ficou registrado.`;
+        // o mesmo aviso no formato do Recado do design system: rótulo em negrito + a frase
+        recado = { rotulo: quando, texto: `você parou no passo ${passo} de ${total}. Ficou registrado.` };
       }
     }
     if (st.pausa && st.pausa.ate && st.pausa.ate < d) encerrarPausa(st, d);
     fecharSemanas(st, d);
-    st.missao = this.novaMissao(d, { faixa });
+    st.missao = this.novaMissao(d, { faixa, recado });
     return 'hoje';
   }
 
@@ -342,14 +344,14 @@ Missao.T = {
     ESTUDAR_MESMO_ASSIM() {
       const m = this.m;
       if (m.tipo !== 'folga' || m.iniciada) return IGNORAR;
-      this.st.missao = this.novaMissao(R.hoje(), { estudarMesmoAssim: true, faixa: m.faixa, provaFeitaHoje: m.provaFeitaHoje });
+      this.st.missao = this.novaMissao(R.hoje(), { estudarMesmoAssim: true, faixa: m.faixa, recado: m.recado, provaFeitaHoje: m.provaFeitaHoje });
       return 'hoje';
     },
     ENCERRAR_PAUSA() {
       const m = this.m;
       if (m.tipo !== 'pausa') return IGNORAR;
       encerrarPausa(this.st, R.hoje());
-      this.st.missao = this.novaMissao(R.hoje(), { faixa: m.faixa });
+      this.st.missao = this.novaMissao(R.hoje(), { faixa: m.faixa, recado: m.recado });
       return 'hoje';
     },
     FAZER_PROVA() {

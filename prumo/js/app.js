@@ -18,7 +18,7 @@ try {
   document.documentElement.dataset.pronto = '1';
 } catch (err) {
   console.error(err);
-  raiz.innerHTML = '<main class="pu"><p class="rotulo">Prumo · App de Estudos</p><h1 class="titulo">O Prumo não abriu.</h1><p>Seu progresso continua salvo neste aparelho. Feche e abra de novo; se continuar, salve uma cópia em outro aparelho.</p><button type="button" class="botao" onclick="location.reload()">Abrir de novo</button></main>';
+  raiz.innerHTML = '<main class="pu"><h1 class="titulo">O Prumo não abriu.</h1><p>Seu progresso continua salvo neste aparelho. Feche e abra de novo; se continuar, salve uma cópia em outro aparelho.</p><button type="button" class="botao botao-largo" onclick="location.reload()">Abrir de novo</button></main>';
 }
 
 /* ---------------- service worker ---------------- */

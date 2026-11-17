@@ -10,7 +10,7 @@ async function roteiro(motor, tema) {
   try {
     // 1 · Primeiro uso
     await pg.goto(U.BASE); await U.pronto(pg);
-    confere(await tem('Já usei o Prumo · restaurar uma cópia'), 'link "Já usei o Prumo · restaurar uma cópia"');
+    confere(await tem('Já usei o Prumo: restaurar uma cópia'), 'link "Já usei o Prumo: restaurar uma cópia"');
     confere(await tem('Ver com dados de exemplo'), 'link "Ver com dados de exemplo"');
     await cap(pg, 'primeiro-uso', true);
     await pg.click('label.escolha:has(input[value="escola"])');
@@ -26,8 +26,9 @@ async function roteiro(motor, tema) {
     // 2 · Hoje como folha de rosto; "Por que esta missão?" → "ver a regra"
     await pg.waitForSelector('.manchete');
     confere((await U.texto(pg)).toUpperCase().includes('MISSÃO 1'), 'Hoje: "Missão 1"');
-    confere(await tem('Cap. 1 · Parte fixa e parte que varia'), 'Hoje: manchete do Cap. 1');
-    confere(await tem('termina em "Pronto por hoje"'), 'Hoje: linha fina');
+    confere(await tem('Cap. 1: Parte fixa e parte que varia'), 'Hoje: manchete do Cap. 1');
+    confere((await pg.$('.pr-cabecalho')) !== null && await tem('Capítulo') && await tem('Tempo') && !(await tem('Data')), 'Hoje: Cabecalho (Capítulo | Páginas | Tempo), sem Data');
+    confere(await tem('No fim, o visto do dia.'), 'Hoje: regra anuncia o visto');
     confere(await tem('0 dias estudados'), 'Hoje: 0 dias estudados');
     confere((await pg.evaluate(() => window.__prumo.nucleo.st.perfil.prova)) === '2026-12-15', 'perfil com a prova em 15/12');
     await cap(pg, 'hoje-primeiro-dia', true);
@@ -44,7 +45,7 @@ async function roteiro(motor, tema) {
     // 3 · Pré-pergunta da p. 1 (sem sinal de acerto) + leitura + checagem
     await pg.click('[data-ev="COMECAR"]');
     await pg.waitForSelector('.alternativas');
-    confere(await tem('ANTES DE LER · P. 1'), 'rótulo ANTES DE LER · P. 1');
+    confere(await tem('Antes de ler a p. 1'), 'rótulo Antes de ler a p. 1');
     confere(await tem('Tente antes de ler. Esta página responde.'), 'aviso da pré-pergunta');
     confere(await tem('2 acertos seguidos, um deles numa questão do Enem'), 'regra da rodada no início');
     confere((await pg.getAttribute('[data-acao="responder"]', 'aria-disabled')) === 'true', 'Responder começa desabilitado');
@@ -53,7 +54,7 @@ async function roteiro(motor, tema) {
     await pg.waitForSelector('.pagina-livro');
     confere(await tem('Resposta guardada.'), 'faixa "Resposta guardada."');
     confere(!(await tem('Certa')) && !(await tem('acertou')), 'leitura não revela acerto');
-    confere(await tem('Já sei isto · ir para a próxima pergunta'), '"Já sei isto" na leitura');
+    confere(await tem('Já sei isto: ir para a próxima pergunta'), '"Já sei isto" na leitura');
     await cap(pg, 'leitura-p1', true);
     // recarregar no meio da missão volta ao mesmo passo, sem gravar tentativa
     const t0 = await U.tentativas(pg);
@@ -70,7 +71,7 @@ async function roteiro(motor, tema) {
     }
     await pg.click('[data-acao="termineiLer"]');
     await pg.waitForSelector('.alternativas');
-    confere(await tem('CONFIRA · P. 1'), 'checagem da p. 1');
+    confere(await tem('Confira a p. 1'), 'checagem da p. 1');
     confere(await tem('Isso fica só no seu celular. Ninguém da escola vê.'), 'aviso da primeira checagem');
     await cap(pg, 'checagem-p1');
     await U.responderCerta(pg);
@@ -84,15 +85,15 @@ async function roteiro(motor, tema) {
 
     // 4 · Pré-pergunta da p. 2 + "Já sei isto" + pré-pergunta do § 4
     await pg.waitForSelector('.alternativas');
-    confere(await tem('ANTES DE LER · P. 2'), 'pré-pergunta da p. 2');
+    confere(await tem('Antes de ler a p. 2'), 'pré-pergunta da p. 2');
     await U.escolher(pg, await U.gabarito(pg));
     await pg.waitForSelector('.pagina-livro');
     confere(await tem('Resposta guardada. Na primeira revisão do capítulo você vê se acertou.'), 'faixa da p. 2');
     await cap(pg, 'leitura-p2');
     await pg.click('[data-ev="JA_SEI"]');
     await pg.waitForSelector('.alternativas');
-    confere(await tem('ANTES DO § 4'), 'pré-pergunta do § 4');
-    confere(await tem('Tente antes de ler. O § 4 responde.'), 'aviso da pré-pergunta de bloco');
+    confere(await tem('Antes do parágrafo 4'), 'pré-pergunta do § 4');
+    confere(await tem('Tente antes de ler. O parágrafo 4 responde.'), 'aviso da pré-pergunta de bloco');
     await cap(pg, 'pre-bloco-p2');
     await U.escolher(pg, 'C');
     await pg.waitForSelector('.pagina-livro');
@@ -102,14 +103,14 @@ async function roteiro(motor, tema) {
     await pg.click('[data-acao="termineiLer"]');
     await pg.waitForSelector('.alternativas');
     confere((await pg.evaluate(() => window.__prumo.nucleo.st.notas.length)) === 1, 'nota da página guardada ao terminar de ler');
-    confere(await tem('CONFIRA · P. 2'), 'checagem da p. 2');
+    confere(await tem('Confira a p. 2'), 'checagem da p. 2');
     await U.responderCerta(pg);
     await pg.waitForSelector('.feedback');
     await U.continuar(pg);
 
     // 5 · 2023 Q162, errando com E; trecho com o fio de prumo; folha Encerrar; Parar e continuar
     await pg.waitForSelector('.alternativas');
-    confere((await tem('QUESTÃO DO ENEM')) && (await tem('Enem 2023 · 2º dia · questão 162')), 'questão do Enem 2023 Q162');
+    confere((await tem('QUESTÃO 162')) && (await tem('Enem 2023, 2º dia')), 'questão do Enem 2023 Q162');
     confere((await pg.$('.rodape-licenca a[href*="creativecommons.org/licenses/by-nd/3.0"]')) !== null, 'atribuição com link da licença');
     await cap(pg, 'enem-q162', true);
     const t1 = await U.tentativas(pg);
@@ -137,11 +138,11 @@ async function roteiro(motor, tema) {
     confere((await U.estado(pg)) === 'feedback' && (await tem('Você marcou E. A certa é D.')), 'recarga: volta ao feedback');
     await pg.click('[data-folha="encerrar"]');
     await pg.waitForSelector('#folha-raiz .folha');
-    confere((await tem('Parar e continuar mais tarde (até a meia-noite)')) && (await tem('Encerrar por hoje')), 'folha Encerrar com duas saídas');
+    confere((await tem('Parar e continuar mais tarde')) && (await tem('aberta até a meia-noite')) && (await tem('Encerrar por hoje')), 'folha Encerrar com duas saídas');
     await cap(pg, 'folha-encerrar');
     await pg.click('#folha-raiz [data-ev="PAUSAR"]');
     await pg.waitForSelector('.manchete');
-    confere(/Continuar · passo \d+ de \d+ \(até a meia.noite\)/.test(await U.texto(pg)), 'Hoje em curso: "Continuar · passo N de M"');
+    confere(/Continuar do passo \d+ de \d+/.test(await U.texto(pg)) && /aberta até a meia.noite/.test(await U.texto(pg)), 'Hoje em curso: "Continuar do passo N de M"');
     await cap(pg, 'hoje-em-curso');
     await pg.click('[data-ev="CONTINUAR"]');
     await pg.waitForSelector('.feedback');
@@ -167,11 +168,11 @@ async function roteiro(motor, tema) {
     // 7 · Pronto por hoje (direto, sem Fim da rodada) → Hoje feito sem nenhuma oferta
     await pg.waitForSelector('.colofao');
     confere((await U.estado(pg)) === 'encerramento', 'direto ao Pronto por hoje');
-    confere(await tem('Pronto por hoje.'), 'título do colofão');
+    confere(await tem('Pronto por hoje'), 'título do colofão');
     confere(await tem('1 dia estudado'), '"1 dia estudado"');
-    confere(await tem('Cap. 1 · Parte fixa e parte que varia entrou em Aprendendo. Revisão: amanhã'), 'linha do nível novo');
+    confere(await tem('O Cap. 1 entrou em Aprendendo. Próxima revisão: amanhã'), 'linha do nível novo');
     confere(await tem('Amanhã você vê se acertou a pergunta de entrada da p. 2.'), 'gancho do próximo dia');
-    confere((await pg.$('.nivel i.cheio')) !== null, 'segmento de nível preenchido');
+    confere((await pg.$('.pr-visto')) !== null && /\d\d\/\d\d\/\d{4}/.test(await pg.textContent('.pr-visto-data')), 'visto do dia com a data dd/mm/aaaa');
     await cap(pg, 'pronto-por-hoje', true);
     const nt = await U.tentativas(pg);
     confere(nt === 5, `5 tentativas avaliadas (veio ${nt})`);

@@ -85,6 +85,7 @@ const jogar = (alvo) => {
     await auditar('hoje');
     await pg.click('[data-folha="porQue"]'); await pg.click('[data-acao="verRegraPorQue"]'); await auditar('folha-por-que');
     await pg.click('#folha-raiz .folha-pe [data-acao="fecharFolha"]');
+    await pg.evaluate(() => { window.__prumo.nucleo.despachar('HOJE_NAO'); window.__prumo.app.render(); }); await auditar('hoje-nao-esmaecido');
     await pg.evaluate(() => { window.__prumo.nucleo.despachar('COMECAR'); window.__prumo.app.render(); }); await auditar('pre-pergunta');
     await pg.click('label.alt:has(input[value="B"])'); await auditar('pre-pergunta-marcada');
     await pg.click('[data-acao="responder"]'); await auditar('leitura');

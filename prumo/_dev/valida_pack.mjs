@@ -8,7 +8,7 @@
 //   - texto do INEP alterado em relação à transcrição (CC BY-ND: só mudança de formato), depois de aplicadas
 //     as correções da conferência com o PDF oficial (_dev/correcoes_enem.mjs);
 //   - questão conferida com o PDF (textoConferidoPDF) cujo texto não aparece no trecho do PDF oficial
-//     (_dev/fontes/pdf_azul_c12.txt), ou com data diferente da registrada na conferência;
+//     (_dev/fontes/pdf_azul_c12.txt e pdf_azul_c34.txt), ou com data diferente da registrada na conferência;
 //   - imagem local inexistente ou sem texto alternativo;
 //   - alternativa errada de questão de rodada sem "o que faltou" (falta, parágrafo e expr que reproduz o erro, d.6);
 //   - capítulo com menos de 6 (ou mais de 8) cards; card sem bloco válido, sem parágrafo ou com parágrafo
@@ -16,7 +16,7 @@
 //   - id duplicado; rodada fora da ordem crescente de b; modelo sem variantes ou com alternativas repetidas.
 // Se conteudo/mat-fa-c34.js ainda não existe, avisa e valida o que existe (Caps. 1 e 2).
 // Com --so-c12, valida só os Caps. 1 e 2 mesmo que mat-fa-c34.js exista.
-import { readFileSync, existsSync, writeFileSync, unlinkSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, unlinkSync, readdirSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -89,6 +89,10 @@ const curadoria = (() => {
   const arq = resolve(TCC, 'rebranding/anexos/curadoria.json');
   return existsSync(arq) ? JSON.parse(readFileSync(arq, 'utf8')).itens : [];
 })();
+{ // uma linha por questão no curadoria.json (o papel na rodada ou na reserva vem do pack)
+  const vistos = new Set();
+  for (const c of curadoria) { if (vistos.has(c.id)) erro('curadoria', `${c.id} aparece mais de uma vez em curadoria.json`); vistos.add(c.id); }
+}
 
 // Alternativa do Enem em texto → expressão avaliável ("Y = 80X + 920." → "80*X+920"; "P=d.n + L" → "d*n+L").
 function exprDaAlternativa(texto) {
@@ -179,8 +183,9 @@ for (const c of pack.capitulos || []) {
       if (!m.variantes || m.variantes.length < 2) erro(sec, `${pg.id}: o modelo ${m.id} não tem pré-pergunta e checagem (linhas 0 e 1)`);
       else if (m.variantes.length !== 11) aviso(sec, `${m.id}: ${m.variantes.length} linhas (o esquema pede 11 num modelo de página)`);
     }
-    // autoria do texto da equipe: em pagina.credito (Caps. 1 e 2) ou em pagina.fonte (e.2; Caps. 3 e 4)
-    if (!autoriaOk(pg.credito?.autoria || pg.fonte?.autoria)) erro(sec, `${pg.id}: texto da equipe sem autoria { ia, modelo, revisor }`);
+    // autoria do texto da equipe em pagina.fonte (e.2): é dela que Pack.creditos() lê a autoria da página;
+    // sem ela, a tela de créditos diria "autoria não registrada".
+    if (!autoriaOk(pg.fonte?.autoria)) erro(sec, `${pg.id}: página sem fonte.autoria { ia, modelo, revisor } (os créditos diriam "autoria não registrada")`);
     for (const b of pg.blocos || []) for (const p of b.paragrafos || []) {
       if (!p.html) erro(sec, `${p.id}: parágrafo vazio`);
       if (/<(p|div|table|figure|ul|ol|h\d)\b/i.test(p.html || '')) aviso(sec, `${p.id}: html do parágrafo com elemento de bloco (use figura)`);
@@ -246,6 +251,9 @@ for (const q of pack.questoes || []) {
     if (cur.gabaritoINEP !== q.gabarito) erro(sec, `gabarito ${q.gabarito} ≠ curadoria.json ${cur.gabaritoINEP}`);
     if (cur.anulada || cur.confere === false) erro(sec, 'curadoria.json marca a questão como anulada ou divergente');
     if (cur.coItem !== q.inep.coItem) erro(sec, `CO_ITEM ${q.inep.coItem} ≠ curadoria.json ${cur.coItem}`);
+    if ((cur.textoConferidoPDF || null) !== (q.textoConferidoPDF || null)) erro(sec, `textoConferidoPDF ${q.textoConferidoPDF} ≠ curadoria.json ${cur.textoConferidoPDF}`);
+    if (cur.materialDeTerceiros && !String(q.materialDeTerceiros || '').startsWith(cur.materialDeTerceiros)) erro(sec, `material de terceiros do curadoria.json ausente na questão ("${cur.materialDeTerceiros}")`);
+    if (!cur.materialDeTerceiros && q.materialDeTerceiros) erro(sec, 'material de terceiros na questão e não no curadoria.json');
   }
   // A transcrição do enem.dev, com as correções da conferência com o PDF oficial (o texto que vale é o do PDF).
   const bruto = rawDe(q.ano, q.numero);
@@ -281,13 +289,18 @@ feito(`${conferidas} questão(ões) do Enem conferidas com ITENS_PROVA, curadori
 // ------------------------------------------------------------------ texto contra o PDF oficial (e.1, g.6)
 // Toda questão com textoConferidoPDF e registro em _dev/correcoes_enem.mjs tem de ter cada parágrafo do
 // texto-base, o comando e as cinco alternativas dentro do trecho do PDF oficial (espaços normalizados).
-const ARQ_PDF = resolve(aqui, 'fontes/pdf_azul_c12.txt');
+// Um arquivo de trechos por parte do caderno: fontes/pdf_azul_c12.txt (Caps. 1 e 2) e pdf_azul_c34.txt (Caps. 3 e 4).
+const PASTA_FONTES = resolve(aqui, 'fontes');
+const ARQS_PDF = existsSync(PASTA_FONTES) ? readdirSync(PASTA_FONTES).filter(n => /^pdf_azul_.*\.txt$/.test(n)).sort().map(n => join(PASTA_FONTES, n)) : [];
 const trechosPdf = {};
-if (existsSync(ARQ_PDF)) {
+for (const arq of ARQS_PDF) {
   let atual = null;
-  for (const l of readFileSync(ARQ_PDF, 'utf8').split(/\r?\n/)) {
+  for (const l of readFileSync(arq, 'utf8').split(/\r?\n/)) {
     const m = /^=== (enem-\d{4}-\d+) ·/.exec(l);
-    if (m) { atual = m[1]; trechosPdf[atual] = ''; continue; }
+    if (m) {
+      if (m[1] in trechosPdf) erro('pdf', `${m[1]}: trecho repetido em _dev/fontes/pdf_azul_*.txt`);
+      atual = m[1]; trechosPdf[atual] = ''; continue;
+    }
     if (atual && !l.startsWith('#')) trechosPdf[atual] += l + '\n';
   }
 }
@@ -297,7 +310,7 @@ for (const q of pack.questoes || []) {
   if (!q.textoConferidoPDF || !CONFERENCIA[q.id]) continue;
   correcoesPdf += CONFERENCIA[q.id].correcoes.length;
   const t = trechosPdf[q.id];
-  if (!t) { erro(q.id, 'conferida com o PDF, mas sem trecho em _dev/fontes/pdf_azul_c12.txt'); continue; }
+  if (!t) { erro(q.id, 'conferida com o PDF, mas sem trecho em _dev/fontes/pdf_azul_*.txt'); continue; }
   const pdf = normPdf(t);
   const pecas = [...String(q.contexto || '').split(/<\/p>|<figure[\s\S]*?<\/figure>/).map(textoDeHtml), q.introducao, ...(q.alternativas || []).map(a => a.texto)]
     .filter(x => x && x.trim());

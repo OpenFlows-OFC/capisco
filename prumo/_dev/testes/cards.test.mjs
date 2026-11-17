@@ -22,14 +22,15 @@ for (const pk of await packs()) {
     assert.ok(n.prontoPorHoje().mudancas.some(x => /^Os \d+ cards do Cap\. 1 entraram no seu baralho\.$/.test(x.texto)));
   });
 
-  test(`[${P}] Decisão 1 · a mão é um passo anunciado em Hoje ("Cards · N cards · ≈ M min"), no máximo 8, vencidos e caixa mais baixa primeiro`, () => {
+  test(`[${P}] Decisão 1 · a mão é um passo anunciado em Hoje ("Cards: N cards para lembrar"), no máximo 8, vencidos e caixa mais baixa primeiro`, () => {
     const { n, rel } = novo(pk.dados);
     jogar(n, rel); n.despachar('FECHAR');
     irPara(n, rel, '2026-11-19');
     const h = n.hoje();
-    const linha = h.bloco.passos.find(p => p.texto.startsWith('Cards · '));
-    assert.match(linha.texto, /^Cards · \d+ cards · ≈ \d+ min$/);
-    assert.match(h.bloco.composicao, / · \d+ cards$/);
+    const linha = h.bloco.passos.find(p => p.texto.startsWith('Cards: '));
+    assert.match(linha.texto, /^Cards: \d+ cards para lembrar$/);
+    assert.match(h.bloco.composicao, /(^| e )\d+ cards\.$/, 'composição em frase, sem cadeia de pontos');
+    assert.ok(!/·|≈/.test(h.bloco.composicao));
     // ordem: atrasados antes dos de hoje, caixa mais baixa primeiro, determinística
     const st = base();
     receberCards(st, pack, 'mat-fa.c1', '2026-11-10');
@@ -58,7 +59,7 @@ for (const pk of await packs()) {
     assert.equal(st.cards[a].caixa, 3);
   });
 
-  test(`[${P}] Decisão 1 · "Ainda não" mostra "ver o trecho" e o card volta UMA vez no fim da mesma mão; resumo informativo`, () => {
+  test(`[${P}] Decisão 1 · "Ainda não" mostra "Ver o parágrafo N da p. P" e o card volta UMA vez no fim da mesma mão; resumo informativo`, () => {
     const { n, rel } = novo(pk.dados);
     jogar(n, rel); n.despachar('FECHAR');
     irPara(n, rel, '2026-11-19');
@@ -71,7 +72,7 @@ for (const pk of await packs()) {
     n.despachar('VIRAR');
     n.despachar('AINDA_NAO');
     t = n.tela();
-    assert.match(t.vm.pendente.trecho.rotulo, /^ver o trecho · p\. \d+, § \d+$/);
+    assert.match(t.vm.pendente.trecho.rotulo, /^Ver o parágrafo \d+ da p\. \d+$/);
     assert.equal(t.vm.pendente.texto, 'Ainda não. Este card volta uma vez no fim desta mão.');
     n.despachar('VER_TRECHO'); assert.equal(n.estado(), 'trechoCard'); n.despachar('VOLTAR');
     n.despachar('SEGUIR');
@@ -86,7 +87,7 @@ for (const pk of await packs()) {
     assert.equal(m.mao.fila.filter(x => x === primeiro).length, 2, 'volta uma vez só');
     assert.equal(n.st.cards[primeiro].caixa, caixa1, 'a volta do fim da mão não mexe na caixa de novo');
     const resumo = m.resumo.cards.texto;
-    assert.match(resumo, new RegExp(`^${mao0.length} cards · ${mao0.length - 1} lembrados · 1 volta \\S+ \\d\\d/\\d\\d$`));
+    assert.match(resumo, new RegExp(`^Você lembrou ${mao0.length - 1} de ${mao0.length} cards\\. O outro volta em \\S+ \\d\\d/\\d\\d\\.$`));
     assert.equal(n.estado(), 'encerramento');
     assert.ok(n.prontoPorHoje().mudancas.some(x => x.texto === resumo));
     n.despachar('FECHAR');
@@ -104,7 +105,7 @@ for (const pk of await packs()) {
     assert.ok(k.frente && k.verso);
     assert.equal(k.caixaNome, 'Aprendendo');
     assert.equal(k.proximaTexto, 'qui 19/11');
-    assert.match(k.trecho.rotulo, /^ver o trecho · p\. \d+, § \d+$/);
+    assert.match(k.trecho.rotulo, /^Ver o parágrafo \d+ da p\. \d+$/);
     assert.equal(c.aviso, 'Consultar é leitura livre; jogar, só na missão.');
   });
 

@@ -6,7 +6,9 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { CAPITULOS, MODELOS, QUESTOES, AUTORIA } from './c34_fonte.mjs';
+import { contasJuntas, reaisJuntos } from '../conteudo/gerador.js';   // a quebra de linha não cai no meio de uma conta
 import { conferir } from './conferencia_c34.mjs';
+import { CONFERENCIA, PDF, corrigirRaw } from './correcoes_enem.mjs';
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 const PRUMO = resolve(aqui, '..');
@@ -76,12 +78,13 @@ const capitulosSaida = CAPITULOS.map(cap => {
     let n = 0;
     const blocos = pg.blocos.map(b => {
       const bl = { id: b.id, papel: b.papel, ...(b.prePergunta ? { prePergunta: b.prePergunta } : {}),
-        paragrafos: b.paragrafos.map(html => { n++; const id = `${b.id}.s${n}`; paragrafos.set(id, { pagina: pg.id, bloco: b.id, n, html }); return { id, n, html }; }) };
+        paragrafos: b.paragrafos.map(texto => { const html = contasJuntas(texto); n++; const id = `${b.id}.s${n}`; paragrafos.set(id, { pagina: pg.id, bloco: b.id, n, html }); return { id, n, html }; }) };
       blocosPorId.set(b.id, { ...bl, pagina: pg.id, nucleo: pg.nucleo === b.id });
       return bl;
     });
     if (n < 3 || n > 4) falha(`${pg.id}: ${n} parágrafos (pedido: 3 a 4)`);
-    const p = { id: pg.id, n: pg.n, capitulo: cap.id, titulo: pg.titulo, blocos, modelo: pg.modelo, nucleo: pg.nucleo, notaPrompt: pg.notaPrompt, credito: CREDITO_EQUIPE };
+    const p = { id: pg.id, n: pg.n, capitulo: cap.id, titulo: pg.titulo, blocos, modelo: pg.modelo, nucleo: pg.nucleo, notaPrompt: pg.notaPrompt, credito: CREDITO_EQUIPE,
+      fonte: CREDITO_EQUIPE };   // e.2: Pack.creditos() lê a autoria da página em pagina.fonte
     paginasPorId.set(pg.id, p);
     return p;
   });
@@ -90,7 +93,7 @@ const capitulosSaida = CAPITULOS.map(cap => {
     const id = `${cap.id}.k${i + 1}`;
     if (!c.paragrafo) falha(`${id}: card sem paragrafo`);
     else if (paragrafos.get(c.paragrafo)?.bloco !== c.bloco) falha(`${id}: parágrafo ${c.paragrafo} fora do bloco ${c.bloco}`);
-    return { id, tipo: c.tipo, frente: c.frente, verso: c.verso, bloco: c.bloco, paragrafo: c.paragrafo, autoria: AUTORIA };
+    return { id, tipo: c.tipo, frente: reaisJuntos(c.frente), verso: reaisJuntos(c.verso), bloco: c.bloco, paragrafo: c.paragrafo, autoria: AUTORIA };
   });
   return { id: cap.id, n: cap.n, titulo: cap.titulo, habilidades: cap.habilidades, prereq: cap.prereq,
     paginas, rodada: cap.rodada, reserva: cap.reserva, irAlem: cap.irAlem, cards };
@@ -103,12 +106,14 @@ const PAPEIS = {
   aplicar: 'linha 0 = item da rodada (papel de aplicar); 1 a 4 = variantes (revisões, Prova, Questão do dia), em ordem; 5 a 7 = "Refazer com outros números"',
 };
 const N_LINHAS = { pagina: 11, bloco: 2, aplicar: 8 };
-const modelosSaida = MODELOS.map(m => {
+// "R$" e o valor sem quebra de linha entre eles (reaisJuntos), no modelo e nos textos que a linha deriva.
+const modelosSaida = MODELOS.map(m0 => {
+  const m = { ...m0, enunciado: reaisJuntos(m0.enunciado), explicacao: reaisJuntos(m0.explicacao), erros: m0.erros.map(e => ({ ...e, falta: reaisJuntos(e.falta) })) };
   if (m.linhas.length !== N_LINHAS[m.tipo]) falha(`${m.id}: ${m.linhas.length} linhas (esperado ${N_LINHAS[m.tipo]})`);
   for (const e of m.erros) if (!paragrafos.has(e.paragrafo)) falha(`${m.id}: parágrafo inexistente ${e.paragrafo}`);
   if (m.formato !== 'numero') falha(`${m.id}: formato tem de ser "numero" (é o que pack.js entende para valores)`);
   const linhas = m.linhas.map((linha, k) => {
-    const v = { ...linha, ...m.deriva(linha) };
+    const v = Object.fromEntries(Object.entries({ ...linha, ...m.deriva(linha) }).map(([k, x]) => [k, typeof x === 'string' ? reaisJuntos(x) : x]));
     if (v.conferePrecos && new Set(v.conferePrecos.map(x => x.toFixed(2))).size !== 1) falha(`${m.id}#${k}: os três pedidos não têm o mesmo total (${v.conferePrecos})`);
     const vals = [avaliar(m.certa, v), ...m.erros.map(e => avaliar(e.expr, v))];
     if (vals.some(x => !Number.isFinite(x))) { falha(`${m.id}#${k}: valor não finito`); return {}; }
@@ -161,7 +166,13 @@ for (const [id, q] of Object.entries(QUESTOES)) {
   const [, ano, n] = id.match(/^enem-(\d{4})-(\d+)$/).map(Number);
   const raw = JSON.parse(readFileSync(resolve(RAW, `enem_${ano}.json`), 'utf8')).filter(x => x.index === n && x.language == null);
   if (raw.length !== 1) { falha(`${id}: ${raw.length} registros no enem.dev`); continue; }
-  const r = raw[0], c = conferir({ ano, n });
+  // Texto que vale: o do PDF oficial. As correções da conferência (_dev/correcoes_enem.mjs) trocam os trechos
+  // em que a transcrição do enem.dev difere do PDF; fonteMd guarda o markdown original, para auditoria.
+  const bruto = raw[0], conf = CONFERENCIA[id] || null;
+  let r;
+  try { r = corrigirRaw(id, bruto); } catch (e) { falha(e.message); continue; }
+  if (!conf) falha(`${id}: sem registro da conferência com o PDF em _dev/correcoes_enem.mjs`);
+  const c = conferir({ ano, n });
   if (!c.confere) falha(`${id}: não passou na conferência (INEP ${c.gabaritoINEP}, enem.dev ${c.gabaritoEnemDev}, anulada ${c.anulada})`);
   const { html: contexto, usadas } = mdParaHtml(r.context || '', q.imagens, id);
   const alternativas = r.alternatives.map(a => {
@@ -174,27 +185,35 @@ for (const [id, q] of Object.entries(QUESTOES)) {
     if (a.letter !== r.correctAlternative) {
       const e = q.erradas[a.letter];
       if (!e) falha(`${id}: alternativa ${a.letter} sem "o que faltou"`);
-      else Object.assign(alt, { falta: e.falta, ...(e.expr ? { expr: e.expr } : {}), ...(e.exprTeste ? { exprTeste: e.exprTeste } : {}), ...(e.esperado ? { esperado: e.esperado } : {}), paragrafo: e.paragrafo });
+      else Object.assign(alt, { falta: reaisJuntos(e.falta), ...(e.expr ? { expr: e.expr } : {}), ...(e.exprTeste ? { exprTeste: e.exprTeste } : {}), ...(e.esperado ? { esperado: e.esperado } : {}), paragrafo: e.paragrafo });
     }
     return alt;
   });
   const imagens = Object.entries(q.imagens).map(([nome, info]) => {
     if (!existsSync(resolve(PRUMO, 'conteudo/img', info.arquivo))) falha(`${id}: arquivo de imagem ausente ${info.arquivo}`);
     if (!usadas.includes(nome)) falha(`${id}: imagem declarada e não usada ${nome}`);
-    return { src: `conteudo/img/${info.arquivo}`, alt: info.alt, altFonte: 'equipe', ...(info.letra ? { alternativa: info.letra } : {}), original: `https://enem.dev/${ano}/questions/${n}/${nome}` };
+    return { src: `conteudo/img/${info.arquivo}`, alt: info.alt, altFonte: 'equipe', ...(info.letra ? { alternativa: info.letra } : {}), original: `https://enem.dev/${ano}/questions/${n}/${nome}`,
+      ...(conf?.imagem?.recorte ? { recorte: conf.imagem.recorte, recortePDF: PDF[ano].url } : {}) };
   });
+  const dataBR = d => d.split('-').reverse().join('/');
   questoesSaida.push({
     id, ano, dia: 2, caderno: 'Azul', numero: n, area: 'MT', habilidade: c.habilidade, capitulo: q.capitulo,
     inep: { coItem: c.coItem, coProva: c.coProva, a: c.a, b: c.b, c: c.c },
     gabarito: r.correctAlternative, gabaritoConferido: c.gabaritoINEP === r.correctAlternative,
-    conferidoITENS_PROVA: HOJE, textoConferidoPDF: null, anulada: c.anulada,
-    contexto, introducao: escapar(r.alternativesIntroduction || ''), fonteMd: r.context || '',
+    conferidoITENS_PROVA: HOJE, textoConferidoPDF: conf ? conf.em : null,
+    conferenciaPDF: conf ? { pdf: PDF[ano].url, sha256: PDF[ano].sha256, pagina: conf.pagina, nota: conf.nota, correcoes: conf.correcoes.map(x => ({ ...x })) } : null,
+    anulada: c.anulada,
+    contexto, introducao: escapar(r.alternativesIntroduction || ''), fonteMd: bruto.context || '',
+    // Nenhuma das 5 traz linha de fonte de terceiros (conferido no PDF: nem no texto, nem nas imagens).
     materialDeTerceiros: null, alternativas, imagens,
     atribuicao: `INEP · Enem ${ano}, 2º dia, Caderno Azul, questão ${n} · CC BY-ND 3.0`,
-    transcricao: 'Transcrição do projeto enem.dev, em conferência com o PDF oficial.',
+    transcricao: conf
+      ? `Transcrição do projeto enem.dev (commit 938c56f), conferida com o PDF oficial do INEP em ${dataBR(conf.em)}`
+        + (conf.correcoes.length ? '; onde a transcrição diferia do PDF, vale o PDF.' : '.')
+      : 'Transcrição do projeto enem.dev (commit 938c56f), em conferência com o PDF oficial.',
     licenca: 'CC BY-ND 3.0 (rodapé do portal do INEP; interpretação da equipe, e.1)',
     licencaUrl: 'https://creativecommons.org/licenses/by-nd/3.0/legalcode',
-    blocos: q.blocos, modelo: q.modelo, explicacao: q.explicacao, exprCerta: q.exprCerta, teste: q.teste,
+    blocos: q.blocos, modelo: q.modelo, explicacao: reaisJuntos(q.explicacao), exprCerta: q.exprCerta, teste: q.teste,
     autoria: AUTORIA, papel: 'rodada',
   });
 }
@@ -287,8 +306,10 @@ const cabecalho = `// Caderno "Funções afins" · Caps. 3 e 4 (págs. 5–8) ·
 //  - modelo.explicacao (molde da resolução), modelo.formato e, em cada linha, "pronto": enunciado,
 //    alternativas (em ordem crescente, com "falta" e "paragrafo" nas erradas), gabarito e explicação
 //    já preenchidos, para a tela não precisar avaliar expressões.
-//  - questão: capitulo, exprCerta, teste (dados do teste de d.6), transcricao, conferidoITENS_PROVA;
-//    alternativa.esperado quando a "expr" confere uma propriedade do erro e não o valor.
+//  - questão: capitulo, exprCerta, teste (dados do teste de d.6), transcricao, conferidoITENS_PROVA,
+//    conferenciaPDF (PDF, SHA-256, página e correções da transcrição, _dev/correcoes_enem.mjs);
+//    alternativa.esperado quando a "expr" confere uma propriedade do erro e não o valor;
+//    imagem.recorte quando a imagem é recorte do PDF oficial (mesmo nome de arquivo).
 // Autoria: todo texto da equipe é rascunho por IA (Claude Opus 5.5), revisão pendente.
 // Licenças: texto, modelos, explicações e cards da equipe em CC BY-SA 4.0; cada questão do Enem
 // mantém a licença indicada nela (CC BY-ND 3.0, INEP), reproduzida sem adaptação.

@@ -16,7 +16,7 @@ export const ENEM_C12 = {
    "c": 0.22079
   },
   "gabarito": "D",
-  "contexto": "<p>Para concretar a laje de sua residência, uma pessoa contratou uma construtora. Tal empresa informa que o preço <em>y</em> do concreto bombeado é composto de duas partes: uma fixa, chamada de taxa de bombeamento, e uma variável, que depende do volume <em>x</em> de concreto utilizado. Sabe-se que a taxa de bombeamento custa R$ 500,00 e que o metro cúbico do concreto bombeado é de R$ 250,00.</p>",
+  "contexto": "<p>Para concretar a laje de sua residência, uma pessoa contratou uma construtora. Tal empresa informa que o preço y do concreto bombeado é composto de duas partes: uma fixa, chamada de taxa de bombeamento, e uma variável, que depende do volume x de concreto utilizado. Sabe-se que a taxa de bombeamento custa R$ 500,00 e que o metro cúbico do concreto bombeado é de R$ 250,00.</p>",
   "introducao": "A expressão que representa o preço y em função do volume x, em metro cúbico, é",
   "alternativas": [
    {
@@ -172,7 +172,7 @@ export const ENEM_C12 = {
    "pdf": "https://download.inep.gov.br/educacao_basica/enem/provas/2019/caderno_de_questoes_2_dia_caderno_7_azul_aplicacao_regular.pdf",
    "sha256": "a476882608be2bf1353af8b26c60838ac187f2d1a3653524c90de62b0372efa6",
    "pagina": 26,
-   "nota": "O PDF traz \"R$ 1 000,00\" e \"Cada um deles trabalha\"; a transcrição perdeu o \"deles\", juntou o milhar e partiu o parágrafo em dois (a linha do PDF é justificada: é quebra da diagramação). Alternativas com \"1 000\".",
+   "nota": "O PDF traz \"R$ 1 000,00\" e \"Cada um deles trabalha\"; a transcrição omitia o \"deles\", juntou o milhar e partiu o parágrafo em dois (a linha do PDF é justificada: é quebra da diagramação). Alternativas com \"1 000\".",
    "correcoes": [
     {
      "campo": "contexto",

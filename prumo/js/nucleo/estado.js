@@ -40,7 +40,7 @@ export function vazio() {
     historico: [],
     refazer: null,
     seq: { erro: 0, nota: 0 },
-    config: { som: false, nivelMaximo: 3, ultimaCopia: null, simboloConstancia: 'chama', alarme: null,
+    config: { som: false, nivelMaximo: 3, ultimaCopia: null, simboloConstancia: 'risquinhos', alarme: null,
       demo: { ativo: false, offset: 0, exemplo: false, guardado: null } },
   };
 }
@@ -159,7 +159,7 @@ export function normalizar(s) {
   const c = obj(s.config), dm = obj(c.demo);
   v.config = {
     som: c.som === true, nivelMaximo: int(c.nivelMaximo, 1, 5, 3), ultimaCopia: data(c.ultimaCopia),
-    simboloConstancia: c.simboloConstancia === 'regua' ? 'regua' : 'chama',
+    simboloConstancia: 'risquinhos',   // único símbolo da constância (design system); 'chama' e 'regua' salvos antes viram risquinhos
     alarme: ['criado', 'agora-nao'].includes(c.alarme) ? c.alarme : null,
     demo: { ativo: !!dm.ativo, offset: int(dm.offset, -3650, 3650, 0), exemplo: !!dm.exemplo, guardado: typeof dm.guardado === 'string' ? dm.guardado : null },
   };

@@ -35,8 +35,15 @@ const ALT = {
   'enem-2020-164': { altFonte: 'equipe', altRef: 'Descrição escrita pela equipe Prumo (não há caderno DOSVOX de 2020 nas fontes consultadas)',
     alt: 'Descrição da equipe Prumo. Gráfico de linha sobre uma malha de linhas verticais. Eixo horizontal: hora, de 0 a 24, de 1 em 1. Eixo vertical: decibel, com as marcas 0 e 55. Uma reta horizontal marca 55 decibéis. A curva começa em 0 às 0 h e cruza a reta dos 55 decibéis às 2 h (subindo), às 5 h (descendo), às 6 h (subindo), às 9 h (descendo), às 11 h (subindo), às 14 h (descendo), às 16 h (subindo), às 17 h (descendo), às 19 h (subindo) e às 22 h (descendo). Das 22 h às 24 h, fica abaixo da reta. O ponto mais alto fica perto das 8 h. Abaixo do gráfico, a linha de fonte: Disponível em: www.revistaencontro.com.br. Acesso em: 12 ago. 2020 (adaptado).' },
 };
-// Linha de fonte de terceiros que aparece dentro da imagem (não está no texto da transcrição).
-const TERCEIROS_NA_IMAGEM = { 'enem-2020-164': 'Disponível em: www.revistaencontro.com.br. Acesso em: 12 ago. 2020 (adaptado). (linha de fonte impressa abaixo do gráfico, na imagem)' };
+// A linha de fonte de terceiros vem do curadoria.json (campo materialDeTerceiros). Quando ela está dentro
+// da imagem (e não no texto da transcrição), a nota abaixo é acrescentada, e o curadoria.json tem de trazê-la.
+const TERCEIROS_NA_IMAGEM = { 'enem-2020-164': '(linha de fonte impressa abaixo do gráfico, na imagem)' };
+
+// Itálico das variáveis (y, x, C, q, P, d, L, s, n): no PDF elas vêm em itálico no texto-base, no comando e nas
+// alternativas. O app mostra o comando e as alternativas como texto puro (js/ui/componentes.js escapa o HTML),
+// e só o texto-base aceita <em>. Para a mesma questão não aparecer com duas tipografias (achado da rodada 2),
+// o texto-base também sai sem itálico. É só mudança de formato (CC BY-ND 3.0); as letras não mudam.
+const semItalico = html => html.replace(/<\/?em>/g, '');
 
 export const ALVO = [
   { ano: 2023, n: 162, img: [] },
@@ -81,15 +88,16 @@ export function extrair() {
       if (conf?.imagem?.recorte) Object.assign(im, { recorte: conf.imagem.recorte, recortePDF: PDF[ano].url });
       mapa[u] = im; imagens.push(im);
     });
-    const terceiros = [c.materialDeTerceiros, TERCEIROS_NA_IMAGEM[id]].filter(Boolean);
+    if (TERCEIROS_NA_IMAGEM[id] && !c.materialDeTerceiros) throw new Error(`${id}: a imagem traz linha de fonte de terceiros, e o curadoria.json não a registra em materialDeTerceiros`);
+    const terceiros = c.materialDeTerceiros ? [c.materialDeTerceiros, TERCEIROS_NA_IMAGEM[id]].filter(Boolean) : [];
     saida[id] = {
       id, ano, numero: n, habilidade: `MT-H${+linha.CO_HABILIDADE}`,
       inep: { coItem: +linha.CO_ITEM, coProva: +linha.CO_PROVA, a: +linha.NU_PARAM_A, b: +linha.NU_PARAM_B, c: +linha.NU_PARAM_C },
       gabarito: linha.TX_GABARITO,
-      contexto: mdParaHtml(q.context, mapa), introducao: q.alternativesIntroduction,
+      contexto: semItalico(mdParaHtml(q.context, mapa)), introducao: q.alternativesIntroduction,
       alternativas: q.alternatives.map(a => ({ letra: a.letter, texto: a.text })),
       imagens, fonteMd: bruto.context,
-      materialDeTerceiros: terceiros.length ? terceiros.join(' · ') : null,
+      materialDeTerceiros: terceiros.length ? terceiros.join(' ') : null,
       textoConferidoPDF: conf ? conf.em : null,
       conferenciaPDF: conf ? { pdf: PDF[ano].url, sha256: PDF[ano].sha256, pagina: conf.pagina, nota: conf.nota,
         correcoes: conf.correcoes.map(c => ({ ...c })) } : null,

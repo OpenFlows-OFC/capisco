@@ -6,12 +6,14 @@
    fica no fluxo do texto, para o teclado não cobri-lo. A folha "Encerrar"
    é da tela e manda PAUSAR ou CONFIRMAR_ENCERRAR.
    ========================================================= */
-import { h, cru, cada, depoisDoQuadro } from './dom.js';
+import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
 import {
   topo, enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, nivel,
-  botaoContinuar, animarContinuar, prepararFiguras,
+  botaoContinuar, animarContinuar, prepararFiguras, questaoCab,
 } from './componentes.js';
+
+const CADERNO = new Set(['enem', 'equipe']);   // aí o cabeçalho "QUESTÃO 162" já é o título da tela
 
 const chaveSel = vm => `${vm.item.id}@${vm.topo.passo.n}`;
 const primeiraVez = (ctx, chave) => ctx.ui.chave !== chave;
@@ -29,11 +31,16 @@ function figuras(ctx, raiz, item) {
 
 /* ---------------- pergunta (c.3a, c.3c, c.3d, c.3d', c.3h) ---------------- */
 function cabecaPergunta(vm, { foco = true } = {}) {
-  const sub = vm.subrotulo && vm.subrotulo !== vm.item.rodape ? vm.subrotulo : null;
-  return h`<header class="pergunta-cabeca">
-    ${foco ? h`<h1 class="rotulo" tabindex="-1" data-foco-inicial>${vm.rotulo}</h1>` : h`<p class="rotulo">${vm.rotulo}</p>`}
+  const doCaderno = CADERNO.has(vm.tipo) && vm.item.cabecalho;
+  const sub = vm.subrotulo && vm.subrotulo !== vm.item.rodape && !(doCaderno && vm.tipo === 'enem') ? vm.subrotulo : null;
+  if (doCaderno) {
+    return h`<div class="pergunta-cabeca"><span class="so-leitor">${vm.rotulo}. </span>${questaoCab(vm.item, { comoTitulo: foco })}${sub ? h`<p class="sub">${sub}</p>` : ''}</div>`;
+  }
+  return h`<div class="pergunta-cabeca">
+    ${foco ? h`<h1 class="passo-rotulo" tabindex="-1" data-foco-inicial>${vm.rotulo}</h1>` : h`<p class="passo-rotulo">${vm.rotulo}</p>`}
     ${sub ? h`<p class="sub">${sub}</p>` : ''}
-  </header>`;
+    ${questaoCab(vm.item)}
+  </div>`;
 }
 
 function pergunta(ctx, vm) {
@@ -41,12 +48,12 @@ function pergunta(ctx, vm) {
   const marcada = ctx.ui.selecao && ctx.ui.selecao.chave === k ? ctx.ui.selecao.alt : null;
   return {
     chave: `pergunta:${k}`,
-    titulo: vm.rotulo.charAt(0) + vm.rotulo.slice(1).toLowerCase(),
+    titulo: vm.rotulo,
     html: h`<main class="missao">
       ${topo(vm.topo, { rotuloDaTela: vm.rotulo })}
       <section class="pergunta">
         ${cabecaPergunta(vm)}
-        ${vm.avisoInserida ? h`<p class="aviso-linha" style="margin:0 0 16px">${vm.avisoInserida}</p>` : ''}
+        ${vm.avisoInserida ? h`<p class="pr-recado aviso-inserida">${vm.avisoInserida}</p>` : ''}
         ${enunciado(vm.item)}
         <form data-enviar="responder" data-chave="${k}" novalidate>${alternativasPergunta(vm.item.alternativas, marcada)}</form>
         ${vm.aviso ? h`<p class="aviso-pergunta">${vm.aviso}</p>` : ''}
@@ -74,16 +81,16 @@ function notaForm(n) {
 function leitura(ctx, vm) {
   return {
     chave: `leitura:${vm.topo.passo.n}:${vm.pagina.id}`,
-    titulo: `Leitura · p. ${vm.pagina.n}`,
+    titulo: `Leitura da p. ${vm.pagina.n}`,
     html: h`<main class="missao missao-leitura">
       ${topo(vm.topo)}
       <article class="pagina-livro" aria-labelledby="pg-titulo">
-        ${vm.faixa ? h`<p class="aviso-linha" role="status" style="margin:0 0 20px">${vm.faixa}</p>` : ''}
+        ${vm.faixa ? h`<p class="pr-recado" role="status">${vm.faixa}</p>` : ''}
         <p class="rotulo cabeco">${vm.cabeco}</p>
-        ${vm.jaSei ? h`<p class="ja-sei"><button type="button" class="link link-discreto link-pequeno" data-ev="${vm.jaSei.evento}">${vm.jaSei.rotulo}</button></p>` : ''}
+        ${vm.jaSei ? h`<p class="ja-sei"><button type="button" class="link link-discreto" data-ev="${vm.jaSei.evento}">${vm.jaSei.rotulo}</button></p>` : ''}
         <h1 class="pagina-titulo" id="pg-titulo" tabindex="-1" data-foco-inicial>${vm.pagina.titulo}</h1>
         ${blocos(vm.blocos)}
-        <p class="pe num">${vm.pagina.pe}</p>
+        <p class="pe">${vm.pagina.pe}</p>
       </article>
       ${vm.nota ? notaForm(vm.nota) : ''}
       <div class="fim-leitura"><button type="button" class="botao botao-largo" data-acao="termineiLer" data-alvo="${vm.botao.evento}">${vm.botao.rotulo}</button></div>
@@ -105,15 +112,15 @@ function corpoFeedback(ctx, vm, { foco = true, animar = false } = {}) {
       <section class="feedback" id="feedback" aria-labelledby="fb-titulo">
         ${foco ? h`<h1 class="feedback-titulo" id="fb-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>` : h`<p class="feedback-titulo" id="fb-titulo">${vm.titulo}</p>`}
         ${vm.porque ? h`<p>${vm.porque}</p>` : ''}
-        ${vm.falta ? h`<p class="falta"><strong>O que faltou:</strong> ${vm.falta}</p>` : ''}
+        ${vm.falta ? h`<p class="falta"><strong>O que faltou.</strong> ${vm.falta}</p>` : ''}
         ${rev && !vm.certa ? h`<p>${rev.texto}</p>` : ''}
         ${rev && rev.antesDepois ? h`<p class="antes-depois">${rev.antesDepois}</p>` : ''}
         ${rev && rev.nivel ? nivel({ cheios: rev.nivel.para, de: rev.nivel.de, animar: animar && rev.nivel.animar }) : ''}
         ${vm.proxima ? h`<p class="proxima">${vm.proxima}</p>` : ''}
         <div class="acoes-fb">
-          ${vm.trecho ? h`<button type="button" class="link" data-ev="${vm.trecho.evento}">${vm.trecho.rotulo}</button>` : ''}
+          ${vm.trecho ? h`<button type="button" class="botao-sec botao-largo" data-ev="${vm.trecho.evento}">${vm.trecho.rotulo}</button>` : ''}
           ${mostrarResolucao ? (res.aberta
-            ? h`<div class="resolucao"><p class="rotulo">Resolução da equipe</p><p>${res.texto}</p></div>`
+            ? h`<div class="resolucao"><p class="corpo-forte">Resolução da equipe</p><p>${res.texto}</p></div>`
             : h`<button type="button" class="link" data-ev="${res.evento}">${res.rotulo}</button>`) : ''}
         </div>
       </section>
@@ -144,19 +151,19 @@ function feedback(ctx, vm) {
 }
 
 /* ---------------- trecho (c.3f): folha com a página ancorada no parágrafo ---------------- */
-function folhaTrecho(vm, { titulo }) {
+export function folhaTrecho(vm, { titulo, grifar = false }) {
   return h`<div class="folha-fundo">
     <div class="folha folha-alta" role="dialog" aria-modal="true" aria-labelledby="trecho-titulo">
-      <div class="folha-cabeca"><h1 class="rotulo" id="trecho-titulo" tabindex="-1" data-foco-inicial>${titulo}</h1></div>
+      <div class="folha-cabeca"><h1 class="folha-titulo" id="trecho-titulo" tabindex="-1" data-foco-inicial>${titulo}</h1></div>
       <div class="folha-corpo" id="trecho-corpo">
         <article class="pagina-livro">
           <p class="rotulo cabeco">${vm.cabeco}</p>
           <h2 class="pagina-titulo">${vm.pagina.titulo}</h2>
-          ${blocos(vm.blocos, vm.ancora)}
-          <p class="pe num">${vm.pagina.pe}</p>
+          ${blocos(vm.blocos, vm.ancora, { grifar })}
+          <p class="pe">${vm.pagina.pe}</p>
         </article>
       </div>
-      <div class="folha-pe"><button type="button" class="botao" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>
+      <div class="folha-pe"><button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>
     </div>
   </div>`;
 }
@@ -169,9 +176,9 @@ function trecho(ctx, vm) {
   const fb = vm.feedback;
   return {
     chave: `trecho:${vm.ancora}`,
-    titulo: `Trecho · ${vm.rotulo}`,
+    titulo: `Trecho, ${vm.titulo || vm.rotulo}`,
     html: h`<div inert aria-hidden="true"><main class="missao">${topo(fb.topo, { medidor: fb.medidor })}${corpoFeedback(ctx, fb, { foco: false })}</main></div>
-      ${folhaTrecho(vm, { titulo: `Trecho · ${vm.rotulo}` })}`,
+      ${folhaTrecho(vm, { titulo: vm.titulo || vm.rotulo, grifar: !fb.certa })}`,
     depois(raiz) {
       document.documentElement.style.overflow = 'hidden';
       figuras(ctx, raiz);
@@ -194,7 +201,7 @@ function fimDaRodada(ctx, vm) {
       <section class="fim-rodada">
         <h1 class="feedback-titulo" tabindex="-1" data-foco-inicial>${vm.texto}</h1>
         ${mostrarNivel ? nivel({ cheios: vm.nivel.para, de: vm.nivel.de, animar: nova && vm.nivel.animar, nome: vm.nivel.nome }) : ''}
-        ${vm.cards ? h`<p style="margin-top:16px">${vm.cards}</p>` : ''}
+        ${vm.cards ? h`<p>${vm.cards}</p>` : ''}
       </section>
     </main>`,
     barra: h`<button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button>`,
@@ -218,20 +225,20 @@ function cards(ctx, vm) {
     html: h`<main class="missao">
       ${topo(vm.topo, { medidor: null, semRegra: true })}
       <section class="mao" aria-labelledby="mao-rotulo">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
-          <h1 class="rotulo" id="mao-rotulo" tabindex="-1" data-foco-inicial>${vm.rotulo}</h1>
-          <p class="rotulo num">${vm.posicao}</p>
+        <div class="mao-cabeca">
+          <h1 class="passo-rotulo" id="mao-rotulo" tabindex="-1" data-foco-inicial>${vm.rotulo}</h1>
+          <p class="contagem">${vm.posicao}</p>
         </div>
         <div class="mesa">
           <div class="ficha-giro ${classeGiro}" id="ficha-giro" style="--giro:${vm.animacaoMs || 180}ms">
             <div class="ficha ficha-frente" ${vm.virado ? cru('aria-hidden="true"') : ''}>
-              <div class="ficha-topo"><span class="rotulo">Frente</span><span class="mini texto-2">${vm.caixa && vm.caixa.nome ? vm.caixa.nome : ''}</span></div>
+              <div class="ficha-topo"><span>${vm.cap || 'Frente'}</span><span>${vm.caixa && vm.caixa.rotulo ? vm.caixa.rotulo : 'frente'}</span></div>
               <p class="ficha-frente-texto">${vm.frente}</p>
               <p class="ficha-pergunta">Tente lembrar a resposta antes de virar.</p>
             </div>
             <div class="ficha ficha-verso" ${vm.virado ? '' : cru('aria-hidden="true"')}>
-              <div class="ficha-topo"><span class="rotulo">Verso</span><span class="mini texto-2">${vm.caixa && vm.caixa.nome ? vm.caixa.nome : ''}</span></div>
-              <p class="ficha-pergunta">${vm.frente}</p>
+              <div class="ficha-topo"><span>${vm.cap || 'Verso'}</span><span>verso</span></div>
+              <p class="ficha-frente-texto">${vm.frente}</p>
               <p class="ficha-verso-texto">${vm.verso}</p>
             </div>
           </div>
@@ -244,18 +251,26 @@ function cards(ctx, vm) {
     </main>`,
     barra: cada(vm.acoes, botaoCard),
     depois(raiz) {
-      if (animarVirada) {
-        const g = raiz.querySelector('#ficha-giro');
-        depoisDoQuadro(() => { if (g) g.classList.add('virado'); });
-      }
+      const g = raiz.querySelector('#ficha-giro');
+      if (!animarVirada || !g) return;
+      // meia-volta até a borda (90 ms), troca a face, meia-volta de volta (90 ms): ~180 ms no total
+      const meia = Math.round((vm.animacaoMs || 180) / 2);
+      if (!g.animate) { g.classList.add('virado'); return; }
+      const ida = g.animate([{ transform: 'perspective(900px) rotateY(0deg)' }, { transform: 'perspective(900px) rotateY(90deg)' }], { duration: meia, easing: 'ease-in' });
+      let volta = null;
+      ida.onfinish = () => {
+        g.classList.add('virado');
+        volta = g.animate([{ transform: 'perspective(900px) rotateY(-90deg)' }, { transform: 'perspective(900px) rotateY(0deg)' }], { duration: meia, easing: 'ease-out' });
+      };
+      return () => { ida.cancel(); if (volta) volta.cancel(); g.classList.add('virado'); };
     },
   };
 }
 function trechoCard(ctx, vm) {
   return {
     chave: `trechoCard:${vm.ancora}`,
-    titulo: `Trecho · ${vm.rotulo}`,
-    html: h`<main class="missao" aria-hidden="true"></main>${folhaTrecho(vm, { titulo: `Trecho · ${vm.rotulo}` })}`,
+    titulo: `Trecho, ${vm.titulo || vm.rotulo}`,
+    html: h`<main class="missao" aria-hidden="true"></main>${folhaTrecho(vm, { titulo: vm.titulo || vm.rotulo })}`,
     depois(raiz) {
       document.documentElement.style.overflow = 'hidden';
       rolarAteAncora(raiz, vm.ancora);
@@ -339,14 +354,14 @@ registrar({
       const passo = tp && tp.passo ? `no passo ${tp.passo.n} de ${tp.passo.total}` : '';
       return {
         rotulo: 'Encerrar',
-        corpo: h`<p class="feedback-titulo" style="margin-bottom:16px">Parar agora?</p>
+        corpo: h`<p class="folha-frase">Parar agora?</p>
           <div class="pilha-8">
-            <button type="button" class="botao botao-largo" data-ev="PAUSAR">Parar e continuar mais tarde (até a meia-noite)</button>
-            <p class="pequeno texto-2" style="margin:0 0 16px">A missão fica aberta. Em Hoje, ela aparece como “Continuar”.</p>
+            <button type="button" class="botao botao-largo" data-ev="PAUSAR">Parar e continuar mais tarde</button>
+            <p class="pequeno texto-2" style="margin:0 0 16px">A missão fica aberta até a meia-noite. Em Hoje, ela aparece como “Continuar”.</p>
             <button type="button" class="botao-sec botao-largo" data-ev="CONFIRMAR_ENCERRAR">Encerrar por hoje</button>
             <p class="pequeno texto-2" style="margin:0">Encerra a missão de hoje ${passo}. O que você fez fica registrado; a rodada aberta não muda nenhum nível e volta no próximo dia de estudo.</p>
           </div>`,
-        pe: h`<button type="button" class="link" data-acao="fecharFolha" style="width:100%;justify-content:center">Voltar à missão</button>`,
+        pe: h`<button type="button" class="link link-centro" data-acao="fecharFolha">Voltar à missão</button>`,
       };
     },
     /** "ver a regra" da rodada (o topo mostra a regra uma vez, no início). */
@@ -355,9 +370,9 @@ registrar({
       if (!tp || !tp.regra) return null;
       return {
         rotulo: 'Regra da rodada',
-        corpo: h`<p style="font-size:18px;line-height:28px">${tp.regra.texto}</p>
+        corpo: h`<p class="folha-frase">${tp.regra.texto}</p>
           ${tp.medidor ? h`<p class="pequeno texto-2">O medidor do topo tem duas casas: a 1ª é um acerto seguido; a 2ª, um acerto numa questão de aplicar. As duas cheias fecham a rodada.</p>` : ''}`,
-        pe: h`<button type="button" class="botao-sec" data-acao="fecharFolha">Fechar</button>`,
+        pe: h`<button type="button" class="botao-sec botao-largo" data-acao="fecharFolha">Fechar</button>`,
       };
     },
     /** Figura em tela cheia, com zoom. */

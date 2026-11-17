@@ -89,15 +89,16 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
   }
 
   /* ---------------- desenho ---------------- */
+  // abas Hoje/Caderno/Plano como divisórias de fichário: a atual desce da folha (raio só embaixo)
   function htmlAbas(rota) {
     return h`<nav class="trilho" aria-label="Seções">
-      <a class="trilho-marca" href="#/hoje" aria-label="Prumo · Hoje">${simbolo()}<span aria-hidden="true">prumo</span></a>
+      <a class="trilho-marca" href="#/hoje" aria-label="Prumo, Hoje">${simbolo()}<span aria-hidden="true">prumo</span></a>
       ${cada(ABAS, a => h`<a class="aba" href="#/${a.id}" ${rota.aba === a.id ? cru('aria-current="page"') : ''}>${a.rotulo}</a>`)}
     </nav>`;
   }
   function htmlFaixas(f, cheia) {
     const out = [];
-    if (f && f.demo) out.push(h`<div class="faixa faixa-demo" role="status"><span class="faixa-texto">${f.demo.texto}${f.demo.dataSimulada ? ` · ${f.demo.dataSimulada}` : ''}</span><button type="button" class="link" data-acao="sairDemo">${f.demo.sair}</button></div>`);
+    if (f && f.demo) out.push(h`<div class="faixa faixa-demo" role="status"><span class="faixa-texto"><strong>${f.demo.rotulo || 'Modo demonstração'}:</strong> ${f.demo.frase || f.demo.texto}</span><button type="button" class="link" data-acao="sairDemo">${f.demo.sair}</button></div>`);
     if (f && f.falhaSalvar) out.push(h`<div class="faixa" role="alert"><span class="faixa-texto">${f.falhaSalvar.texto}</span><button type="button" class="link" data-acao="salvarCopia">${f.falhaSalvar.acao}</button></div>`);
     if (f && f.carga) out.push(h`<div class="faixa" role="status"><span class="faixa-texto">${f.carga}</span></div>`);
     if (ui.novaVersao && !cheia) out.push(h`<div class="faixa" role="status"><span class="faixa-texto">Há uma versão nova do Prumo. Ela entra quando você fechar e abrir o app. Seu progresso não muda.</span><button type="button" class="link" data-acao="atualizarApp">Atualizar agora</button></div>`);
@@ -125,7 +126,7 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
       else s = ROTAS[rota.aba](ctx, t, rota);
     } catch (err) {
       console.error(err);
-      s = { chave: 'erro', html: h`<main class="pu"><p class="rotulo">Prumo</p><h1 class="titulo" tabindex="-1" data-foco-inicial>Esta tela não abriu.</h1><p>Seu progresso continua salvo neste aparelho. Feche e abra o app de novo.</p><button type="button" class="botao" data-acao="recarregar">Abrir de novo</button></main>` };
+      s = { chave: 'erro', html: h`<main class="pu"><h1 class="titulo" tabindex="-1" data-foco-inicial>Esta tela não abriu.</h1><p>Seu progresso continua salvo neste aparelho. Feche e abra o app de novo.</p><button type="button" class="botao botao-largo" data-acao="recarregar">Abrir de novo</button></main>` };
     }
     const comAbas = !cheia && nome !== 'primeiroUso';
     const ativo = document.activeElement, chaveFoco = chaveDoFoco(ativo);
@@ -140,7 +141,7 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
     $barra.innerHTML = s.barra ? String(h`<div class="barra"><div class="barra-dentro">${s.barra}</div></div>`) : '';
     raiz.classList.toggle('com-barra', !!s.barra);
     document.body.classList.toggle('modo-missao', cheia || nome === 'primeiroUso');
-    document.title = s.titulo ? `${s.titulo} · Prumo` : 'Prumo · App de Estudos';
+    document.title = s.titulo ? `${s.titulo} – Prumo` : 'Prumo · App de Estudos';
 
     if (mudou) {
       window.scrollTo(0, 0);

@@ -72,7 +72,7 @@ export function avancarMao(mao, cardId, res) {
   if (mao.i >= mao.fila.length) mao.fim = true;
   return repeticao;
 }
-/** Resumo informativo do fim da mão: "5 cards · 4 lembrados · 1 volta sex 20/11". */
+/** Resumo informativo do fim da mão, em frase: "Você lembrou 4 de 5 cards. O outro volta em sex 20/11." */
 export function resumoMao(st, mao, d) {
   if (!mao) return null;
   const ids = Object.keys(mao.respostas);
@@ -80,8 +80,8 @@ export function resumoMao(st, mao, d) {
   const voltam = ids.filter(id => mao.respostas[id] === 'ainda');
   const datas = [...new Set(voltam.map(id => st.cards[id] && st.cards[id].proxima).filter(Boolean))].sort();
   const n = ids.length;
-  let txt = `${n} ${n === 1 ? 'card' : 'cards'} · ${lembrados} ${lembrados === 1 ? 'lembrado' : 'lembrados'}`;
-  if (voltam.length) txt += ` · ${voltam.length} ${voltam.length === 1 ? 'volta' : 'voltam'} ${datas.map(x => R.fmtCurta(x)).join(', ')}`;
+  let txt = `Você lembrou ${lembrados} de ${n} ${n === 1 ? 'card' : 'cards'}.`;
+  if (voltam.length) txt += ` ${voltam.length === 1 ? 'O outro volta' : `Os outros ${voltam.length} voltam`} em ${datas.map(x => R.fmtCurta(x)).join(' e ')}.`;
   return { total: n, lembrados, voltam: voltam.length, texto: txt };
 }
 
@@ -94,9 +94,9 @@ export function cardsDoCaderno(st, pack, d) {
       const loc = pack.localDoCard(k);
       return {
         id: k.id, frente: k.frente, verso: k.verso, tipo: k.tipo || null,
-        trecho: loc ? { rotulo: `ver o trecho · ${loc.rotulo}`, pagina: loc.pagina, paragrafo: loc.paragrafo } : null,
+        trecho: loc ? { rotulo: `Ver o parágrafo ${loc.n} da p. ${loc.paginaN}`, pagina: loc.pagina, paragrafo: loc.paragrafo } : null,
         noBaralho: !!e,
-        caixa: e ? e.caixa : null, caixaNome: e ? NIVEL[e.caixa] : null,
+        caixa: e ? e.caixa : null, caixaNome: e ? NIVEL[e.caixa] : null, caixaRotulo: e ? `revisão ${Math.max(1, e.caixa || 1)} de 5` : null,
         proxima: e ? e.proxima : null,
         proximaTexto: e ? (e.proxima <= d ? (e.proxima < d ? `atrasado desde ${R.fmtCurta(e.proxima)}` : 'hoje') : R.fmtCurta(e.proxima)) : null,
       };

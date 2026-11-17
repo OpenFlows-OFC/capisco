@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as R from '../../js/nucleo/relogio.js';
 import * as E from '../../js/nucleo/estado.js';
-import { fecharSemanas, regua, chama, constancia, linhaSemanaPassada, encerrarPausa, marcarPausa, emPausa, proximoDiaDeEstudo, rotuloDias } from '../../js/nucleo/plano.js';
+import * as PlanoMod from '../../js/nucleo/plano.js';
+import { fecharSemanas, regua, constancia, linhaSemanaPassada, encerrarPausa, marcarPausa, emPausa, proximoDiaDeEstudo, rotuloDias } from '../../js/nucleo/plano.js';
 import { packs, novo, jogar, irPara } from './ajuda.mjs';
 
 const base = (dias = {}) => Object.assign(E.vazio(), { perfil: E.normalizarPerfil({ provaTipo: 'escola', prova: '2026-12-15', dias: [1, 2, 3, 4], minutos: 25, metaSemana: 3 }), conjuntosAtivos: ['mat-fa'], dias });
@@ -12,7 +13,7 @@ test('d.2 · "dias estudados" é a contagem de dias com tentativa avaliada; o r�
   assert.equal(rotuloDias(24), '24 dias estudados');
   const c = constancia(base({ '2026-11-02': true, '2026-11-03': true }), '2026-11-18');
   assert.equal(c.rotulo, '2 dias estudados');
-  assert.equal(constancia(base(), '2026-11-18').vazio, 'A régua ganha um traço a cada dia em que você responde pelo menos uma checagem, questão ou revisão.');
+  assert.equal(constancia(base(), '2026-11-18').vazio, 'Cada dia em que você responde pelo menos uma checagem, questão ou revisão ganha um risquinho.');
 });
 test('d.2 · semana com a meta só depois que termina; estudar na folga não conta para a meta; resultado gravado não muda', () => {
   // semana de 02/11: seg, ter e sáb (folga) → 2 dias na meta, 3 no total
@@ -30,26 +31,25 @@ test('d.2 · semana com a meta só depois que termina; estudar na folga não con
   assert.deepEqual(r.filter(x => x.latao).map(x => x.dia), ['2026-11-11'], 'latão no último dia estudado da semana com a meta');
   assert.equal(r[4].longo, true, 'traço longo a cada 5 dias');
 });
-test('Decisão 3 · chama (B): acende na semana com a meta depois que ela termina e nunca apaga nem zera', () => {
+test('design system · risquinhos: único símbolo da constância; a chama saiu; o número só cresce', () => {
   const st = base({ '2026-11-09': true, '2026-11-10': true, '2026-11-11': true });
-  fecharSemanas(st, '2026-11-12');
-  assert.equal(chama(st).acesa, false, 'durante a semana, nada');
   fecharSemanas(st, '2026-11-16');
-  assert.equal(chama(st).acesa, true); assert.equal(chama(st).acesas, 1);
+  assert.equal(PlanoMod.chama, undefined, 'plano.js não exporta mais a chama');
+  const c = constancia(st, '2026-11-16');
+  assert.equal(c.simbolo, 'risquinhos'); assert.equal(c.diasEstudados, 3); assert.ok(!('chama' in c));
   fecharSemanas(st, '2027-01-10');                       // semanas sem estudo depois
-  assert.equal(chama(st).acesa, true, 'faltar não apaga');
-  assert.equal(chama(st).acesas, 1);
+  assert.equal(constancia(st, '2027-01-10').diasEstudados, 3, 'faltar não apaga');
   assert.equal(constancia(st, '2027-01-10').rotulo, '3 dias estudados');
 });
 test('d.2 · linha do 1º dia estudado da semana nova, sem palavra negativa', () => {
   const st = base({ '2026-11-09': true, '2026-11-10': true, '2026-11-11': true, '2026-11-16': true });
   fecharSemanas(st, '2026-11-16');
-  assert.equal(linhaSemanaPassada(st, '2026-11-16'), 'Semana passada: 3 dias estudados · meta cumprida');
+  assert.equal(linhaSemanaPassada(st, '2026-11-16'), 'Semana passada: 3 dias estudados, com a meta cumprida.');
   st.dias['2026-11-17'] = true;
   assert.equal(linhaSemanaPassada(st, '2026-11-17'), null, 'só no 1º dia estudado da semana');
   const st2 = base({ '2026-11-09': true, '2026-11-10': true, '2026-11-16': true });
   fecharSemanas(st2, '2026-11-16');
-  assert.equal(linhaSemanaPassada(st2, '2026-11-16'), 'Semana passada: 2 dias estudados');
+  assert.equal(linhaSemanaPassada(st2, '2026-11-16'), 'Semana passada: 2 dias estudados.');
 });
 test('pausa de 1 a 14 dias: "nada vence por isso" (revisões e cards andam os dias da pausa)', () => {
   const st = base();
@@ -99,12 +99,12 @@ for (const pk of await packs()) {
     assert.deepEqual(p.intervalos.porNivel.map(x => x.dias), [1, 2, 3, 4, 5]);
     assert.equal(p.constancia.linhaMeta, 'semanas com a meta: 0');
   });
-  test(`[${P}] Ajustes: "Símbolo da constância: Chama · Régua", padrão Chama`, () => {
+  test(`[${P}] Ajustes sem "Símbolo da constância": a chama saiu (decisão do dono); Hoje e Plano usam risquinhos`, () => {
     const { n } = novo(pk.dados);
-    assert.equal(n.ajustes().simbolo.valor, 'chama');
-    assert.equal(n.ajustes().simbolo.rotulo, 'Símbolo da constância');
-    n.definirSimbolo('regua');
-    assert.equal(n.hoje().constancia.simbolo, 'regua');
-    assert.equal(n.constancia().simbolo, 'regua');
+    assert.equal(n.ajustes().simbolo, undefined);
+    assert.equal(n.definirSimbolo, undefined);
+    assert.equal(n.hoje().constancia.simbolo, 'risquinhos');
+    assert.equal(n.constancia().simbolo, 'risquinhos');
+    assert.ok(!('chama' in n.hoje().constancia) && !('chama' in n.constancia()));
   });
 }

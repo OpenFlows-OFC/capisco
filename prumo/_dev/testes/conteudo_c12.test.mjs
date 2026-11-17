@@ -86,6 +86,10 @@ test('revisão dos Caps. 1 e 2: conferência com o PDF e posição da certa', as
   const letras = pack.modelos.find(m => m.id === 'mat-fa.p2.m').variantes.map(v => v.gabarito);
   assert.equal(letras[0], 'D');
   assert.ok(new Set(letras).size >= 3, letras.join(''));
+  // p. 1 e p. 3 (17/11/2026): erros a mais, escolhidos por linha (linha.erros), espalham a certa
+  const letrasDe = id => pack.modelos.find(m => m.id === id).variantes.map(v => v.gabarito);
+  assert.deepEqual([...new Set(letrasDe('mat-fa.p1.m'))].sort(), ['B', 'C', 'D']);
+  assert.deepEqual([...new Set(letrasDe('mat-fa.p3.m'))].sort(), ['A', 'B', 'C', 'D', 'E']);
   // distrator que imita a alternativa C da Q150: termo independente primeiro, como o INEP escreve
   const b2 = pack.modelos.find(m => m.id === 'mat-fa.p2.b2.m').variantes[0];
   assert.deepEqual(b2.alternativas.map(a => a.texto), ['P = 1 − 0,7V', 'P = 0,3V', 'P = 0,7V', 'P = V − 70', 'P = 30V']);

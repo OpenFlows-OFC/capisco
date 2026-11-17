@@ -7,8 +7,8 @@
    falha de forma visível (nada de engolir 404).
    A lista ARQUIVOS é gerada por _dev/ui/gera_precache.mjs (não edite à mão).
    ========================================================= */
-const VERSAO = 'prumo-pwa-previa-1';
-const FONTES = 'prumo-pwa-fontes';
+const VERSAO = 'prumo-pwa-v2';
+const FONTES = 'prumo-pwa-fontes-v2';   // fontes do design system (Gabarito, Atkinson Hyperlegible Next e Mono); o activate apaga o cache antigo
 const PREFIXO = 'prumo-pwa-';
 // <precache>
 const ARQUIVOS = [
@@ -73,10 +73,10 @@ const ARQUIVOS = [
 ];
 // </precache>
 
-// A folha de fontes do index.html (Poppins 600, Inter 400/500/600). Na primeira visita o service worker
+// A folha de fontes do index.html (Gabarito 700/800, Atkinson Hyperlegible Next 400/600, Atkinson Hyperlegible Mono 500). Na primeira visita o service worker
 // ainda não controla a página, então as fontes são buscadas já na instalação (sem derrubar a instalação
 // se o Google não responder: aí elas entram em tempo de execução, na visita seguinte).
-const FONTES_CSS = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600&display=swap';
+const FONTES_CSS = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@500&family=Atkinson+Hyperlegible+Next:wght@400;600&family=Gabarito:wght@700;800&display=swap';
 async function guardarFontes() {
   const c = await caches.open(FONTES);
   if (await c.match(FONTES_CSS, { ignoreVary: true })) return;
@@ -106,7 +106,7 @@ self.addEventListener('message', e => {
   if (e.data && e.data.tipo === 'ATIVAR') self.skipWaiting();
 });
 
-// Fontes do Google: guardadas em tempo de execução (Poppins 600 e Inter 400/500/600).
+// Fontes do Google: guardadas em tempo de execução (Gabarito, Atkinson Hyperlegible Next e Mono).
 async function fonte(req) {
   const c = await caches.open(FONTES);
   const m = await c.match(req, { ignoreVary: true });

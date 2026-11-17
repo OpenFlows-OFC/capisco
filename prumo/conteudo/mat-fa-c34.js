@@ -9,8 +9,10 @@
 //  - modelo.explicacao (molde da resolução), modelo.formato e, em cada linha, "pronto": enunciado,
 //    alternativas (em ordem crescente, com "falta" e "paragrafo" nas erradas), gabarito e explicação
 //    já preenchidos, para a tela não precisar avaliar expressões.
-//  - questão: capitulo, exprCerta, teste (dados do teste de d.6), transcricao, conferidoITENS_PROVA;
-//    alternativa.esperado quando a "expr" confere uma propriedade do erro e não o valor.
+//  - questão: capitulo, exprCerta, teste (dados do teste de d.6), transcricao, conferidoITENS_PROVA,
+//    conferenciaPDF (PDF, SHA-256, página e correções da transcrição, _dev/correcoes_enem.mjs);
+//    alternativa.esperado quando a "expr" confere uma propriedade do erro e não o valor;
+//    imagem.recorte quando a imagem é recorte do PDF oficial (mesmo nome de arquivo).
 // Autoria: todo texto da equipe é rascunho por IA (Claude Opus 5.5), revisão pendente.
 // Licenças: texto, modelos, explicações e cards da equipe em CC BY-SA 4.0; cada questão do Enem
 // mantém a licença indicada nela (CC BY-ND 3.0, INEP), reproduzida sem adaptação.
@@ -41,17 +43,17 @@ export const capitulos34 = [
               {
                 "id": "mat-fa.p5.b1.s1",
                 "n": 1,
-                "html": "<strong>Taxa de variação</strong> é quanto uma grandeza muda a cada unidade de outra. A conta é sempre uma divisão: quanto mudou, dividido pelo intervalo em que mudou. Um ônibus andou 6 km em 15 minutos. A taxa é 6 ÷ 15 = 0,4 km por minuto."
+                "html": "<strong>Taxa de variação</strong> é quanto uma grandeza muda a cada unidade de outra. A conta é sempre uma divisão: quanto mudou, dividido pelo intervalo em que mudou. Um ônibus andou 6 km em 15 minutos. A taxa é 6 ÷ 15 = 0,4 km por minuto."
               },
               {
                 "id": "mat-fa.p5.b1.s2",
                 "n": 2,
-                "html": "A unidade diz a ordem da divisão. Em “km por minuto”, o km vai em cima e o minuto embaixo. A conta ao contrário, 15 ÷ 6 = 2,5, mede outra coisa: minutos por km, o tempo para andar 1 km. Nessa unidade, quanto maior o número, mais devagar."
+                "html": "A unidade diz a ordem da divisão. Em “km por minuto”, o km vai em cima e o minuto embaixo. A conta ao contrário, 15 ÷ 6 = 2,5, mede outra coisa: minutos por km, o tempo para andar 1 km. Nessa unidade, quanto maior o número, mais devagar."
               },
               {
                 "id": "mat-fa.p5.b1.s3",
                 "n": 3,
-                "html": "O maior total não é, sozinho, a maior taxa. Bia pedalou 15 km em 60 minutos; Caio, 10 km em 25 minutos. Bia andou mais, mas Caio foi mais rápido: 10 ÷ 25 = 0,4 km por minuto, contra 15 ÷ 60 = 0,25. Para comparar, divida cada total pelo próprio tempo. Somar os dois, multiplicar ou ficar com o maior número não compara taxas."
+                "html": "O maior total não é, sozinho, a maior taxa. Bia pedalou 15 km em 60 minutos; Caio, 10 km em 25 minutos. Bia andou mais, mas Caio foi mais rápido: 10 ÷ 25 = 0,4 km por minuto, contra 15 ÷ 60 = 0,25. Para comparar, divida cada total pelo próprio tempo. Somar os dois, multiplicar ou ficar com o maior número não compara taxas."
               }
             ]
           },
@@ -62,7 +64,7 @@ export const capitulos34 = [
               {
                 "id": "mat-fa.p5.b2.s4",
                 "n": 4,
-                "html": "No gráfico, a taxa vira inclinação. Quando a conta começa do zero, ligue a origem a cada ponto: quanto mais em pé o segmento, maior a taxa. Antes, confira se os dois eixos começam em 0. Se um deles não começa, o canto do gráfico não é a origem: faça a divisão. Dois pontos na mesma altura têm o mesmo total, mas o que está mais à direita levou mais tempo e tem taxa menor. É o <em>a</em> de y = ax + b, da p. 2: quanto y muda quando x anda 1."
+                "html": "No gráfico, a taxa vira inclinação. Se os dois eixos começam em 0, ligue o ponto (0; 0) a cada ponto: quanto mais em pé o segmento, maior a taxa. Se um dos eixos não começa em 0, o canto do gráfico não é o ponto (0; 0), e a inclinação engana: faça a divisão de cada ponto. Dois pontos na mesma altura têm o mesmo total, mas o que está mais à direita levou mais tempo e tem taxa menor. É o <em>a</em> de y = ax + b, da p. 2: quanto y muda quando x anda 1."
               }
             ]
           }
@@ -74,7 +76,20 @@ export const capitulos34 = [
           "fonte": "Equipe Prumo",
           "licenca": "CC BY-SA 4.0",
           "autoria": {
-            "ia": true,
+            "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
+            "modelo": "Claude Opus 5.5",
+            "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
+            "data": "2026-11-17",
+            "equipe": null,
+            "revisor": null,
+            "revisadoEm": null
+          }
+        },
+        "fonte": {
+          "fonte": "Equipe Prumo",
+          "licenca": "CC BY-SA 4.0",
+          "autoria": {
+            "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
             "modelo": "Claude Opus 5.5",
             "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
             "data": "2026-11-17",
@@ -102,7 +117,7 @@ export const capitulos34 = [
               {
                 "id": "mat-fa.p6.b1.s2",
                 "n": 2,
-                "html": "O que aconteceu num trecho é a <strong>subida</strong> do trecho: valor no fim menos valor no começo. Se o trecho dura 1 minuto, essa subida já é a taxa daquele minuto. O 4º minuto vai de t = 3 a t = 4, e não de 0 a 4. Cada minuto tem a sua subida, e um total final que bate não garante que cada trecho bate. Confira um por um."
+                "html": "O que aconteceu num trecho é a <strong>subida</strong> do trecho: valor no fim menos valor no começo. Se o trecho dura 1 minuto, essa subida já é a taxa daquele minuto. O 4º minuto vai de t = 3 a t = 4, e não de 0 a 4. Cada minuto tem a sua subida. Uma sequência cujo total confere com o fim do gráfico ainda pode errar minuto a minuto: confira um por um."
               }
             ]
           },
@@ -131,7 +146,20 @@ export const capitulos34 = [
           "fonte": "Equipe Prumo",
           "licenca": "CC BY-SA 4.0",
           "autoria": {
-            "ia": true,
+            "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
+            "modelo": "Claude Opus 5.5",
+            "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
+            "data": "2026-11-17",
+            "equipe": null,
+            "revisor": null,
+            "revisadoEm": null
+          }
+        },
+        "fonte": {
+          "fonte": "Equipe Prumo",
+          "licenca": "CC BY-SA 4.0",
+          "autoria": {
+            "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
             "modelo": "Claude Opus 5.5",
             "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
             "data": "2026-11-17",
@@ -151,15 +179,17 @@ export const capitulos34 = [
     "irAlem": [
       {
         "tipo": "khan",
-        "rotulo": "Para revisar função afim e seus gráficos no curso da Khan que a sua escola usa (Unidade 3, 2º Bimestre)",
-        "url": "https://pt.khanacademy.org/math/1-serie-em-mat-sp/x82b03a9b6c8af113:2-bimestre-2026",
-        "aviso": "Todo o conteúdo da Khan Academy está disponível gratuitamente em www.khanacademy.org. O Prumo não é oficial nem endossado pela Khan Academy."
+        "rotulo": "Taxa de variação de uma função afim, no curso da Khan para a 1ª série do Ensino Médio de SP (Unidade 4, 3º Bimestre)",
+        "url": "https://pt.khanacademy.org/math/1-serie-em-mat-sp/x82b03a9b6c8af113:3-bimestre-2026",
+        "aviso": "Todo o conteúdo da Khan Academy está disponível gratuitamente em www.khanacademy.org. O Prumo não é oficial nem endossado pela Khan Academy.",
+        "conferidoEm": "2026-11-17"
       },
       {
         "tipo": "obmep",
-        "rotulo": "Portal da OBMEP: módulos do 1º ano do ensino médio",
-        "url": "https://portaldaobmep.impa.br/index.php/modulo/index?a=1",
-        "aviso": "Site do Portal da OBMEP (IMPA). Não há licença aberta indicada; o Prumo só aponta para ele."
+        "rotulo": "Portal da OBMEP: módulo Função Afim (videoaulas e exercícios)",
+        "url": "https://portaldaobmep.impa.br/index.php/modulo/ver?modulo=35",
+        "aviso": "Abre o Portal da OBMEP (IMPA) em outra aba. O Prumo só aponta o link; o conteúdo do portal não é copiado.",
+        "conferidoEm": "2026-11-17"
       }
     ],
     "cards": [
@@ -171,7 +201,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p5.b1",
         "paragrafo": "mat-fa.p5.b1.s1",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -188,7 +218,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p5.b1",
         "paragrafo": "mat-fa.p5.b1.s2",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -205,7 +235,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p5.b1",
         "paragrafo": "mat-fa.p5.b1.s3",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -217,12 +247,12 @@ export const capitulos34 = [
       {
         "id": "mat-fa.c3.k4",
         "tipo": "procedimento",
-        "frente": "No gráfico que começa do zero, como achar a maior taxa?",
-        "verso": "Ligue o ponto (0; 0) a cada ponto: o segmento mais inclinado tem a maior taxa. Se um eixo não começa em 0, divida.",
+        "frente": "Como achar a maior taxa num gráfico de pontos?",
+        "verso": "Se os dois eixos começam em 0, ligue (0; 0) a cada ponto: o segmento mais inclinado tem a maior taxa. Se não, divida.",
         "bloco": "mat-fa.p5.b2",
         "paragrafo": "mat-fa.p5.b2.s4",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -239,7 +269,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p6.b1",
         "paragrafo": "mat-fa.p6.b1.s1",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -256,7 +286,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p6.b1",
         "paragrafo": "mat-fa.p6.b1.s2",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -268,12 +298,12 @@ export const capitulos34 = [
       {
         "id": "mat-fa.c3.k7",
         "tipo": "armadilha",
-        "frente": "O total final bateu. Então a sequência está certa?",
+        "frente": "A soma das potências deu o total do gráfico. Então a sequência está certa?",
         "verso": "Não basta. Confira a subida de cada trecho, um por um.",
         "bloco": "mat-fa.p6.b1",
         "paragrafo": "mat-fa.p6.b1.s2",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -290,7 +320,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p6.b2",
         "paragrafo": "mat-fa.p6.b2.s3",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -326,17 +356,17 @@ export const capitulos34 = [
               {
                 "id": "mat-fa.p7.b1.s1",
                 "n": 1,
-                "html": "Um problema com dois valores desconhecidos precisa de duas informações. Dê uma letra para cada valor e diga o que ela é: c = preço de uma coxinha, em reais; s = preço de um suco, em reais. Cada condição do texto vira uma equação. Duas condições sobre as mesmas letras formam um <strong>sistema</strong>."
+                "html": "Um problema com dois valores desconhecidos precisa de duas informações. Dê uma letra para cada valor e diga o que ela é: c = preço de uma coxinha, em reais; s = preço de um suco, em reais. Cada condição do texto vira uma equação. Duas condições sobre as mesmas letras formam um <strong>sistema</strong>."
               },
               {
                 "id": "mat-fa.p7.b1.s2",
                 "n": 2,
-                "html": "Traduza a frase inteira, sem pular pedaço. “A coxinha custa R$ 2 a mais que o suco” é c = s + 2. “A coxinha custa R$ 2 a mais que o dobro do suco” é c = 2s + 2. E “a coxinha menos o suco dá o suco mais R$ 2” é c − s = s + 2, que também vira c = 2s + 2. Ler só o “2 a mais” troca o problema."
+                "html": "Traduza a frase inteira, sem pular pedaço. “A coxinha custa R$ 2 a mais que o suco” é c = s + 2. “A coxinha custa R$ 2 a mais que o dobro do suco” é c = 2s + 2. E “a coxinha menos o suco dá o suco mais R$ 2” é c − s = s + 2, que também vira c = 2s + 2. Ler só o “2 a mais” muda o problema."
               },
               {
                 "id": "mat-fa.p7.b1.s3",
                 "n": 3,
-                "html": "Cuide das quantidades e das unidades. Se a coxinha vem em bandeja de 6, uma bandeja custa 6c, e três bandejas custam 3 × 6c = 18c. Centavos viram reais com vírgula: 5 centavos são R$ 0,05; 50 centavos são R$ 0,50. Um zero fora do lugar muda a resposta."
+                "html": "Cuide das quantidades e das unidades. Se a coxinha vem em bandeja de 6, uma bandeja custa 6c, e três bandejas custam 3 × 6c = 18c. Centavos viram reais com vírgula: 5 centavos são R$ 0,05; 50 centavos são R$ 0,50. Um zero fora do lugar muda a resposta."
               }
             ]
           },
@@ -347,7 +377,7 @@ export const capitulos34 = [
               {
                 "id": "mat-fa.p7.b2.s4",
                 "n": 4,
-                "html": "Com as duas equações, use a <strong>substituição</strong>: isole uma letra numa equação e leve para a outra. Se c = 2s + 2 e 3c + s = 27, troque c: 3(2s + 2) + s = 27, então 7s + 6 = 27 e s = 3. Volte: c = 2 · 3 + 2 = 8. Confira nas duas: 8 = 2 · 3 + 2 e 3 · 8 + 3 = 27."
+                "html": "Com as duas equações, use a <strong>substituição</strong>: isole uma letra numa equação e leve para a outra. Se uma equação é c = 2s + 2 e a outra é 3c + s = 27, troque c na segunda: 3(2s + 2) + s = 27, então 7s + 6 = 27 e s = 3. Volte à primeira: c = 2 × 3 + 2 = 8. Confira nas duas. Na primeira, 8 = 2 × 3 + 2; na segunda, 3 × 8 + 3 = 27."
               }
             ]
           }
@@ -359,7 +389,20 @@ export const capitulos34 = [
           "fonte": "Equipe Prumo",
           "licenca": "CC BY-SA 4.0",
           "autoria": {
-            "ia": true,
+            "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
+            "modelo": "Claude Opus 5.5",
+            "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
+            "data": "2026-11-17",
+            "equipe": null,
+            "revisor": null,
+            "revisadoEm": null
+          }
+        },
+        "fonte": {
+          "fonte": "Equipe Prumo",
+          "licenca": "CC BY-SA 4.0",
+          "autoria": {
+            "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
             "modelo": "Claude Opus 5.5",
             "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
             "data": "2026-11-17",
@@ -382,17 +425,17 @@ export const capitulos34 = [
               {
                 "id": "mat-fa.p8.b1.s1",
                 "n": 1,
-                "html": "Quando duas situações dão o mesmo total, compare uma com a outra. Dois pedidos de R$ 28 numa pastelaria: o primeiro com 2 pastéis e 3 caldos de cana; o segundo com 3 pastéis e 1 caldo. Do primeiro para o segundo, entrou 1 pastel e saíram 2 caldos, e o total não mudou."
+                "html": "Quando duas situações dão o mesmo total, compare uma com a outra. Dois pedidos de R$ 28 numa pastelaria: o primeiro com 2 pastéis e 3 caldos de cana; o segundo com 3 pastéis e 1 caldo. Do primeiro para o segundo, entrou 1 pastel e saíram 2 caldos, e o total não mudou."
               },
               {
                 "id": "mat-fa.p8.b1.s2",
                 "n": 2,
-                "html": "Se o total não mudou, o que entrou vale o mesmo que o que saiu: 1 pastel vale 2 caldos. É a <strong>troca</strong> que equilibra. Isso é o mesmo que subtrair uma condição da outra: o que é igual nas duas some, e sobra a troca. Conte por tipo de item, e não pelo total de itens: o pedido ficou com 1 item a menos, mas o que vale é 1 pastel no lugar de 2 caldos."
+                "html": "Se o total não mudou, o que entrou vale o mesmo que o que saiu: 1 pastel vale 2 caldos. É a <strong>troca</strong> que equilibra. Isso é o mesmo que subtrair uma condição da outra: o que é igual nas duas se cancela, e sobra a troca. Conte por tipo de item, e não pelo total de itens: o pedido ficou com 1 item a menos, mas o que vale é 1 pastel no lugar de 2 caldos."
               },
               {
                 "id": "mat-fa.p8.b1.s3",
                 "n": 3,
-                "html": "Com a troca, dá para montar uma terceira situação sem descobrir cada preço. Quer um pedido de R$ 28 com 1 pastel só? Parta do primeiro (2 pastéis e 3 caldos) e troque 1 pastel por 2 caldos: fica 1 pastel e 5 caldos. Aplique a troca quantas vezes for preciso, nem uma a mais, nem uma a menos."
+                "html": "Com a troca, dá para montar uma terceira situação sem descobrir cada preço. Quer um pedido de R$ 28 com 1 pastel só? Parta do primeiro (2 pastéis e 3 caldos) e troque 1 pastel por 2 caldos: ficam 1 pastel e 5 caldos. Aplique a troca quantas vezes for preciso, nem uma a mais, nem uma a menos."
               }
             ]
           },
@@ -411,12 +454,25 @@ export const capitulos34 = [
         ],
         "modelo": "mat-fa.p8.m",
         "nucleo": "mat-fa.p8.b1",
-        "notaPrompt": "Com suas palavras: o que a comparação entre os dois pedidos te conta?",
+        "notaPrompt": "Com suas palavras: o que a comparação entre os dois pedidos mostra?",
         "credito": {
           "fonte": "Equipe Prumo",
           "licenca": "CC BY-SA 4.0",
           "autoria": {
-            "ia": true,
+            "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
+            "modelo": "Claude Opus 5.5",
+            "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
+            "data": "2026-11-17",
+            "equipe": null,
+            "revisor": null,
+            "revisadoEm": null
+          }
+        },
+        "fonte": {
+          "fonte": "Equipe Prumo",
+          "licenca": "CC BY-SA 4.0",
+          "autoria": {
+            "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
             "modelo": "Claude Opus 5.5",
             "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
             "data": "2026-11-17",
@@ -436,15 +492,17 @@ export const capitulos34 = [
     "irAlem": [
       {
         "tipo": "khan",
-        "rotulo": "Para revisar equações de 1º grau no curso da Khan que a sua escola usa (Unidade 3, 2º Bimestre)",
+        "rotulo": "Para revisar equações de 1º grau, no curso da Khan para a 1ª série do Ensino Médio de SP (Unidade 3, 2º Bimestre)",
         "url": "https://pt.khanacademy.org/math/1-serie-em-mat-sp/x82b03a9b6c8af113:2-bimestre-2026",
-        "aviso": "Todo o conteúdo da Khan Academy está disponível gratuitamente em www.khanacademy.org. O Prumo não é oficial nem endossado pela Khan Academy."
+        "aviso": "Todo o conteúdo da Khan Academy está disponível gratuitamente em www.khanacademy.org. O Prumo não é oficial nem endossado pela Khan Academy.",
+        "conferidoEm": "2026-11-17"
       },
       {
         "tipo": "obmep",
-        "rotulo": "Portal da OBMEP: módulos do 1º ano do ensino médio",
-        "url": "https://portaldaobmep.impa.br/index.php/modulo/index?a=1",
-        "aviso": "Site do Portal da OBMEP (IMPA). Não há licença aberta indicada; o Prumo só aponta para ele."
+        "rotulo": "Portal da OBMEP: módulo Função Afim (videoaulas e exercícios)",
+        "url": "https://portaldaobmep.impa.br/index.php/modulo/ver?modulo=35",
+        "aviso": "Abre o Portal da OBMEP (IMPA) em outra aba. O Prumo só aponta o link; o conteúdo do portal não é copiado.",
+        "conferidoEm": "2026-11-17"
       }
     ],
     "cards": [
@@ -456,7 +514,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p7.b1",
         "paragrafo": "mat-fa.p7.b1.s1",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -473,7 +531,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p7.b1",
         "paragrafo": "mat-fa.p7.b1.s1",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -485,12 +543,12 @@ export const capitulos34 = [
       {
         "id": "mat-fa.c4.k3",
         "tipo": "palavra-pista",
-        "frente": "Como se escreve “R$ 2 a mais que o dobro de s”?",
+        "frente": "Como se escreve “R$ 2 a mais que o dobro de s”?",
         "verso": "2s + 2. O dobro multiplica s por 2; o “a mais” soma depois.",
         "bloco": "mat-fa.p7.b1",
         "paragrafo": "mat-fa.p7.b1.s2",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -503,11 +561,11 @@ export const capitulos34 = [
         "id": "mat-fa.c4.k4",
         "tipo": "armadilha",
         "frente": "Quanto são 5 centavos em reais?",
-        "verso": "R$ 0,05. Já 50 centavos são R$ 0,50: a casa do 5 muda a resposta.",
+        "verso": "R$ 0,05. Já 50 centavos são R$ 0,50: a casa do 5 muda a resposta.",
         "bloco": "mat-fa.p7.b1",
         "paragrafo": "mat-fa.p7.b1.s3",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -524,7 +582,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p7.b2",
         "paragrafo": "mat-fa.p7.b2.s4",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -541,7 +599,7 @@ export const capitulos34 = [
         "bloco": "mat-fa.p8.b1",
         "paragrafo": "mat-fa.p8.b1.s2",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -554,11 +612,11 @@ export const capitulos34 = [
         "id": "mat-fa.c4.k7",
         "tipo": "procedimento",
         "frente": "Como chegar a uma terceira situação sem achar cada preço?",
-        "verso": "Parta de uma das situações e aplique a troca quantas vezes for preciso, nem uma a mais.",
+        "verso": "Parta de uma das situações e aplique a troca quantas vezes for preciso, nem uma a mais, nem uma a menos.",
         "bloco": "mat-fa.p8.b1",
         "paragrafo": "mat-fa.p8.b1.s3",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -571,11 +629,11 @@ export const capitulos34 = [
         "id": "mat-fa.c4.k8",
         "tipo": "armadilha",
         "frente": "Achou um número. O que conferir antes de marcar?",
-        "verso": "Se ele responde o que foi pedido, se você descontou o que vai junto e se fecha as duas condições.",
+        "verso": "Se ele responde o que foi pedido, se você descontou o que já ocupa parte do total e se ele satisfaz as duas condições.",
         "bloco": "mat-fa.p8.b2",
         "paragrafo": "mat-fa.p8.b2.s4",
         "autoria": {
-          "ia": true,
+          "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
           "modelo": "Claude Opus 5.5",
           "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
           "data": "2026-11-17",
@@ -1233,7 +1291,7 @@ export const modelos34 = [
       "fonte": "Equipe Prumo",
       "licenca": "CC BY-SA 4.0",
       "autoria": {
-        "ia": true,
+        "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
         "modelo": "Claude Opus 5.5",
         "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
         "data": "2026-11-17",
@@ -1887,7 +1945,7 @@ export const modelos34 = [
       "fonte": "Equipe Prumo",
       "licenca": "CC BY-SA 4.0",
       "autoria": {
-        "ia": true,
+        "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
         "modelo": "Claude Opus 5.5",
         "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
         "data": "2026-11-17",
@@ -2055,7 +2113,7 @@ export const modelos34 = [
       "fonte": "Equipe Prumo",
       "licenca": "CC BY-SA 4.0",
       "autoria": {
-        "ia": true,
+        "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
         "modelo": "Claude Opus 5.5",
         "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
         "data": "2026-11-17",
@@ -2072,7 +2130,7 @@ export const modelos34 = [
     "capitulo": "mat-fa.c4",
     "licenca": "CC BY-SA 4.0",
     "formato": "numero",
-    "enunciado": "Na cantina da escola, {fraseRelacao} Juntos, {n1t} e {n2t} custam R$ {Tt}. Quanto custa {umPedido}, em reais?",
+    "enunciado": "Na cantina da escola, {fraseRelacao} Juntos, {n1t} e {n2t} custam R$ {Tt}. Quanto custa {umPedido}, em reais?",
     "certa": "q*(2*s + d) + (1 - q)*s",
     "erros": [
       {
@@ -2096,7 +2154,7 @@ export const modelos34 = [
         "paragrafo": "mat-fa.p7.b1.s3"
       }
     ],
-    "explicacao": "Com s = preço do suco, {traducaoTexto} Então {n1} × (2s + {dNum}) + {n2} × s = {Tt}, ou seja, {coefS}s + {n1dTexto} = {Tt}. Daí {coefS}s = {restoTexto} e s = {sTexto}.{fimTexto}",
+    "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. {traducaoTexto} Então {n1}(2s + {dNum}) + {n2s} = {Tt}, ou seja, {coefS}s + {n1dTexto} = {Tt}. Daí {coefS}s = {restoTexto} e s = {sTexto}.{fimTexto}",
     "papeisDasLinhas": "linha 0 = pré-pergunta do núcleo; 1 = checagem; 2 a 7 = variantes (revisões, R5, inserções do Pilar III, Prova, Questão do dia), em ordem; 8 a 10 = \"Refazer com outros números\"",
     "linhas": [
       {
@@ -2109,12 +2167,13 @@ export const modelos34 = [
         "d": 1,
         "T": 19,
         "Tt": "19,00",
-        "dReais": "R$ 1,00",
+        "dReais": "R$ 1,00",
         "dNum": "1,00",
-        "dTexto": "R$ 1,00",
-        "fraseRelacao": "o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,00.",
-        "faltaDobro": "Leu como “o salgado custa R$ 1,00 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,00, ou seja, salgado = 2 × suco + R$ 1,00.",
-        "traducaoTexto": "a frase diz salgado − s = s + 1,00, ou seja, o salgado custa 2s + 1,00.",
+        "dTexto": "R$ 1,00",
+        "fraseRelacao": "o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,00.",
+        "faltaDobro": "Leu como “o salgado custa R$ 1,00 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,00, ou seja, salgado = 2 × suco + R$ 1,00.",
+        "traducaoTexto": "A frase diz g − s = s + 1,00, ou seja, g = 2s + 1,00.",
+        "n2s": "2s",
         "n1t": "3 salgados",
         "n2t": "2 sucos",
         "nItens": 5,
@@ -2127,13 +2186,13 @@ export const modelos34 = [
         "sTexto": "2,00",
         "fimTexto": "",
         "pronto": {
-          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,00. Juntos, 3 salgados e 2 sucos custam R$ 19,00. Quanto custa um suco, em reais?",
+          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,00. Juntos, 3 salgados e 2 sucos custam R$ 19,00. Quanto custa um suco, em reais?",
           "alternativas": [
             {
               "letra": "A",
               "texto": "1,75",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 1,00.",
+              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2145,14 +2204,14 @@ export const modelos34 = [
               "letra": "C",
               "texto": "3,2",
               "erro": 0,
-              "falta": "Leu como “o salgado custa R$ 1,00 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,00, ou seja, salgado = 2 × suco + R$ 1,00.",
+              "falta": "Leu como “o salgado custa R$ 1,00 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,00, ou seja, salgado = 2 × suco + R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
               "letra": "D",
               "texto": "4,5",
               "erro": 3,
-              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 1,00).",
+              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 1,00).",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2164,7 +2223,7 @@ export const modelos34 = [
             }
           ],
           "gabarito": "B",
-          "explicacao": "Com s = preço do suco, a frase diz salgado − s = s + 1,00, ou seja, o salgado custa 2s + 1,00. Então 3 × (2s + 1,00) + 2 × s = 19,00, ou seja, 8s + 3,00 = 19,00. Daí 8s = 16,00 e s = 2,00."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g − s = s + 1,00, ou seja, g = 2s + 1,00. Então 3(2s + 1,00) + 2s = 19,00, ou seja, 8s + 3,00 = 19,00. Daí 8s = 16,00 e s = 2,00."
         }
       },
       {
@@ -2177,12 +2236,13 @@ export const modelos34 = [
         "d": 0.75,
         "T": 16.5,
         "Tt": "16,50",
-        "dReais": "R$ 0,75",
+        "dReais": "R$ 0,75",
         "dNum": "0,75",
         "dTexto": "75 centavos",
         "fraseRelacao": "o preço de um salgado menos o de um suco é igual ao preço do suco mais 75 centavos.",
-        "faltaDobro": "Leu como “o salgado custa 75 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,75, ou seja, salgado = 2 × suco + R$ 0,75.",
-        "traducaoTexto": "a frase diz salgado − s = s + 0,75, ou seja, o salgado custa 2s + 0,75.",
+        "faltaDobro": "Leu como “o salgado custa 75 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,75, ou seja, salgado = 2 × suco + R$ 0,75.",
+        "traducaoTexto": "A frase diz g − s = s + 0,75, ou seja, g = 2s + 0,75.",
+        "n2s": "s",
         "n1t": "2 salgados",
         "n2t": "1 suco",
         "nItens": 3,
@@ -2193,9 +2253,9 @@ export const modelos34 = [
         "n1dTexto": "1,50",
         "restoTexto": "15,00",
         "sTexto": "3,00",
-        "fimTexto": " O salgado custa 2 × 3,00 + 0,75 = R$ 6,75.",
+        "fimTexto": " O salgado custa g = 2 × 3,00 + 0,75 = R$ 6,75.",
         "pronto": {
-          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais 75 centavos. Juntos, 2 salgados e 1 suco custam R$ 16,50. Quanto custa um salgado, em reais?",
+          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais 75 centavos. Juntos, 2 salgados e 1 suco custam R$ 16,50. Quanto custa um salgado, em reais?",
           "alternativas": [
             {
               "letra": "A",
@@ -2208,14 +2268,14 @@ export const modelos34 = [
               "letra": "B",
               "texto": "5,75",
               "erro": 0,
-              "falta": "Leu como “o salgado custa 75 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,75, ou seja, salgado = 2 × suco + R$ 0,75.",
+              "falta": "Leu como “o salgado custa 75 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,75, ou seja, salgado = 2 × suco + R$ 0,75.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
               "letra": "C",
               "texto": "6,45",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 0,75 pelos 3 itens. Só os 2 salgados têm esse acréscimo: 2 × R$ 0,75.",
+              "falta": "Multiplicou o acréscimo de R$ 0,75 pelos 3 itens. Só os 2 salgados têm esse acréscimo: 2 × R$ 0,75.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2227,12 +2287,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "11,25",
               "erro": 3,
-              "falta": "Contou um salgado só. São 2 salgados: a conta tem 2 × (2 × suco + R$ 0,75).",
+              "falta": "Contou um salgado só. São 2 salgados: a conta tem 2 × (2 × suco + R$ 0,75).",
               "paragrafo": "mat-fa.p7.b1.s3"
             }
           ],
           "gabarito": "D",
-          "explicacao": "Com s = preço do suco, a frase diz salgado − s = s + 0,75, ou seja, o salgado custa 2s + 0,75. Então 2 × (2s + 0,75) + 1 × s = 16,50, ou seja, 5s + 1,50 = 16,50. Daí 5s = 15,00 e s = 3,00. O salgado custa 2 × 3,00 + 0,75 = R$ 6,75."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g − s = s + 0,75, ou seja, g = 2s + 0,75. Então 2(2s + 0,75) + s = 16,50, ou seja, 5s + 1,50 = 16,50. Daí 5s = 15,00 e s = 3,00. O salgado custa g = 2 × 3,00 + 0,75 = R$ 6,75."
         }
       },
       {
@@ -2245,12 +2305,13 @@ export const modelos34 = [
         "d": 1,
         "T": 23,
         "Tt": "23,00",
-        "dReais": "R$ 1,00",
+        "dReais": "R$ 1,00",
         "dNum": "1,00",
-        "dTexto": "R$ 1,00",
-        "fraseRelacao": "um salgado custa R$ 1,00 a mais que o dobro do preço de um suco.",
-        "faltaDobro": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
-        "traducaoTexto": "o salgado custa 2s + 1,00.",
+        "dTexto": "R$ 1,00",
+        "fraseRelacao": "um salgado custa R$ 1,00 a mais que o dobro do preço de um suco.",
+        "faltaDobro": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
+        "traducaoTexto": "A frase diz g = 2s + 1,00.",
+        "n2s": "2s",
         "n1t": "3 salgados",
         "n2t": "2 sucos",
         "nItens": 5,
@@ -2263,13 +2324,13 @@ export const modelos34 = [
         "sTexto": "2,50",
         "fimTexto": "",
         "pronto": {
-          "enunciado": "Na cantina da escola, um salgado custa R$ 1,00 a mais que o dobro do preço de um suco. Juntos, 3 salgados e 2 sucos custam R$ 23,00. Quanto custa um suco, em reais?",
+          "enunciado": "Na cantina da escola, um salgado custa R$ 1,00 a mais que o dobro do preço de um suco. Juntos, 3 salgados e 2 sucos custam R$ 23,00. Quanto custa um suco, em reais?",
           "alternativas": [
             {
               "letra": "A",
               "texto": "2,25",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 1,00.",
+              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2281,14 +2342,14 @@ export const modelos34 = [
               "letra": "C",
               "texto": "4",
               "erro": 0,
-              "falta": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
+              "falta": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
               "letra": "D",
               "texto": "5,5",
               "erro": 3,
-              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 1,00).",
+              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 1,00).",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2300,7 +2361,7 @@ export const modelos34 = [
             }
           ],
           "gabarito": "B",
-          "explicacao": "Com s = preço do suco, o salgado custa 2s + 1,00. Então 3 × (2s + 1,00) + 2 × s = 23,00, ou seja, 8s + 3,00 = 23,00. Daí 8s = 20,00 e s = 2,50."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g = 2s + 1,00. Então 3(2s + 1,00) + 2s = 23,00, ou seja, 8s + 3,00 = 23,00. Daí 8s = 20,00 e s = 2,50."
         }
       },
       {
@@ -2313,12 +2374,13 @@ export const modelos34 = [
         "d": 1.5,
         "T": 10.5,
         "Tt": "10,50",
-        "dReais": "R$ 1,50",
+        "dReais": "R$ 1,50",
         "dNum": "1,50",
-        "dTexto": "R$ 1,50",
-        "fraseRelacao": "o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,50.",
-        "faltaDobro": "Leu como “o salgado custa R$ 1,50 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,50, ou seja, salgado = 2 × suco + R$ 1,50.",
-        "traducaoTexto": "a frase diz salgado − s = s + 1,50, ou seja, o salgado custa 2s + 1,50.",
+        "dTexto": "R$ 1,50",
+        "fraseRelacao": "o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,50.",
+        "faltaDobro": "Leu como “o salgado custa R$ 1,50 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,50, ou seja, salgado = 2 × suco + R$ 1,50.",
+        "traducaoTexto": "A frase diz g − s = s + 1,50, ou seja, g = 2s + 1,50.",
+        "n2s": "s",
         "n1t": "2 salgados",
         "n2t": "1 suco",
         "nItens": 3,
@@ -2329,9 +2391,9 @@ export const modelos34 = [
         "n1dTexto": "3,00",
         "restoTexto": "7,50",
         "sTexto": "1,50",
-        "fimTexto": " O salgado custa 2 × 1,50 + 1,50 = R$ 4,50.",
+        "fimTexto": " O salgado custa g = 2 × 1,50 + 1,50 = R$ 4,50.",
         "pronto": {
-          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,50. Juntos, 2 salgados e 1 suco custam R$ 10,50. Quanto custa um salgado, em reais?",
+          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,50. Juntos, 2 salgados e 1 suco custam R$ 10,50. Quanto custa um salgado, em reais?",
           "alternativas": [
             {
               "letra": "A",
@@ -2344,14 +2406,14 @@ export const modelos34 = [
               "letra": "B",
               "texto": "3,9",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 1,50 pelos 3 itens. Só os 2 salgados têm esse acréscimo: 2 × R$ 1,50.",
+              "falta": "Multiplicou o acréscimo de R$ 1,50 pelos 3 itens. Só os 2 salgados têm esse acréscimo: 2 × R$ 1,50.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
               "letra": "C",
               "texto": "4",
               "erro": 0,
-              "falta": "Leu como “o salgado custa R$ 1,50 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,50, ou seja, salgado = 2 × suco + R$ 1,50.",
+              "falta": "Leu como “o salgado custa R$ 1,50 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,50, ou seja, salgado = 2 × suco + R$ 1,50.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
@@ -2363,12 +2425,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "7,5",
               "erro": 3,
-              "falta": "Contou um salgado só. São 2 salgados: a conta tem 2 × (2 × suco + R$ 1,50).",
+              "falta": "Contou um salgado só. São 2 salgados: a conta tem 2 × (2 × suco + R$ 1,50).",
               "paragrafo": "mat-fa.p7.b1.s3"
             }
           ],
           "gabarito": "D",
-          "explicacao": "Com s = preço do suco, a frase diz salgado − s = s + 1,50, ou seja, o salgado custa 2s + 1,50. Então 2 × (2s + 1,50) + 1 × s = 10,50, ou seja, 5s + 3,00 = 10,50. Daí 5s = 7,50 e s = 1,50. O salgado custa 2 × 1,50 + 1,50 = R$ 4,50."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g − s = s + 1,50, ou seja, g = 2s + 1,50. Então 2(2s + 1,50) + s = 10,50, ou seja, 5s + 3,00 = 10,50. Daí 5s = 7,50 e s = 1,50. O salgado custa g = 2 × 1,50 + 1,50 = R$ 4,50."
         }
       },
       {
@@ -2381,12 +2443,13 @@ export const modelos34 = [
         "d": 0.75,
         "T": 24,
         "Tt": "24,00",
-        "dReais": "R$ 0,75",
+        "dReais": "R$ 0,75",
         "dNum": "0,75",
         "dTexto": "75 centavos",
         "fraseRelacao": "um salgado custa 75 centavos a mais que o dobro do preço de um suco.",
-        "faltaDobro": "Traduziu só “75 centavos a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 0,75.",
-        "traducaoTexto": "o salgado custa 2s + 0,75.",
+        "faltaDobro": "Traduziu só “75 centavos a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 0,75.",
+        "traducaoTexto": "A frase diz g = 2s + 0,75.",
+        "n2s": "s",
         "n1t": "2 salgados",
         "n2t": "1 suco",
         "nItens": 3,
@@ -2399,13 +2462,13 @@ export const modelos34 = [
         "sTexto": "4,50",
         "fimTexto": "",
         "pronto": {
-          "enunciado": "Na cantina da escola, um salgado custa 75 centavos a mais que o dobro do preço de um suco. Juntos, 2 salgados e 1 suco custam R$ 24,00. Quanto custa um suco, em reais?",
+          "enunciado": "Na cantina da escola, um salgado custa 75 centavos a mais que o dobro do preço de um suco. Juntos, 2 salgados e 1 suco custam R$ 24,00. Quanto custa um suco, em reais?",
           "alternativas": [
             {
               "letra": "A",
               "texto": "4,35",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 0,75 pelos 3 itens. Só os 2 salgados têm esse acréscimo: 2 × R$ 0,75.",
+              "falta": "Multiplicou o acréscimo de R$ 0,75 pelos 3 itens. Só os 2 salgados têm esse acréscimo: 2 × R$ 0,75.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2417,14 +2480,14 @@ export const modelos34 = [
               "letra": "C",
               "texto": "7,5",
               "erro": 0,
-              "falta": "Traduziu só “75 centavos a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 0,75.",
+              "falta": "Traduziu só “75 centavos a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 0,75.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
               "letra": "D",
               "texto": "7,75",
               "erro": 3,
-              "falta": "Contou um salgado só. São 2 salgados: a conta tem 2 × (2 × suco + R$ 0,75).",
+              "falta": "Contou um salgado só. São 2 salgados: a conta tem 2 × (2 × suco + R$ 0,75).",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2436,7 +2499,7 @@ export const modelos34 = [
             }
           ],
           "gabarito": "B",
-          "explicacao": "Com s = preço do suco, o salgado custa 2s + 0,75. Então 2 × (2s + 0,75) + 1 × s = 24,00, ou seja, 5s + 1,50 = 24,00. Daí 5s = 22,50 e s = 4,50."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g = 2s + 0,75. Então 2(2s + 0,75) + s = 24,00, ou seja, 5s + 1,50 = 24,00. Daí 5s = 22,50 e s = 4,50."
         }
       },
       {
@@ -2449,12 +2512,13 @@ export const modelos34 = [
         "d": 0.5,
         "T": 36.5,
         "Tt": "36,50",
-        "dReais": "R$ 0,50",
+        "dReais": "R$ 0,50",
         "dNum": "0,50",
         "dTexto": "50 centavos",
         "fraseRelacao": "o preço de um salgado menos o de um suco é igual ao preço do suco mais 50 centavos.",
-        "faltaDobro": "Leu como “o salgado custa 50 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,50, ou seja, salgado = 2 × suco + R$ 0,50.",
-        "traducaoTexto": "a frase diz salgado − s = s + 0,50, ou seja, o salgado custa 2s + 0,50.",
+        "faltaDobro": "Leu como “o salgado custa 50 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,50, ou seja, salgado = 2 × suco + R$ 0,50.",
+        "traducaoTexto": "A frase diz g − s = s + 0,50, ou seja, g = 2s + 0,50.",
+        "n2s": "4s",
         "n1t": "3 salgados",
         "n2t": "4 sucos",
         "nItens": 7,
@@ -2465,9 +2529,9 @@ export const modelos34 = [
         "n1dTexto": "1,50",
         "restoTexto": "35,00",
         "sTexto": "3,50",
-        "fimTexto": " O salgado custa 2 × 3,50 + 0,50 = R$ 7,50.",
+        "fimTexto": " O salgado custa g = 2 × 3,50 + 0,50 = R$ 7,50.",
         "pronto": {
-          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais 50 centavos. Juntos, 3 salgados e 4 sucos custam R$ 36,50. Quanto custa um salgado, em reais?",
+          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais 50 centavos. Juntos, 3 salgados e 4 sucos custam R$ 36,50. Quanto custa um salgado, em reais?",
           "alternativas": [
             {
               "letra": "A",
@@ -2480,14 +2544,14 @@ export const modelos34 = [
               "letra": "B",
               "texto": "5,5",
               "erro": 0,
-              "falta": "Leu como “o salgado custa 50 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,50, ou seja, salgado = 2 × suco + R$ 0,50.",
+              "falta": "Leu como “o salgado custa 50 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,50, ou seja, salgado = 2 × suco + R$ 0,50.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
               "letra": "C",
               "texto": "7,1",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 0,50 pelos 7 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 0,50.",
+              "falta": "Multiplicou o acréscimo de R$ 0,50 pelos 7 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 0,50.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2499,12 +2563,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "12,5",
               "erro": 3,
-              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 0,50).",
+              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 0,50).",
               "paragrafo": "mat-fa.p7.b1.s3"
             }
           ],
           "gabarito": "D",
-          "explicacao": "Com s = preço do suco, a frase diz salgado − s = s + 0,50, ou seja, o salgado custa 2s + 0,50. Então 3 × (2s + 0,50) + 4 × s = 36,50, ou seja, 10s + 1,50 = 36,50. Daí 10s = 35,00 e s = 3,50. O salgado custa 2 × 3,50 + 0,50 = R$ 7,50."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g − s = s + 0,50, ou seja, g = 2s + 0,50. Então 3(2s + 0,50) + 4s = 36,50, ou seja, 10s + 1,50 = 36,50. Daí 10s = 35,00 e s = 3,50. O salgado custa g = 2 × 3,50 + 0,50 = R$ 7,50."
         }
       },
       {
@@ -2517,12 +2581,13 @@ export const modelos34 = [
         "d": 1,
         "T": 34,
         "Tt": "34,00",
-        "dReais": "R$ 1,00",
+        "dReais": "R$ 1,00",
         "dNum": "1,00",
-        "dTexto": "R$ 1,00",
-        "fraseRelacao": "um salgado custa R$ 1,00 a mais que o dobro do preço de um suco.",
-        "faltaDobro": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
-        "traducaoTexto": "o salgado custa 2s + 1,00.",
+        "dTexto": "R$ 1,00",
+        "fraseRelacao": "um salgado custa R$ 1,00 a mais que o dobro do preço de um suco.",
+        "faltaDobro": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
+        "traducaoTexto": "A frase diz g = 2s + 1,00.",
+        "n2s": "2s",
         "n1t": "4 salgados",
         "n2t": "2 sucos",
         "nItens": 6,
@@ -2535,13 +2600,13 @@ export const modelos34 = [
         "sTexto": "3,00",
         "fimTexto": "",
         "pronto": {
-          "enunciado": "Na cantina da escola, um salgado custa R$ 1,00 a mais que o dobro do preço de um suco. Juntos, 4 salgados e 2 sucos custam R$ 34,00. Quanto custa um suco, em reais?",
+          "enunciado": "Na cantina da escola, um salgado custa R$ 1,00 a mais que o dobro do preço de um suco. Juntos, 4 salgados e 2 sucos custam R$ 34,00. Quanto custa um suco, em reais?",
           "alternativas": [
             {
               "letra": "A",
               "texto": "2,8",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 6 itens. Só os 4 salgados têm esse acréscimo: 4 × R$ 1,00.",
+              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 6 itens. Só os 4 salgados têm esse acréscimo: 4 × R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2553,7 +2618,7 @@ export const modelos34 = [
               "letra": "C",
               "texto": "5",
               "erro": 0,
-              "falta": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
+              "falta": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
@@ -2567,12 +2632,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "8,25",
               "erro": 3,
-              "falta": "Contou um salgado só. São 4 salgados: a conta tem 4 × (2 × suco + R$ 1,00).",
+              "falta": "Contou um salgado só. São 4 salgados: a conta tem 4 × (2 × suco + R$ 1,00).",
               "paragrafo": "mat-fa.p7.b1.s3"
             }
           ],
           "gabarito": "B",
-          "explicacao": "Com s = preço do suco, o salgado custa 2s + 1,00. Então 4 × (2s + 1,00) + 2 × s = 34,00, ou seja, 10s + 4,00 = 34,00. Daí 10s = 30,00 e s = 3,00."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g = 2s + 1,00. Então 4(2s + 1,00) + 2s = 34,00, ou seja, 10s + 4,00 = 34,00. Daí 10s = 30,00 e s = 3,00."
         }
       },
       {
@@ -2585,12 +2650,13 @@ export const modelos34 = [
         "d": 0.5,
         "T": 17.5,
         "Tt": "17,50",
-        "dReais": "R$ 0,50",
+        "dReais": "R$ 0,50",
         "dNum": "0,50",
         "dTexto": "50 centavos",
         "fraseRelacao": "o preço de um salgado menos o de um suco é igual ao preço do suco mais 50 centavos.",
-        "faltaDobro": "Leu como “o salgado custa 50 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,50, ou seja, salgado = 2 × suco + R$ 0,50.",
-        "traducaoTexto": "a frase diz salgado − s = s + 0,50, ou seja, o salgado custa 2s + 0,50.",
+        "faltaDobro": "Leu como “o salgado custa 50 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,50, ou seja, salgado = 2 × suco + R$ 0,50.",
+        "traducaoTexto": "A frase diz g − s = s + 0,50, ou seja, g = 2s + 0,50.",
+        "n2s": "2s",
         "n1t": "3 salgados",
         "n2t": "2 sucos",
         "nItens": 5,
@@ -2601,9 +2667,9 @@ export const modelos34 = [
         "n1dTexto": "1,50",
         "restoTexto": "16,00",
         "sTexto": "2,00",
-        "fimTexto": " O salgado custa 2 × 2,00 + 0,50 = R$ 4,50.",
+        "fimTexto": " O salgado custa g = 2 × 2,00 + 0,50 = R$ 4,50.",
         "pronto": {
-          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais 50 centavos. Juntos, 3 salgados e 2 sucos custam R$ 17,50. Quanto custa um salgado, em reais?",
+          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais 50 centavos. Juntos, 3 salgados e 2 sucos custam R$ 17,50. Quanto custa um salgado, em reais?",
           "alternativas": [
             {
               "letra": "A",
@@ -2616,14 +2682,14 @@ export const modelos34 = [
               "letra": "B",
               "texto": "3,7",
               "erro": 0,
-              "falta": "Leu como “o salgado custa 50 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,50, ou seja, salgado = 2 × suco + R$ 0,50.",
+              "falta": "Leu como “o salgado custa 50 centavos a mais que o suco”. A frase diz salgado − suco = suco + R$ 0,50, ou seja, salgado = 2 × suco + R$ 0,50.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
               "letra": "C",
               "texto": "4,25",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 0,50 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 0,50.",
+              "falta": "Multiplicou o acréscimo de R$ 0,50 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 0,50.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2635,12 +2701,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "9",
               "erro": 3,
-              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 0,50).",
+              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 0,50).",
               "paragrafo": "mat-fa.p7.b1.s3"
             }
           ],
           "gabarito": "D",
-          "explicacao": "Com s = preço do suco, a frase diz salgado − s = s + 0,50, ou seja, o salgado custa 2s + 0,50. Então 3 × (2s + 0,50) + 2 × s = 17,50, ou seja, 8s + 1,50 = 17,50. Daí 8s = 16,00 e s = 2,00. O salgado custa 2 × 2,00 + 0,50 = R$ 4,50."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g − s = s + 0,50, ou seja, g = 2s + 0,50. Então 3(2s + 0,50) + 2s = 17,50, ou seja, 8s + 1,50 = 17,50. Daí 8s = 16,00 e s = 2,00. O salgado custa g = 2 × 2,00 + 0,50 = R$ 4,50."
         }
       },
       {
@@ -2653,12 +2719,13 @@ export const modelos34 = [
         "d": 1,
         "T": 35,
         "Tt": "35,00",
-        "dReais": "R$ 1,00",
+        "dReais": "R$ 1,00",
         "dNum": "1,00",
-        "dTexto": "R$ 1,00",
-        "fraseRelacao": "um salgado custa R$ 1,00 a mais que o dobro do preço de um suco.",
-        "faltaDobro": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
-        "traducaoTexto": "o salgado custa 2s + 1,00.",
+        "dTexto": "R$ 1,00",
+        "fraseRelacao": "um salgado custa R$ 1,00 a mais que o dobro do preço de um suco.",
+        "faltaDobro": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
+        "traducaoTexto": "A frase diz g = 2s + 1,00.",
+        "n2s": "2s",
         "n1t": "3 salgados",
         "n2t": "2 sucos",
         "nItens": 5,
@@ -2671,13 +2738,13 @@ export const modelos34 = [
         "sTexto": "4,00",
         "fimTexto": "",
         "pronto": {
-          "enunciado": "Na cantina da escola, um salgado custa R$ 1,00 a mais que o dobro do preço de um suco. Juntos, 3 salgados e 2 sucos custam R$ 35,00. Quanto custa um suco, em reais?",
+          "enunciado": "Na cantina da escola, um salgado custa R$ 1,00 a mais que o dobro do preço de um suco. Juntos, 3 salgados e 2 sucos custam R$ 35,00. Quanto custa um suco, em reais?",
           "alternativas": [
             {
               "letra": "A",
               "texto": "3,75",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 1,00.",
+              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2689,14 +2756,14 @@ export const modelos34 = [
               "letra": "C",
               "texto": "6,4",
               "erro": 0,
-              "falta": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
+              "falta": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
               "letra": "D",
               "texto": "8,5",
               "erro": 3,
-              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 1,00).",
+              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 1,00).",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2708,7 +2775,7 @@ export const modelos34 = [
             }
           ],
           "gabarito": "B",
-          "explicacao": "Com s = preço do suco, o salgado custa 2s + 1,00. Então 3 × (2s + 1,00) + 2 × s = 35,00, ou seja, 8s + 3,00 = 35,00. Daí 8s = 32,00 e s = 4,00."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g = 2s + 1,00. Então 3(2s + 1,00) + 2s = 35,00, ou seja, 8s + 3,00 = 35,00. Daí 8s = 32,00 e s = 4,00."
         }
       },
       {
@@ -2721,12 +2788,13 @@ export const modelos34 = [
         "d": 1,
         "T": 49,
         "Tt": "49,00",
-        "dReais": "R$ 1,00",
+        "dReais": "R$ 1,00",
         "dNum": "1,00",
-        "dTexto": "R$ 1,00",
-        "fraseRelacao": "o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,00.",
-        "faltaDobro": "Leu como “o salgado custa R$ 1,00 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,00, ou seja, salgado = 2 × suco + R$ 1,00.",
-        "traducaoTexto": "a frase diz salgado − s = s + 1,00, ou seja, o salgado custa 2s + 1,00.",
+        "dTexto": "R$ 1,00",
+        "fraseRelacao": "o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,00.",
+        "faltaDobro": "Leu como “o salgado custa R$ 1,00 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,00, ou seja, salgado = 2 × suco + R$ 1,00.",
+        "traducaoTexto": "A frase diz g − s = s + 1,00, ou seja, g = 2s + 1,00.",
+        "n2s": "2s",
         "n1t": "4 salgados",
         "n2t": "2 sucos",
         "nItens": 6,
@@ -2737,9 +2805,9 @@ export const modelos34 = [
         "n1dTexto": "4,00",
         "restoTexto": "45,00",
         "sTexto": "4,50",
-        "fimTexto": " O salgado custa 2 × 4,50 + 1,00 = R$ 10,00.",
+        "fimTexto": " O salgado custa g = 2 × 4,50 + 1,00 = R$ 10,00.",
         "pronto": {
-          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,00. Juntos, 4 salgados e 2 sucos custam R$ 49,00. Quanto custa um salgado, em reais?",
+          "enunciado": "Na cantina da escola, o preço de um salgado menos o de um suco é igual ao preço do suco mais R$ 1,00. Juntos, 4 salgados e 2 sucos custam R$ 49,00. Quanto custa um salgado, em reais?",
           "alternativas": [
             {
               "letra": "A",
@@ -2752,14 +2820,14 @@ export const modelos34 = [
               "letra": "B",
               "texto": "8,5",
               "erro": 0,
-              "falta": "Leu como “o salgado custa R$ 1,00 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,00, ou seja, salgado = 2 × suco + R$ 1,00.",
+              "falta": "Leu como “o salgado custa R$ 1,00 a mais que o suco”. A frase diz salgado − suco = suco + R$ 1,00, ou seja, salgado = 2 × suco + R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
               "letra": "C",
               "texto": "9,6",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 6 itens. Só os 4 salgados têm esse acréscimo: 4 × R$ 1,00.",
+              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 6 itens. Só os 4 salgados têm esse acréscimo: 4 × R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2771,12 +2839,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "25",
               "erro": 3,
-              "falta": "Contou um salgado só. São 4 salgados: a conta tem 4 × (2 × suco + R$ 1,00).",
+              "falta": "Contou um salgado só. São 4 salgados: a conta tem 4 × (2 × suco + R$ 1,00).",
               "paragrafo": "mat-fa.p7.b1.s3"
             }
           ],
           "gabarito": "D",
-          "explicacao": "Com s = preço do suco, a frase diz salgado − s = s + 1,00, ou seja, o salgado custa 2s + 1,00. Então 4 × (2s + 1,00) + 2 × s = 49,00, ou seja, 10s + 4,00 = 49,00. Daí 10s = 45,00 e s = 4,50. O salgado custa 2 × 4,50 + 1,00 = R$ 10,00."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g − s = s + 1,00, ou seja, g = 2s + 1,00. Então 4(2s + 1,00) + 2s = 49,00, ou seja, 10s + 4,00 = 49,00. Daí 10s = 45,00 e s = 4,50. O salgado custa g = 2 × 4,50 + 1,00 = R$ 10,00."
         }
       },
       {
@@ -2789,12 +2857,13 @@ export const modelos34 = [
         "d": 1,
         "T": 43,
         "Tt": "43,00",
-        "dReais": "R$ 1,00",
+        "dReais": "R$ 1,00",
         "dNum": "1,00",
-        "dTexto": "R$ 1,00",
-        "fraseRelacao": "um salgado custa R$ 1,00 a mais que o dobro do preço de um suco.",
-        "faltaDobro": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
-        "traducaoTexto": "o salgado custa 2s + 1,00.",
+        "dTexto": "R$ 1,00",
+        "fraseRelacao": "um salgado custa R$ 1,00 a mais que o dobro do preço de um suco.",
+        "faltaDobro": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
+        "traducaoTexto": "A frase diz g = 2s + 1,00.",
+        "n2s": "2s",
         "n1t": "3 salgados",
         "n2t": "2 sucos",
         "nItens": 5,
@@ -2807,13 +2876,13 @@ export const modelos34 = [
         "sTexto": "5,00",
         "fimTexto": "",
         "pronto": {
-          "enunciado": "Na cantina da escola, um salgado custa R$ 1,00 a mais que o dobro do preço de um suco. Juntos, 3 salgados e 2 sucos custam R$ 43,00. Quanto custa um suco, em reais?",
+          "enunciado": "Na cantina da escola, um salgado custa R$ 1,00 a mais que o dobro do preço de um suco. Juntos, 3 salgados e 2 sucos custam R$ 43,00. Quanto custa um suco, em reais?",
           "alternativas": [
             {
               "letra": "A",
               "texto": "4,75",
               "erro": 1,
-              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 1,00.",
+              "falta": "Multiplicou o acréscimo de R$ 1,00 pelos 5 itens. Só os 3 salgados têm esse acréscimo: 3 × R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2825,14 +2894,14 @@ export const modelos34 = [
               "letra": "C",
               "texto": "8",
               "erro": 0,
-              "falta": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
+              "falta": "Traduziu só “R$ 1,00 a mais que o suco” e esqueceu o dobro. A frase inteira dá: salgado = 2 × suco + R$ 1,00.",
               "paragrafo": "mat-fa.p7.b1.s2"
             },
             {
               "letra": "D",
               "texto": "10,5",
               "erro": 3,
-              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 1,00).",
+              "falta": "Contou um salgado só. São 3 salgados: a conta tem 3 × (2 × suco + R$ 1,00).",
               "paragrafo": "mat-fa.p7.b1.s3"
             },
             {
@@ -2844,7 +2913,7 @@ export const modelos34 = [
             }
           ],
           "gabarito": "B",
-          "explicacao": "Com s = preço do suco, o salgado custa 2s + 1,00. Então 3 × (2s + 1,00) + 2 × s = 43,00, ou seja, 8s + 3,00 = 43,00. Daí 8s = 40,00 e s = 5,00."
+          "explicacao": "Chame de g o preço de um salgado e de s o de um suco, em reais. A frase diz g = 2s + 1,00. Então 3(2s + 1,00) + 2s = 43,00, ou seja, 8s + 3,00 = 43,00. Daí 8s = 40,00 e s = 5,00."
         }
       }
     ],
@@ -2852,7 +2921,7 @@ export const modelos34 = [
       "fonte": "Equipe Prumo",
       "licenca": "CC BY-SA 4.0",
       "autoria": {
-        "ia": true,
+        "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
         "modelo": "Claude Opus 5.5",
         "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
         "data": "2026-11-17",
@@ -2869,7 +2938,7 @@ export const modelos34 = [
     "capitulo": "mat-fa.c4",
     "licenca": "CC BY-SA 4.0",
     "formato": "numero",
-    "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ {Tt}. O primeiro tinha {x1t}, {y1t} e {z1t}. O segundo tinha {x2t}, {y2t} e {z2t}. Um terceiro pedido, também de R$ {Tt}, terá {y3t} e {z3t}. Quantos pães de queijo ele terá?",
+    "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ {Tt}. O primeiro tinha {x1t}, {y1t} e {z1t}. O segundo tinha {x2t}, {y2t} e {z2t}. Um terceiro pedido, também de R$ {Tt}, terá {y3t} e {z3t}. Quantos pães de queijo ele terá?",
     "certa": "xb + sg*p",
     "erros": [
       {
@@ -2928,7 +2997,7 @@ export const modelos34 = [
         "y3t": "1 suco",
         "z3t": "1 fatia de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 44,00. O primeiro tinha 4 pães de queijo, 3 sucos e 3 fatias de bolo. O segundo tinha 10 pães de queijo, 2 sucos e 2 fatias de bolo. Um terceiro pedido, também de R$ 44,00, terá 1 suco e 1 fatia de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 44,00. O primeiro tinha 4 pães de queijo, 3 sucos e 3 fatias de bolo. O segundo tinha 10 pães de queijo, 2 sucos e 2 fatias de bolo. Um terceiro pedido, também de R$ 44,00, terá 1 suco e 1 fatia de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3000,7 +3069,7 @@ export const modelos34 = [
         "y3t": "4 sucos",
         "z3t": "3 fatias de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 57,00. O primeiro tinha 14 pães de queijo, 3 sucos e 2 fatias de bolo. O segundo tinha 20 pães de queijo, 2 sucos e 1 fatia de bolo. Um terceiro pedido, também de R$ 57,00, terá 4 sucos e 3 fatias de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 57,00. O primeiro tinha 14 pães de queijo, 3 sucos e 2 fatias de bolo. O segundo tinha 20 pães de queijo, 2 sucos e 1 fatia de bolo. Um terceiro pedido, também de R$ 57,00, terá 4 sucos e 3 fatias de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3072,7 +3141,7 @@ export const modelos34 = [
         "y3t": "2 sucos",
         "z3t": "1 fatia de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 47,00. O primeiro tinha 2 pães de queijo, 4 sucos e 3 fatias de bolo. O segundo tinha 6 pães de queijo, 3 sucos e 2 fatias de bolo. Um terceiro pedido, também de R$ 47,00, terá 2 sucos e 1 fatia de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 47,00. O primeiro tinha 2 pães de queijo, 4 sucos e 3 fatias de bolo. O segundo tinha 6 pães de queijo, 3 sucos e 2 fatias de bolo. Um terceiro pedido, também de R$ 47,00, terá 2 sucos e 1 fatia de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3144,7 +3213,7 @@ export const modelos34 = [
         "y3t": "3 sucos",
         "z3t": "4 fatias de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 61,00. O primeiro tinha 10 pães de queijo, 2 sucos e 3 fatias de bolo. O segundo tinha 14 pães de queijo, 1 suco e 2 fatias de bolo. Um terceiro pedido, também de R$ 61,00, terá 3 sucos e 4 fatias de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 61,00. O primeiro tinha 10 pães de queijo, 2 sucos e 3 fatias de bolo. O segundo tinha 14 pães de queijo, 1 suco e 2 fatias de bolo. Um terceiro pedido, também de R$ 61,00, terá 3 sucos e 4 fatias de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3216,7 +3285,7 @@ export const modelos34 = [
         "y3t": "1 suco",
         "z3t": "2 fatias de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 53,00. O primeiro tinha 3 pães de queijo, 3 sucos e 4 fatias de bolo. O segundo tinha 8 pães de queijo, 2 sucos e 3 fatias de bolo. Um terceiro pedido, também de R$ 53,00, terá 1 suco e 2 fatias de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 53,00. O primeiro tinha 3 pães de queijo, 3 sucos e 4 fatias de bolo. O segundo tinha 8 pães de queijo, 2 sucos e 3 fatias de bolo. Um terceiro pedido, também de R$ 53,00, terá 1 suco e 2 fatias de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3288,7 +3357,7 @@ export const modelos34 = [
         "y3t": "3 sucos",
         "z3t": "3 fatias de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 55,00. O primeiro tinha 12 pães de queijo, 2 sucos e 2 fatias de bolo. O segundo tinha 17 pães de queijo, 1 suco e 1 fatia de bolo. Um terceiro pedido, também de R$ 55,00, terá 3 sucos e 3 fatias de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 55,00. O primeiro tinha 12 pães de queijo, 2 sucos e 2 fatias de bolo. O segundo tinha 17 pães de queijo, 1 suco e 1 fatia de bolo. Um terceiro pedido, também de R$ 55,00, terá 3 sucos e 3 fatias de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3360,7 +3429,7 @@ export const modelos34 = [
         "y3t": "2 sucos",
         "z3t": "2 fatias de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 42,00. O primeiro tinha 1 pão de queijo, 4 sucos e 4 fatias de bolo. O segundo tinha 6 pães de queijo, 3 sucos e 3 fatias de bolo. Um terceiro pedido, também de R$ 42,00, terá 2 sucos e 2 fatias de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 42,00. O primeiro tinha 1 pão de queijo, 4 sucos e 4 fatias de bolo. O segundo tinha 6 pães de queijo, 3 sucos e 3 fatias de bolo. Um terceiro pedido, também de R$ 42,00, terá 2 sucos e 2 fatias de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3432,7 +3501,7 @@ export const modelos34 = [
         "y3t": "4 sucos",
         "z3t": "3 fatias de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 46,00. O primeiro tinha 11 pães de queijo, 3 sucos e 2 fatias de bolo. O segundo tinha 16 pães de queijo, 2 sucos e 1 fatia de bolo. Um terceiro pedido, também de R$ 46,00, terá 4 sucos e 3 fatias de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 46,00. O primeiro tinha 11 pães de queijo, 3 sucos e 2 fatias de bolo. O segundo tinha 16 pães de queijo, 2 sucos e 1 fatia de bolo. Um terceiro pedido, também de R$ 46,00, terá 4 sucos e 3 fatias de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3504,7 +3573,7 @@ export const modelos34 = [
         "y3t": "3 sucos",
         "z3t": "1 fatia de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 38,00. O primeiro tinha 2 pães de queijo, 5 sucos e 3 fatias de bolo. O segundo tinha 8 pães de queijo, 4 sucos e 2 fatias de bolo. Um terceiro pedido, também de R$ 38,00, terá 3 sucos e 1 fatia de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 38,00. O primeiro tinha 2 pães de queijo, 5 sucos e 3 fatias de bolo. O segundo tinha 8 pães de queijo, 4 sucos e 2 fatias de bolo. Um terceiro pedido, também de R$ 38,00, terá 3 sucos e 1 fatia de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3576,7 +3645,7 @@ export const modelos34 = [
         "y3t": "3 sucos",
         "z3t": "4 fatias de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 42,50. O primeiro tinha 13 pães de queijo, 2 sucos e 3 fatias de bolo. O segundo tinha 19 pães de queijo, 1 suco e 2 fatias de bolo. Um terceiro pedido, também de R$ 42,50, terá 3 sucos e 4 fatias de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 42,50. O primeiro tinha 13 pães de queijo, 2 sucos e 3 fatias de bolo. O segundo tinha 19 pães de queijo, 1 suco e 2 fatias de bolo. Um terceiro pedido, também de R$ 42,50, terá 3 sucos e 4 fatias de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3648,7 +3717,7 @@ export const modelos34 = [
         "y3t": "2 sucos",
         "z3t": "3 fatias de bolo",
         "pronto": {
-          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 57,00. O primeiro tinha 1 pão de queijo, 4 sucos e 5 fatias de bolo. O segundo tinha 7 pães de queijo, 3 sucos e 4 fatias de bolo. Um terceiro pedido, também de R$ 57,00, terá 2 sucos e 3 fatias de bolo. Quantos pães de queijo ele terá?",
+          "enunciado": "Dois pedidos numa lanchonete custaram o mesmo valor, R$ 57,00. O primeiro tinha 1 pão de queijo, 4 sucos e 5 fatias de bolo. O segundo tinha 7 pães de queijo, 3 sucos e 4 fatias de bolo. Um terceiro pedido, também de R$ 57,00, terá 2 sucos e 3 fatias de bolo. Quantos pães de queijo ele terá?",
           "alternativas": [
             {
               "letra": "A",
@@ -3693,7 +3762,7 @@ export const modelos34 = [
       "fonte": "Equipe Prumo",
       "licenca": "CC BY-SA 4.0",
       "autoria": {
-        "ia": true,
+        "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
         "modelo": "Claude Opus 5.5",
         "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
         "data": "2026-11-17",
@@ -3837,7 +3906,7 @@ export const modelos34 = [
       "fonte": "Equipe Prumo",
       "licenca": "CC BY-SA 4.0",
       "autoria": {
-        "ia": true,
+        "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
         "modelo": "Claude Opus 5.5",
         "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
         "data": "2026-11-17",
@@ -3854,7 +3923,7 @@ export const modelos34 = [
     "capitulo": "mat-fa.c4",
     "licenca": "CC BY-SA 4.0",
     "formato": "numero",
-    "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem {at} e {bt} e custa R$ {T1t}. O kit 2 tem {bct} e {act} e custa R$ {T2t}. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de {umPedido}?",
+    "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem {at} e {bt} e custa R$ {T1t}. O kit 2 tem {bct} e {act} e custa R$ {T2t}. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de {umPedido}?",
     "certa": "(1 - q)*c + q*k",
     "erros": [
       {
@@ -3864,12 +3933,12 @@ export const modelos34 = [
       },
       {
         "expr": "(T1 + T2)/(a + b)",
-        "falta": "Somou os dois kits e dividiu por {ab}. Isso dá caderno + caneta = R$ {somaTexto}, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
+        "falta": "Somou os dois kits e dividiu por {ab}. Isso dá caderno + caneta = R$ {somaTexto}, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
         "paragrafo": "mat-fa.p8.b1.s2"
       },
       {
         "expr": "T1 - T2",
-        "falta": "Tomou a diferença entre os kits, R$ {difTexto}, como o preço {doPedido}. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
+        "falta": "Tomou a diferença entre os kits, R$ {difTexto}, como o preço {doPedido}. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
         "paragrafo": "mat-fa.p8.b1.s2"
       },
       {
@@ -3878,7 +3947,7 @@ export const modelos34 = [
         "paragrafo": "mat-fa.p7.b1.s1"
       }
     ],
-    "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ {difTexto}. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = {difTexto}, ou seja, caderno = caneta + {difTexto}. Substitua no kit 2: {b} × (caneta + {difTexto}) + {a} × caneta = {T2t}, então {ab} × caneta + {bdTexto} = {T2t} e caneta = R$ {kTexto}. Caderno = {kTexto} + {difTexto} = R$ {cTexto}.",
+    "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ {difTexto}. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = {difTexto}, ou seja, caderno = caneta + {difTexto}. Substitua no kit 2: {b} × (caneta + {difTexto}) + {a} × caneta = {T2t}, então {ab} × caneta + {bdTexto} = {T2t} e caneta = R$ {kTexto}. Caderno = {kTexto} + {difTexto} = R$ {cTexto}.",
     "papeisDasLinhas": "linha 0 = item da rodada (papel de aplicar); 1 a 4 = variantes (revisões, Prova, Questão do dia), em ordem; 5 a 7 = \"Refazer com outros números\"",
     "linhas": [
       {
@@ -3905,7 +3974,7 @@ export const modelos34 = [
         "bct": "2 cadernos",
         "act": "3 canetas",
         "pronto": {
-          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 42,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 33,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de um caderno?",
+          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 42,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 33,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de um caderno?",
           "alternativas": [
             {
               "letra": "A",
@@ -3925,7 +3994,7 @@ export const modelos34 = [
               "letra": "C",
               "texto": "9",
               "erro": 2,
-              "falta": "Tomou a diferença entre os kits, R$ 9,00, como o preço do caderno. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
+              "falta": "Tomou a diferença entre os kits, R$ 9,00, como o preço do caderno. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -3937,12 +4006,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "15",
               "erro": 1,
-              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 15,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
+              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 15,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
               "paragrafo": "mat-fa.p8.b1.s2"
             }
           ],
           "gabarito": "D",
-          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 9,00. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = 9,00, ou seja, caderno = caneta + 9,00. Substitua no kit 2: 2 × (caneta + 9,00) + 3 × caneta = 33,00, então 5 × caneta + 18,00 = 33,00 e caneta = R$ 3,00. Caderno = 3,00 + 9,00 = R$ 12,00."
+          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 9,00. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = 9,00, ou seja, caderno = caneta + 9,00. Substitua no kit 2: 2 × (caneta + 9,00) + 3 × caneta = 33,00, então 5 × caneta + 18,00 = 33,00 e caneta = R$ 3,00. Caderno = 3,00 + 9,00 = R$ 12,00."
         }
       },
       {
@@ -3969,7 +4038,7 @@ export const modelos34 = [
         "bct": "2 cadernos",
         "act": "3 canetas",
         "pronto": {
-          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 36,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 29,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de uma caneta?",
+          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 36,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 29,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de uma caneta?",
           "alternativas": [
             {
               "letra": "A",
@@ -3980,7 +4049,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "7",
               "erro": 2,
-              "falta": "Tomou a diferença entre os kits, R$ 7,00, como o preço da caneta. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
+              "falta": "Tomou a diferença entre os kits, R$ 7,00, como o preço da caneta. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -4001,12 +4070,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "13",
               "erro": 1,
-              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 13,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
+              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 13,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
               "paragrafo": "mat-fa.p8.b1.s2"
             }
           ],
           "gabarito": "A",
-          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 7,00. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = 7,00, ou seja, caderno = caneta + 7,00. Substitua no kit 2: 2 × (caneta + 7,00) + 3 × caneta = 29,00, então 5 × caneta + 14,00 = 29,00 e caneta = R$ 3,00. Caderno = 3,00 + 7,00 = R$ 10,00."
+          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 7,00. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = 7,00, ou seja, caderno = caneta + 7,00. Substitua no kit 2: 2 × (caneta + 7,00) + 3 × caneta = 29,00, então 5 × caneta + 14,00 = 29,00 e caneta = R$ 3,00. Caderno = 3,00 + 7,00 = R$ 10,00."
         }
       },
       {
@@ -4033,7 +4102,7 @@ export const modelos34 = [
         "bct": "1 caderno",
         "act": "2 canetas",
         "pronto": {
-          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 2 cadernos e 1 caneta e custa R$ 24,00. O kit 2 tem 1 caderno e 2 canetas e custa R$ 18,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de um caderno?",
+          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 2 cadernos e 1 caneta e custa R$ 24,00. O kit 2 tem 1 caderno e 2 canetas e custa R$ 18,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de um caderno?",
           "alternativas": [
             {
               "letra": "A",
@@ -4046,7 +4115,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "6",
               "erro": 2,
-              "falta": "Tomou a diferença entre os kits, R$ 6,00, como o preço do caderno. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
+              "falta": "Tomou a diferença entre os kits, R$ 6,00, como o preço do caderno. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -4065,12 +4134,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "14",
               "erro": 1,
-              "falta": "Somou os dois kits e dividiu por 3. Isso dá caderno + caneta = R$ 14,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
+              "falta": "Somou os dois kits e dividiu por 3. Isso dá caderno + caneta = R$ 14,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
               "paragrafo": "mat-fa.p8.b1.s2"
             }
           ],
           "gabarito": "D",
-          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 6,00. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = 6,00, ou seja, caderno = caneta + 6,00. Substitua no kit 2: 1 × (caneta + 6,00) + 2 × caneta = 18,00, então 3 × caneta + 6,00 = 18,00 e caneta = R$ 4,00. Caderno = 4,00 + 6,00 = R$ 10,00."
+          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 6,00. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = 6,00, ou seja, caderno = caneta + 6,00. Substitua no kit 2: 1 × (caneta + 6,00) + 2 × caneta = 18,00, então 3 × caneta + 6,00 = 18,00 e caneta = R$ 4,00. Caderno = 4,00 + 6,00 = R$ 10,00."
         }
       },
       {
@@ -4097,7 +4166,7 @@ export const modelos34 = [
         "bct": "2 cadernos",
         "act": "3 canetas",
         "pronto": {
-          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 30,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 25,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de uma caneta?",
+          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 30,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 25,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de uma caneta?",
           "alternativas": [
             {
               "letra": "A",
@@ -4108,7 +4177,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "5",
               "erro": 2,
-              "falta": "Tomou a diferença entre os kits, R$ 5,00, como o preço da caneta. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
+              "falta": "Tomou a diferença entre os kits, R$ 5,00, como o preço da caneta. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -4129,12 +4198,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "11",
               "erro": 1,
-              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 11,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
+              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 11,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
               "paragrafo": "mat-fa.p8.b1.s2"
             }
           ],
           "gabarito": "A",
-          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 5,00. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = 5,00, ou seja, caderno = caneta + 5,00. Substitua no kit 2: 2 × (caneta + 5,00) + 3 × caneta = 25,00, então 5 × caneta + 10,00 = 25,00 e caneta = R$ 3,00. Caderno = 3,00 + 5,00 = R$ 8,00."
+          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 5,00. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = 5,00, ou seja, caderno = caneta + 5,00. Substitua no kit 2: 2 × (caneta + 5,00) + 3 × caneta = 25,00, então 5 × caneta + 10,00 = 25,00 e caneta = R$ 3,00. Caderno = 3,00 + 5,00 = R$ 8,00."
         }
       },
       {
@@ -4161,7 +4230,7 @@ export const modelos34 = [
         "bct": "2 cadernos",
         "act": "3 canetas",
         "pronto": {
-          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 40,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 32,50. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de um caderno?",
+          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 40,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 32,50. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de um caderno?",
           "alternativas": [
             {
               "letra": "A",
@@ -4174,7 +4243,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "7,5",
               "erro": 2,
-              "falta": "Tomou a diferença entre os kits, R$ 7,50, como o preço do caderno. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
+              "falta": "Tomou a diferença entre os kits, R$ 7,50, como o preço do caderno. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -4193,12 +4262,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "14,5",
               "erro": 1,
-              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 14,50, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
+              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 14,50, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
               "paragrafo": "mat-fa.p8.b1.s2"
             }
           ],
           "gabarito": "D",
-          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 7,50. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = 7,50, ou seja, caderno = caneta + 7,50. Substitua no kit 2: 2 × (caneta + 7,50) + 3 × caneta = 32,50, então 5 × caneta + 15,00 = 32,50 e caneta = R$ 3,50. Caderno = 3,50 + 7,50 = R$ 11,00."
+          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 7,50. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = 7,50, ou seja, caderno = caneta + 7,50. Substitua no kit 2: 2 × (caneta + 7,50) + 3 × caneta = 32,50, então 5 × caneta + 15,00 = 32,50 e caneta = R$ 3,50. Caderno = 3,50 + 7,50 = R$ 11,00."
         }
       },
       {
@@ -4225,7 +4294,7 @@ export const modelos34 = [
         "bct": "1 caderno",
         "act": "2 canetas",
         "pronto": {
-          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 2 cadernos e 1 caneta e custa R$ 30,00. O kit 2 tem 1 caderno e 2 canetas e custa R$ 21,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de uma caneta?",
+          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 2 cadernos e 1 caneta e custa R$ 30,00. O kit 2 tem 1 caderno e 2 canetas e custa R$ 21,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de uma caneta?",
           "alternativas": [
             {
               "letra": "A",
@@ -4236,7 +4305,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "9",
               "erro": 2,
-              "falta": "Tomou a diferença entre os kits, R$ 9,00, como o preço da caneta. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
+              "falta": "Tomou a diferença entre os kits, R$ 9,00, como o preço da caneta. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -4257,12 +4326,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "17",
               "erro": 1,
-              "falta": "Somou os dois kits e dividiu por 3. Isso dá caderno + caneta = R$ 17,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
+              "falta": "Somou os dois kits e dividiu por 3. Isso dá caderno + caneta = R$ 17,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
               "paragrafo": "mat-fa.p8.b1.s2"
             }
           ],
           "gabarito": "A",
-          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 9,00. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = 9,00, ou seja, caderno = caneta + 9,00. Substitua no kit 2: 1 × (caneta + 9,00) + 2 × caneta = 21,00, então 3 × caneta + 9,00 = 21,00 e caneta = R$ 4,00. Caderno = 4,00 + 9,00 = R$ 13,00."
+          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 9,00. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = 9,00, ou seja, caderno = caneta + 9,00. Substitua no kit 2: 1 × (caneta + 9,00) + 2 × caneta = 21,00, então 3 × caneta + 9,00 = 21,00 e caneta = R$ 4,00. Caderno = 4,00 + 9,00 = R$ 13,00."
         }
       },
       {
@@ -4289,7 +4358,7 @@ export const modelos34 = [
         "bct": "2 cadernos",
         "act": "3 canetas",
         "pronto": {
-          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 33,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 27,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de um caderno?",
+          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 3 cadernos e 2 canetas e custa R$ 33,00. O kit 2 tem 2 cadernos e 3 canetas e custa R$ 27,00. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de um caderno?",
           "alternativas": [
             {
               "letra": "A",
@@ -4302,7 +4371,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "6",
               "erro": 2,
-              "falta": "Tomou a diferença entre os kits, R$ 6,00, como o preço do caderno. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
+              "falta": "Tomou a diferença entre os kits, R$ 6,00, como o preço do caderno. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -4321,12 +4390,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "12",
               "erro": 1,
-              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 12,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
+              "falta": "Somou os dois kits e dividiu por 5. Isso dá caderno + caneta = R$ 12,00, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
               "paragrafo": "mat-fa.p8.b1.s2"
             }
           ],
           "gabarito": "D",
-          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 6,00. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = 6,00, ou seja, caderno = caneta + 6,00. Substitua no kit 2: 2 × (caneta + 6,00) + 3 × caneta = 27,00, então 5 × caneta + 12,00 = 27,00 e caneta = R$ 3,00. Caderno = 3,00 + 6,00 = R$ 9,00."
+          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 6,00. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = 6,00, ou seja, caderno = caneta + 6,00. Substitua no kit 2: 2 × (caneta + 6,00) + 3 × caneta = 27,00, então 5 × caneta + 12,00 = 27,00 e caneta = R$ 3,00. Caderno = 3,00 + 6,00 = R$ 9,00."
         }
       },
       {
@@ -4353,7 +4422,7 @@ export const modelos34 = [
         "bct": "1 caderno",
         "act": "2 canetas",
         "pronto": {
-          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 2 cadernos e 1 caneta e custa R$ 21,00. O kit 2 tem 1 caderno e 2 canetas e custa R$ 16,50. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de uma caneta?",
+          "enunciado": "Uma papelaria monta dois kits para a volta às aulas. O kit 1 tem 2 cadernos e 1 caneta e custa R$ 21,00. O kit 2 tem 1 caderno e 2 canetas e custa R$ 16,50. Todos os cadernos têm o mesmo preço, e todas as canetas também. Qual é o preço, em reais, de uma caneta?",
           "alternativas": [
             {
               "letra": "A",
@@ -4364,7 +4433,7 @@ export const modelos34 = [
               "letra": "B",
               "texto": "4,5",
               "erro": 2,
-              "falta": "Tomou a diferença entre os kits, R$ 4,50, como o preço da caneta. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
+              "falta": "Tomou a diferença entre os kits, R$ 4,50, como o preço da caneta. Essa diferença é caderno − caneta: o kit 1 tem 1 caderno a mais e 1 caneta a menos.",
               "paragrafo": "mat-fa.p8.b1.s2"
             },
             {
@@ -4385,12 +4454,12 @@ export const modelos34 = [
               "letra": "E",
               "texto": "12,5",
               "erro": 1,
-              "falta": "Somou os dois kits e dividiu por 3. Isso dá caderno + caneta = R$ 12,50, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
+              "falta": "Somou os dois kits e dividiu por 3. Isso dá caderno + caneta = R$ 12,50, o preço de um de cada, e não o de um item só. Para separar os dois, compare os kits: a diferença entre eles é caderno − caneta.",
               "paragrafo": "mat-fa.p8.b1.s2"
             }
           ],
           "gabarito": "A",
-          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 4,50. Subtraindo um kit do outro, o que é igual nos dois some: caderno − caneta = 4,50, ou seja, caderno = caneta + 4,50. Substitua no kit 2: 1 × (caneta + 4,50) + 2 × caneta = 16,50, então 3 × caneta + 4,50 = 16,50 e caneta = R$ 4,00. Caderno = 4,00 + 4,50 = R$ 8,50."
+          "explicacao": "Do kit 1 para o kit 2 sai 1 caderno, entra 1 caneta, e o total cai R$ 4,50. Subtraindo um kit do outro, o que é igual nos dois se cancela: caderno − caneta = 4,50, ou seja, caderno = caneta + 4,50. Substitua no kit 2: 1 × (caneta + 4,50) + 2 × caneta = 16,50, então 3 × caneta + 4,50 = 16,50 e caneta = R$ 4,00. Caderno = 4,00 + 4,50 = R$ 8,50."
         }
       }
     ],
@@ -4398,7 +4467,7 @@ export const modelos34 = [
       "fonte": "Equipe Prumo",
       "licenca": "CC BY-SA 4.0",
       "autoria": {
-        "ia": true,
+        "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
         "modelo": "Claude Opus 5.5",
         "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
         "data": "2026-11-17",
@@ -4430,9 +4499,16 @@ export const questoes34 = [
     "gabarito": "B",
     "gabaritoConferido": true,
     "conferidoITENS_PROVA": "2026-11-17",
-    "textoConferidoPDF": null,
+    "textoConferidoPDF": "2026-11-17",
+    "conferenciaPDF": {
+      "pdf": "https://download.inep.gov.br/educacao_basica/enem/provas/2019/caderno_de_questoes_2_dia_caderno_7_azul_aplicacao_regular.pdf",
+      "sha256": "a476882608be2bf1353af8b26c60838ac187f2d1a3653524c90de62b0372efa6",
+      "pagina": 19,
+      "nota": "Texto igual ao PDF. A imagem do enem.dev (527 × 259 px) foi trocada por um recorte do gráfico renderizado do PDF oficial (764 × 361 px).",
+      "correcoes": []
+    },
     "anulada": false,
-    "contexto": "<p>Os exercícios físicos são recomendados para o bom funcionamento do organismo, pois aceleram o metabolismo e, em consequência, elevam o consumo de calorias. No gráfico, estão registrados os valores calóricos, em kcal, gastos em cinco diferentes atividades físicas, em função do tempo dedicado às atividades, contado em minuto.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2019-143.png\" alt=\"Descrição da equipe Prumo: gráfico de pontos. Eixo horizontal: tempo, em minutos, marcado de 5 em 5, de 5 a 30. Eixo vertical: kcal, de 20 em 20, de 0 a 140. Ponto I: 10 minutos e 20 kcal. Ponto II: 15 minutos e 100 kcal. Ponto III: 20 minutos e 120 kcal. Ponto IV: 25 minutos e 100 kcal. Ponto V: 30 minutos e 80 kcal.\" loading=\"lazy\"></figure>",
+    "contexto": "<p>Os exercícios físicos são recomendados para o bom funcionamento do organismo, pois aceleram o metabolismo e, em consequência, elevam o consumo de calorias. No gráfico, estão registrados os valores calóricos, em kcal, gastos em cinco diferentes atividades físicas, em função do tempo dedicado às atividades, contado em minuto.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2019-143.png\" alt=\"Descrição da equipe Prumo. Gráfico de pontos sobre uma grade. Eixo horizontal: tempo, em minutos, marcado de 5 em 5, de 5 a 30. Eixo vertical: kcal, marcado de 20 em 20, de 20 a 140. Ponto I: 10 minutos e 20 kcal. Ponto II: 15 minutos e 100 kcal. Ponto III: 20 minutos e 120 kcal. Ponto IV: 25 minutos e 100 kcal. Ponto V: 30 minutos e 80 kcal.\" loading=\"lazy\"></figure>",
     "introducao": "Qual dessas atividades físicas proporciona o maior consumo de quilocalorias por minuto?",
     "fonteMd": "Os exercícios físicos são recomendados para o bom funcionamento do organismo, pois aceleram o metabolismo e, em consequência, elevam o consumo de calorias. No gráfico, estão registrados os valores calóricos, em kcal, gastos em cinco diferentes atividades físicas, em função do tempo dedicado às atividades, contado em minuto.\n\n![](https://enem.dev/2019/questions/143/ef507c14-34a0-479e-a532-193bf38c48ba.png)",
     "materialDeTerceiros": null,
@@ -4458,7 +4534,7 @@ export const questoes34 = [
       {
         "letra": "D",
         "texto": "IV",
-        "falta": "Multiplicou kcal por minutos (100 × 25 = 2.500 é o maior produto). Taxa é divisão: 100 ÷ 25 = 4 kcal por minuto.",
+        "falta": "Multiplicou kcal por minutos (100 × 25 = 2 500 é o maior produto). Taxa é divisão: 100 ÷ 25 = 4 kcal por minuto.",
         "exprTeste": "maior(r => r.k * r.t)",
         "paragrafo": "mat-fa.p5.b1.s1"
       },
@@ -4473,13 +4549,15 @@ export const questoes34 = [
     "imagens": [
       {
         "src": "conteudo/img/enem-2019-143.png",
-        "alt": "Descrição da equipe Prumo: gráfico de pontos. Eixo horizontal: tempo, em minutos, marcado de 5 em 5, de 5 a 30. Eixo vertical: kcal, de 20 em 20, de 0 a 140. Ponto I: 10 minutos e 20 kcal. Ponto II: 15 minutos e 100 kcal. Ponto III: 20 minutos e 120 kcal. Ponto IV: 25 minutos e 100 kcal. Ponto V: 30 minutos e 80 kcal.",
+        "alt": "Descrição da equipe Prumo. Gráfico de pontos sobre uma grade. Eixo horizontal: tempo, em minutos, marcado de 5 em 5, de 5 a 30. Eixo vertical: kcal, marcado de 20 em 20, de 20 a 140. Ponto I: 10 minutos e 20 kcal. Ponto II: 15 minutos e 100 kcal. Ponto III: 20 minutos e 120 kcal. Ponto IV: 25 minutos e 100 kcal. Ponto V: 30 minutos e 80 kcal.",
         "altFonte": "equipe",
-        "original": "https://enem.dev/2019/questions/143/ef507c14-34a0-479e-a532-193bf38c48ba.png"
+        "original": "https://enem.dev/2019/questions/143/ef507c14-34a0-479e-a532-193bf38c48ba.png",
+        "recorte": "Recorte do gráfico da questão 143 (página 19 do PDF oficial do Enem 2019, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026. Só mudança de formato.",
+        "recortePDF": "https://download.inep.gov.br/educacao_basica/enem/provas/2019/caderno_de_questoes_2_dia_caderno_7_azul_aplicacao_regular.pdf"
       }
     ],
     "atribuicao": "INEP · Enem 2019, 2º dia, Caderno Azul, questão 143 · CC BY-ND 3.0",
-    "transcricao": "Transcrição do projeto enem.dev, em conferência com o PDF oficial.",
+    "transcricao": "Transcrição do projeto enem.dev (commit 938c56f), conferida com o PDF oficial do INEP em 17/11/2026.",
     "licenca": "CC BY-ND 3.0 (rodapé do portal do INEP; interpretação da equipe, e.1)",
     "licencaUrl": "https://creativecommons.org/licenses/by-nd/3.0/legalcode",
     "blocos": [
@@ -4513,7 +4591,7 @@ export const questoes34 = [
       }
     },
     "autoria": {
-      "ia": true,
+      "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
       "modelo": "Claude Opus 5.5",
       "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
       "data": "2026-11-17",
@@ -4542,9 +4620,16 @@ export const questoes34 = [
     "gabarito": "A",
     "gabaritoConferido": true,
     "conferidoITENS_PROVA": "2026-11-17",
-    "textoConferidoPDF": null,
+    "textoConferidoPDF": "2026-11-17",
+    "conferenciaPDF": {
+      "pdf": "https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD7.pdf",
+      "sha256": "f9970a82e0ee67a31ec16e2f14c99e620738b88dfe7c68484128964a5d5d69bc",
+      "pagina": 29,
+      "nota": "Texto igual ao PDF, inclusive \"Receita – Custo\" com meia-risca (U+2013), como no PDF. As seis imagens do enem.dev (fotos do caderno, de 202 × 136 a 225 × 175 px) foram trocadas por recortes do PDF oficial renderizados em 3× (597 × 450 px no gráfico do enunciado; cerca de 530 × 390 px em cada alternativa), sem a letra da alternativa, que o app já mostra.",
+      "correcoes": []
+    },
     "anulada": false,
-    "contexto": "<p>Um administrador resolve estudar o lucro de sua empresa e, para isso, traça o gráfico da receita e do custo de produção de seus itens, em real, em função da quantidade de itens produzidos.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2020-175.png\" alt=\"Descrição da equipe Prumo: gráfico com duas curvas. Eixo horizontal: quantidade de itens produzidos, de 0 a 30. Eixo vertical: R$, de 0 a 55. A curva Receita começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 25 itens e desce para cerca de 45 com 30 itens. A curva Custo começa perto de 5 com 5 itens, sobe rápido até cerca de 45 com 10 itens, desce até cerca de 10 com 25 itens e sobe para cerca de 35 com 30 itens. As curvas se encontram com 5 itens e se cruzam perto de 15 itens, na altura de 40.\" loading=\"lazy\"></figure><p>O lucro é determinado pela diferença: Receita – Custo.</p>",
+    "contexto": "<p>Um administrador resolve estudar o lucro de sua empresa e, para isso, traça o gráfico da receita e do custo de produção de seus itens, em real, em função da quantidade de itens produzidos.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2020-175.png\" alt=\"Descrição da equipe Prumo. Gráfico com duas curvas, sobre uma grade tracejada. Eixo horizontal: quantidade de itens produzidos, de 5 em 5, até 30. Eixo vertical: R$, de 5 em 5, de 0 a 55. A curva Receita, mais grossa, começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 25 itens e desce para cerca de 45 com 30 itens. A curva Custo, mais fina, começa perto de 5 com 5 itens, sobe rápido até cerca de 45 com 10 itens, desce até cerca de 10 com 25 itens e sobe para cerca de 35 com 30 itens. As curvas se encontram com 5 itens e se cruzam perto de 15 itens, na altura de 40.\" loading=\"lazy\"></figure><p>O lucro é determinado pela diferença: Receita – Custo.</p>",
     "introducao": "O gráfico que representa o lucro dessa empresa, em função da quantidade de itens produzidos, é",
     "fonteMd": "Um administrador resolve estudar o lucro de sua empresa e, para isso, traça o gráfico da receita e do custo de produção de seus itens, em real, em função da quantidade de itens produzidos.\n\n![](https://enem.dev/2020/questions/175/33aa811b-1dc7-4083-a8c0-2aeeb9fd52d6.png)\n\nO lucro é determinado pela diferença: Receita – Custo.",
     "materialDeTerceiros": null,
@@ -4554,7 +4639,7 @@ export const questoes34 = [
         "texto": "",
         "imagem": {
           "src": "conteudo/img/enem-2020-175-a.png",
-          "alt": "Descrição da equipe Prumo: curva que começa em 0 com 5 itens, desce até cerca de −20 perto de 8 itens, volta a 0 perto de 15 itens, sobe até cerca de 40 perto de 25 itens e cai para cerca de 10 com 30 itens.",
+          "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −20 a 40, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 0 com 5 itens, desce até −20 com 10 itens, volta a 0 com 15 itens, sobe até 40 com 25 itens e cai para 10 com 30 itens.",
           "altFonte": "equipe"
         }
       },
@@ -4563,7 +4648,7 @@ export const questoes34 = [
         "texto": "",
         "imagem": {
           "src": "conteudo/img/enem-2020-175-b.png",
-          "alt": "Descrição da equipe Prumo: curva que começa em 0 com 5 itens, sobe até cerca de 20 perto de 8 itens, volta a 0 perto de 15 itens, desce até cerca de −40 perto de 23 itens e sobe para cerca de −10 com 30 itens.",
+          "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −40 a 20, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 0 com 5 itens, sobe até cerca de 19 perto de 9 itens, volta a 0 com 15 itens, desce até um pouco abaixo de −40 perto de 24 itens e sobe para −10 com 30 itens.",
           "altFonte": "equipe"
         },
         "falta": "Fez custo − receita, na ordem trocada. Por isso o gráfico sobe onde devia descer: todos os sinais ficam invertidos.",
@@ -4576,7 +4661,7 @@ export const questoes34 = [
         "texto": "",
         "imagem": {
           "src": "conteudo/img/enem-2020-175-c.png",
-          "alt": "Descrição da equipe Prumo: curva que nunca fica abaixo de 0: começa em 0 com 5 itens, sobe até cerca de 18 perto de 10 itens, volta a 0 perto de 15 itens, sobe até cerca de 40 perto de 25 itens e cai para cerca de 10 com 30 itens.",
+          "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −5 a 55, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva nunca fica abaixo de 0: começa em 0 com 5 itens, sobe até cerca de 18 perto de 10 itens, volta a 0 com 15 itens, sobe até cerca de 40 perto de 24 itens e cai para 10 com 30 itens.",
           "altFonte": "equipe"
         },
         "falta": "Desenhou a distância entre as curvas, sem sinal. Entre 5 e 15 itens o custo está acima da receita: ali o lucro é negativo, e o gráfico tem de descer abaixo do eixo.",
@@ -4589,7 +4674,7 @@ export const questoes34 = [
         "texto": "",
         "imagem": {
           "src": "conteudo/img/enem-2020-175-d.png",
-          "alt": "Descrição da equipe Prumo: curva que começa perto de 5 com 5 itens, sobe até cerca de 47 perto de 10 itens, desce até cerca de 12 perto de 23 itens e sobe para cerca de 37 com 30 itens.",
+          "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −5 a 55, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 5 com 5 itens, sobe até cerca de 47 perto de 11 itens, desce até 10 com 25 itens e sobe para 35 com 30 itens.",
           "altFonte": "equipe"
         },
         "falta": "Escolheu o desenho do custo, uma das curvas dadas. O lucro é uma terceira curva: receita menos custo em cada ponto.",
@@ -4602,7 +4687,7 @@ export const questoes34 = [
         "texto": "",
         "imagem": {
           "src": "conteudo/img/enem-2020-175-e.png",
-          "alt": "Descrição da equipe Prumo: curva que começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 23 itens e desce um pouco, para cerca de 46, com 30 itens.",
+          "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −5 a 55, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 5 com 5 itens, sobe até 50 perto de 24 itens e desce um pouco, para 45, com 30 itens.",
           "altFonte": "equipe"
         },
         "falta": "Escolheu o desenho da receita. Falta tirar o custo de cada ponto: receita − custo.",
@@ -4614,48 +4699,60 @@ export const questoes34 = [
     "imagens": [
       {
         "src": "conteudo/img/enem-2020-175.png",
-        "alt": "Descrição da equipe Prumo: gráfico com duas curvas. Eixo horizontal: quantidade de itens produzidos, de 0 a 30. Eixo vertical: R$, de 0 a 55. A curva Receita começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 25 itens e desce para cerca de 45 com 30 itens. A curva Custo começa perto de 5 com 5 itens, sobe rápido até cerca de 45 com 10 itens, desce até cerca de 10 com 25 itens e sobe para cerca de 35 com 30 itens. As curvas se encontram com 5 itens e se cruzam perto de 15 itens, na altura de 40.",
+        "alt": "Descrição da equipe Prumo. Gráfico com duas curvas, sobre uma grade tracejada. Eixo horizontal: quantidade de itens produzidos, de 5 em 5, até 30. Eixo vertical: R$, de 5 em 5, de 0 a 55. A curva Receita, mais grossa, começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 25 itens e desce para cerca de 45 com 30 itens. A curva Custo, mais fina, começa perto de 5 com 5 itens, sobe rápido até cerca de 45 com 10 itens, desce até cerca de 10 com 25 itens e sobe para cerca de 35 com 30 itens. As curvas se encontram com 5 itens e se cruzam perto de 15 itens, na altura de 40.",
         "altFonte": "equipe",
-        "original": "https://enem.dev/2020/questions/175/33aa811b-1dc7-4083-a8c0-2aeeb9fd52d6.png"
+        "original": "https://enem.dev/2020/questions/175/33aa811b-1dc7-4083-a8c0-2aeeb9fd52d6.png",
+        "recorte": "Recorte da questão 175 (página 29 do PDF oficial do Enem 2020, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026: o gráfico do enunciado e o gráfico de cada alternativa, sem a letra. Só mudança de formato.",
+        "recortePDF": "https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD7.pdf"
       },
       {
         "src": "conteudo/img/enem-2020-175-a.png",
-        "alt": "Descrição da equipe Prumo: curva que começa em 0 com 5 itens, desce até cerca de −20 perto de 8 itens, volta a 0 perto de 15 itens, sobe até cerca de 40 perto de 25 itens e cai para cerca de 10 com 30 itens.",
+        "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −20 a 40, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 0 com 5 itens, desce até −20 com 10 itens, volta a 0 com 15 itens, sobe até 40 com 25 itens e cai para 10 com 30 itens.",
         "altFonte": "equipe",
         "alternativa": "A",
-        "original": "https://enem.dev/2020/questions/175/b3298ba7-589f-4ca3-a510-3cebdb9903cd.png"
+        "original": "https://enem.dev/2020/questions/175/b3298ba7-589f-4ca3-a510-3cebdb9903cd.png",
+        "recorte": "Recorte da questão 175 (página 29 do PDF oficial do Enem 2020, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026: o gráfico do enunciado e o gráfico de cada alternativa, sem a letra. Só mudança de formato.",
+        "recortePDF": "https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD7.pdf"
       },
       {
         "src": "conteudo/img/enem-2020-175-b.png",
-        "alt": "Descrição da equipe Prumo: curva que começa em 0 com 5 itens, sobe até cerca de 20 perto de 8 itens, volta a 0 perto de 15 itens, desce até cerca de −40 perto de 23 itens e sobe para cerca de −10 com 30 itens.",
+        "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −40 a 20, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 0 com 5 itens, sobe até cerca de 19 perto de 9 itens, volta a 0 com 15 itens, desce até um pouco abaixo de −40 perto de 24 itens e sobe para −10 com 30 itens.",
         "altFonte": "equipe",
         "alternativa": "B",
-        "original": "https://enem.dev/2020/questions/175/fdcc74b5-e93d-42c8-9cce-7e018e43eb67.png"
+        "original": "https://enem.dev/2020/questions/175/fdcc74b5-e93d-42c8-9cce-7e018e43eb67.png",
+        "recorte": "Recorte da questão 175 (página 29 do PDF oficial do Enem 2020, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026: o gráfico do enunciado e o gráfico de cada alternativa, sem a letra. Só mudança de formato.",
+        "recortePDF": "https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD7.pdf"
       },
       {
         "src": "conteudo/img/enem-2020-175-c.png",
-        "alt": "Descrição da equipe Prumo: curva que nunca fica abaixo de 0: começa em 0 com 5 itens, sobe até cerca de 18 perto de 10 itens, volta a 0 perto de 15 itens, sobe até cerca de 40 perto de 25 itens e cai para cerca de 10 com 30 itens.",
+        "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −5 a 55, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva nunca fica abaixo de 0: começa em 0 com 5 itens, sobe até cerca de 18 perto de 10 itens, volta a 0 com 15 itens, sobe até cerca de 40 perto de 24 itens e cai para 10 com 30 itens.",
         "altFonte": "equipe",
         "alternativa": "C",
-        "original": "https://enem.dev/2020/questions/175/8d380a8c-6b10-40a5-bafa-cfe75141c412.png"
+        "original": "https://enem.dev/2020/questions/175/8d380a8c-6b10-40a5-bafa-cfe75141c412.png",
+        "recorte": "Recorte da questão 175 (página 29 do PDF oficial do Enem 2020, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026: o gráfico do enunciado e o gráfico de cada alternativa, sem a letra. Só mudança de formato.",
+        "recortePDF": "https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD7.pdf"
       },
       {
         "src": "conteudo/img/enem-2020-175-d.png",
-        "alt": "Descrição da equipe Prumo: curva que começa perto de 5 com 5 itens, sobe até cerca de 47 perto de 10 itens, desce até cerca de 12 perto de 23 itens e sobe para cerca de 37 com 30 itens.",
+        "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −5 a 55, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 5 com 5 itens, sobe até cerca de 47 perto de 11 itens, desce até 10 com 25 itens e sobe para 35 com 30 itens.",
         "altFonte": "equipe",
         "alternativa": "D",
-        "original": "https://enem.dev/2020/questions/175/5c8b1402-d364-4c5f-beaa-559cb23d0891.png"
+        "original": "https://enem.dev/2020/questions/175/5c8b1402-d364-4c5f-beaa-559cb23d0891.png",
+        "recorte": "Recorte da questão 175 (página 29 do PDF oficial do Enem 2020, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026: o gráfico do enunciado e o gráfico de cada alternativa, sem a letra. Só mudança de formato.",
+        "recortePDF": "https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD7.pdf"
       },
       {
         "src": "conteudo/img/enem-2020-175-e.png",
-        "alt": "Descrição da equipe Prumo: curva que começa perto de 5 com 5 itens, sobe até cerca de 50 perto de 23 itens e desce um pouco, para cerca de 46, com 30 itens.",
+        "alt": "Descrição da equipe Prumo. Gráfico com eixo vertical em R$, de −5 a 55, e eixo horizontal com a quantidade de itens produzidos, até 30. A curva começa em 5 com 5 itens, sobe até 50 perto de 24 itens e desce um pouco, para 45, com 30 itens.",
         "altFonte": "equipe",
         "alternativa": "E",
-        "original": "https://enem.dev/2020/questions/175/f718a2fc-7a30-4e17-b4b3-28dfb028a6f5.png"
+        "original": "https://enem.dev/2020/questions/175/f718a2fc-7a30-4e17-b4b3-28dfb028a6f5.png",
+        "recorte": "Recorte da questão 175 (página 29 do PDF oficial do Enem 2020, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026: o gráfico do enunciado e o gráfico de cada alternativa, sem a letra. Só mudança de formato.",
+        "recortePDF": "https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD7.pdf"
       }
     ],
     "atribuicao": "INEP · Enem 2020, 2º dia, Caderno Azul, questão 175 · CC BY-ND 3.0",
-    "transcricao": "Transcrição do projeto enem.dev, em conferência com o PDF oficial.",
+    "transcricao": "Transcrição do projeto enem.dev (commit 938c56f), conferida com o PDF oficial do INEP em 17/11/2026.",
     "licenca": "CC BY-ND 3.0 (rodapé do portal do INEP; interpretação da equipe, e.1)",
     "licencaUrl": "https://creativecommons.org/licenses/by-nd/3.0/legalcode",
     "blocos": [
@@ -4674,67 +4771,67 @@ export const questoes34 = [
         30
       ],
       "R": [
-        5,
-        27,
-        40,
-        47,
-        50,
-        45
+        5.7,
+        25.3,
+        39.5,
+        47.3,
+        49.9,
+        45.1
       ],
       "C": [
-        5,
+        5.6,
         45,
-        40,
-        22,
-        10,
-        35
+        39.8,
+        19.7,
+        10.5,
+        35.1
       ],
       "leitura": {
         "A": [
-          0,
-          -17,
-          0,
+          -0.2,
+          -20.2,
+          -0.1,
           28,
-          39,
-          8
+          40.3,
+          9.8
         ],
         "B": [
           0,
-          17,
-          0,
-          -28,
-          -40,
-          -12
+          18.3,
+          -0.2,
+          -27.9,
+          -40.6,
+          -10
         ],
         "C": [
-          0,
-          18,
-          0,
-          28,
-          39,
-          10
+          0.3,
+          18.3,
+          1.2,
+          29.4,
+          39.4,
+          9.9
         ],
         "D": [
           5,
-          47,
-          38,
-          22,
-          12,
-          37
+          46,
+          37.9,
+          19.8,
+          9.9,
+          34.9
         ],
         "E": [
-          5,
-          27,
-          39,
-          46,
-          50,
-          46
+          4.8,
+          26.4,
+          40.4,
+          48.2,
+          49.8,
+          45
         ]
       },
-      "tolerancia": 8
+      "tolerancia": 3
     },
     "autoria": {
-      "ia": true,
+      "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
       "modelo": "Claude Opus 5.5",
       "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
       "data": "2026-11-17",
@@ -4763,10 +4860,28 @@ export const questoes34 = [
     "gabarito": "A",
     "gabaritoConferido": true,
     "conferidoITENS_PROVA": "2026-11-17",
-    "textoConferidoPDF": null,
+    "textoConferidoPDF": "2026-11-17",
+    "conferenciaPDF": {
+      "pdf": "https://download.inep.gov.br/educacao_basica/enem/provas/2019/caderno_de_questoes_2_dia_caderno_7_azul_aplicacao_regular.pdf",
+      "sha256": "a476882608be2bf1353af8b26c60838ac187f2d1a3653524c90de62b0372efa6",
+      "pagina": 31,
+      "nota": "O PDF traz \"watt × minuto\" (sinal de multiplicação) e \"A sequência de deslocamentos\" (plural); a transcrição trazia \"watt x minuto\" (letra x) e \"deslocamento\". As alternativas conferem (as setas são desenhadas à parte no PDF; lidas na página renderizada). A imagem do enem.dev (648 × 228 px) foi trocada por recortes do PDF oficial: o gráfico e a planta, que no caderno ficam lado a lado, vão um embaixo do outro numa imagem só (881 × 1396 px), para os rótulos de potência ficarem legíveis na largura do celular. Só mudança de formato: nada foi redesenhado.",
+      "correcoes": [
+        {
+          "campo": "contexto",
+          "de": "em watt x minuto,",
+          "para": "em watt × minuto,"
+        },
+        {
+          "campo": "introducao",
+          "de": "A sequência de deslocamento pelos cômodos",
+          "para": "A sequência de deslocamentos pelos cômodos"
+        }
+      ]
+    },
     "anulada": false,
-    "contexto": "<p>Nos seis cômodos de uma casa há sensores de presença posicionados de forma que a luz de cada cômodo acende assim que uma pessoa nele adentra, e apaga assim que a pessoa se retira desse cômodo. Suponha que o acendimento e o desligamento sejam instantâneos.</p><p>O morador dessa casa visitou alguns desses cômodos, ficando exatamente um minuto em cada um deles. O gráfico descreve o consumo acumulado de energia, em watt x minuto, em função do tempo t, em minuto, das lâmpadas de LED dessa casa, enquanto a figura apresenta a planta baixa da casa, na qual os cômodos estão numerados de 1 a 6, com as potências das respectivas lâmpadas indicadas.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2019-179.png\" alt=\"Descrição da equipe Prumo: à esquerda, gráfico de linha. Eixo horizontal: tempo, em minutos. Eixo vertical: energia, em W·min. A linha liga os pontos (0; 0), (1; 20), (2; 35), (3; 40), (4; 55), (5; 75), (6; 85), (7; 105) e (8; 120). À direita, planta baixa da casa com seis cômodos numerados: 1, sala, lâmpada de 20 W, onde fica a entrada; 2, quarto, 13 W; 3, banheiro, 2 W; 4, suíte, 15 W; 5, banheiro da suíte, 5 W; 6, cozinha, 10 W.\" loading=\"lazy\"></figure>",
-    "introducao": "A sequência de deslocamento pelos cômodos, conforme o consumo de energia apresentado no gráfico, é",
+    "contexto": "<p>Nos seis cômodos de uma casa há sensores de presença posicionados de forma que a luz de cada cômodo acende assim que uma pessoa nele adentra, e apaga assim que a pessoa se retira desse cômodo. Suponha que o acendimento e o desligamento sejam instantâneos.</p><p>O morador dessa casa visitou alguns desses cômodos, ficando exatamente um minuto em cada um deles. O gráfico descreve o consumo acumulado de energia, em watt × minuto, em função do tempo t, em minuto, das lâmpadas de LED dessa casa, enquanto a figura apresenta a planta baixa da casa, na qual os cômodos estão numerados de 1 a 6, com as potências das respectivas lâmpadas indicadas.</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2019-179.png\" alt=\"Descrição da equipe Prumo. Em cima, gráfico de linha. Eixo horizontal: tempo, em minutos. Eixo vertical: energia, em W·min. A linha liga os pontos (0; 0), (1; 20), (2; 35), (3; 40), (4; 55), (5; 75), (6; 85), (7; 105) e (8; 120). Embaixo, planta baixa da casa com seis cômodos numerados: 1, sala, lâmpada de 20 W, onde fica a entrada; 2, quarto, 13 W; 3, banho, 2 W; 4, suíte, 15 W; 5, banho, 5 W; 6, cozinha, 10 W.\" loading=\"lazy\"></figure>",
+    "introducao": "A sequência de deslocamentos pelos cômodos, conforme o consumo de energia apresentado no gráfico, é",
     "fonteMd": "Nos seis cômodos de uma casa há sensores de presença posicionados de forma que a luz de cada cômodo acende assim que uma pessoa nele adentra, e apaga assim que a pessoa se retira desse cômodo. Suponha que o acendimento e o desligamento sejam instantâneos.\n\nO morador dessa casa visitou alguns desses cômodos, ficando exatamente um minuto em cada um deles. O gráfico descreve o consumo acumulado de energia, em watt x minuto, em função do tempo t, em minuto, das lâmpadas de LED dessa casa, enquanto a figura apresenta a planta baixa da casa, na qual os cômodos estão numerados de 1 a 6, com as potências das respectivas lâmpadas indicadas.\n\n![](https://enem.dev/2019/questions/179/3c23edf9-5531-4ae5-b328-9b0a6b31fdc1.png)",
     "materialDeTerceiros": null,
     "alternativas": [
@@ -4801,7 +4916,7 @@ export const questoes34 = [
       {
         "letra": "D",
         "texto": "1 → 2 → 3 → 5 → 4 → 1 → 6 → 1 → 4",
-        "falta": "São 9 paradas (uma por minuto) para 8 minutos. O 2º minuto sobe 15 de uma vez (de 20 para 35): é a suíte, de 15 W, e não o quarto e o banheiro em dois minutos (13 + 2).",
+        "falta": "São 9 paradas (uma por minuto) para 8 minutos. O 2º minuto sobe 15 de uma vez (de 20 para 35): é a suíte, de 15 W, e não o quarto (2) e o banho (3) em dois minutos (13 + 2).",
         "exprTeste": "[somaPotencias(alt), comodos(alt), primeiroMinutoDiferente(alt)]",
         "esperado": [
           120,
@@ -4826,20 +4941,22 @@ export const questoes34 = [
     "imagens": [
       {
         "src": "conteudo/img/enem-2019-179.png",
-        "alt": "Descrição da equipe Prumo: à esquerda, gráfico de linha. Eixo horizontal: tempo, em minutos. Eixo vertical: energia, em W·min. A linha liga os pontos (0; 0), (1; 20), (2; 35), (3; 40), (4; 55), (5; 75), (6; 85), (7; 105) e (8; 120). À direita, planta baixa da casa com seis cômodos numerados: 1, sala, lâmpada de 20 W, onde fica a entrada; 2, quarto, 13 W; 3, banheiro, 2 W; 4, suíte, 15 W; 5, banheiro da suíte, 5 W; 6, cozinha, 10 W.",
+        "alt": "Descrição da equipe Prumo. Em cima, gráfico de linha. Eixo horizontal: tempo, em minutos. Eixo vertical: energia, em W·min. A linha liga os pontos (0; 0), (1; 20), (2; 35), (3; 40), (4; 55), (5; 75), (6; 85), (7; 105) e (8; 120). Embaixo, planta baixa da casa com seis cômodos numerados: 1, sala, lâmpada de 20 W, onde fica a entrada; 2, quarto, 13 W; 3, banho, 2 W; 4, suíte, 15 W; 5, banho, 5 W; 6, cozinha, 10 W.",
         "altFonte": "equipe",
-        "original": "https://enem.dev/2019/questions/179/3c23edf9-5531-4ae5-b328-9b0a6b31fdc1.png"
+        "original": "https://enem.dev/2019/questions/179/3c23edf9-5531-4ae5-b328-9b0a6b31fdc1.png",
+        "recorte": "Recortes do gráfico e da planta baixa da questão 179 (página 31 do PDF oficial do Enem 2019, 2º dia, Caderno Azul), renderizados com PyMuPDF em 17/11/2026 (gráfico em 4×, planta em cerca de 4,4×, as duas com a mesma largura) e postos um embaixo do outro, e não lado a lado como no caderno. Só mudança de formato.",
+        "recortePDF": "https://download.inep.gov.br/educacao_basica/enem/provas/2019/caderno_de_questoes_2_dia_caderno_7_azul_aplicacao_regular.pdf"
       }
     ],
     "atribuicao": "INEP · Enem 2019, 2º dia, Caderno Azul, questão 179 · CC BY-ND 3.0",
-    "transcricao": "Transcrição do projeto enem.dev, em conferência com o PDF oficial.",
+    "transcricao": "Transcrição do projeto enem.dev (commit 938c56f), conferida com o PDF oficial do INEP em 17/11/2026; onde a transcrição diferia do PDF, vale o PDF.",
     "licenca": "CC BY-ND 3.0 (rodapé do portal do INEP; interpretação da equipe, e.1)",
     "licencaUrl": "https://creativecommons.org/licenses/by-nd/3.0/legalcode",
     "blocos": [
       "mat-fa.p6.b1"
     ],
     "modelo": "mat-fa.p6.m",
-    "explicacao": "No gráfico acumulado, a subida de cada minuto é a potência da lâmpada acesa naquele minuto. As subidas são 20, 15, 5, 15, 20, 10, 20 e 15. Pela planta, 20 W é a sala (1), 15 W a suíte (4), 5 W o banheiro da suíte (5) e 10 W a cozinha (6). Sequência: 1 (sala) → 4 (suíte) → 5 (banheiro da suíte) → 4 → 1 → 6 (cozinha) → 1 → 4.",
+    "explicacao": "No gráfico acumulado, a subida de cada minuto é a potência da lâmpada acesa naquele minuto. As subidas são 20, 15, 5, 15, 20, 10, 20 e 15. Pela planta, 20 W é a sala (1), 15 W a suíte (4), 5 W o banho do cômodo 5 e 10 W a cozinha (6). Sequência: 1 (sala) → 4 (suíte) → 5 (banho) → 4 → 1 → 6 (cozinha) → 1 → 4.",
     "exprCerta": "sequenciaPelasSubidas()",
     "teste": {
       "acumulado": [
@@ -4863,7 +4980,7 @@ export const questoes34 = [
       }
     },
     "autoria": {
-      "ia": true,
+      "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
       "modelo": "Claude Opus 5.5",
       "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
       "data": "2026-11-17",
@@ -4892,9 +5009,22 @@ export const questoes34 = [
     "gabarito": "B",
     "gabaritoConferido": true,
     "conferidoITENS_PROVA": "2026-11-17",
-    "textoConferidoPDF": null,
+    "textoConferidoPDF": "2026-11-17",
+    "conferenciaPDF": {
+      "pdf": "https://download.inep.gov.br/enem/provas_e_gabaritos/2021_PV_impresso_D2_CD7.pdf",
+      "sha256": "887b2a10ebb163f0c40db2ab4f67a5a4b5959ceb74ce7273466a755b8e55f540",
+      "pagina": 28,
+      "nota": "O PDF traz \"até 10 kg\", com espaço, como nas outras duas vezes em que a massa aparece; a transcrição trazia \"até 10kg\". No PDF, a coluna Viagem da tabela usa fonte sem mapa Unicode: \"I\" e \"II\" foram lidos na página renderizada e conferem com a imagem do enem.dev, que foi mantida (nítida, 452 × 103 px).",
+      "correcoes": [
+        {
+          "campo": "contexto",
+          "de": "mala com até 10kg.",
+          "para": "mala com até 10 kg."
+        }
+      ]
+    },
     "anulada": false,
-    "contexto": "<p>Uma pessoa pretende viajar por uma companhia aérea que despacha gratuitamente uma mala com até 10kg.</p><p>Em duas viagens que realizou, essa pessoa utilizou a mesma mala e conseguiu 10 kg com as seguintes combinações de itens:</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2021-164.png\" alt=\"Descrição da equipe Prumo: tabela com as colunas Viagem, Camisetas, Calças e Sapatos. Viagem I: 12 camisetas, 4 calças e 3 sapatos. Viagem II: 18 camisetas, 3 calças e 2 sapatos.\" loading=\"lazy\"></figure><p>Para ter certeza de que sua bagagem terá massa de 10 kg, ela decide levar essa mala com duas calças, um sapato e o máximo de camisetas, admitindo que itens do mesmo tipo têm a mesma massa.</p>",
+    "contexto": "<p>Uma pessoa pretende viajar por uma companhia aérea que despacha gratuitamente uma mala com até 10 kg.</p><p>Em duas viagens que realizou, essa pessoa utilizou a mesma mala e conseguiu 10 kg com as seguintes combinações de itens:</p><figure class=\"enem-img\"><img src=\"conteudo/img/enem-2021-164.png\" alt=\"Descrição da equipe Prumo. Tabela com as colunas Viagem, Camisetas, Calças e Sapatos. Viagem I: 12 camisetas, 4 calças e 3 sapatos. Viagem II: 18 camisetas, 3 calças e 2 sapatos.\" loading=\"lazy\"></figure><p>Para ter certeza de que sua bagagem terá massa de 10 kg, ela decide levar essa mala com duas calças, um sapato e o máximo de camisetas, admitindo que itens do mesmo tipo têm a mesma massa.</p>",
     "introducao": "Qual a quantidade máxima de camisetas que essa pessoa poderá levar?",
     "fonteMd": "Uma pessoa pretende viajar por uma companhia aérea que despacha gratuitamente uma mala com até 10kg.\n\nEm duas viagens que realizou, essa pessoa utilizou a mesma mala e conseguiu 10 kg com as seguintes combinações de itens:\n\n![](https://enem.dev/2021/questions/164/eab2c90e-a45f-482b-997d-a5c2f6931726.png)\n\nPara ter certeza de que sua bagagem terá massa de 10 kg, ela decide levar essa mala com duas calças, um sapato e o máximo de camisetas, admitindo que itens do mesmo tipo têm a mesma massa.",
     "materialDeTerceiros": null,
@@ -4913,35 +5043,35 @@ export const questoes34 = [
       {
         "letra": "C",
         "texto": "26",
-        "falta": "Somou as 2 calças às 24 camisetas. A pergunta é só de camisetas.",
+        "falta": "Achou as 24 camisetas e somou as 2 calças, como se a pergunta fosse de peças de roupa: 24 + 2 = 26. A pergunta é só de camisetas.",
         "expr": "18 + (18 - 12) + 2",
         "paragrafo": "mat-fa.p8.b2.s4"
       },
       {
         "letra": "D",
         "texto": "33",
-        "falta": "Passou a mala da viagem I toda para camisetas (com calça e sapato valendo 3 camisetas cada: 12 + 7 × 3 = 33) e esqueceu que a mala nova ainda leva 2 calças e 1 sapato. Descontando esses 3 itens (9 camisetas): 33 − 9 = 24.",
+        "falta": "Trocou por camisetas todas as calças e sapatos da viagem I (12 + 7 × 3 = 33). A mala nova ainda leva 2 calças e 1 sapato: parta da viagem II e faça uma troca só.",
         "expr": "12 + 3*(4 + 3)",
         "paragrafo": "mat-fa.p8.b2.s4"
       },
       {
         "letra": "E",
         "texto": "39",
-        "falta": "Somou a troca duas vezes. Se calça e sapato valessem 3 camisetas cada (1 calça + 1 sapato = 6 camisetas), a mala da viagem I inteira valeria 12 + 7 × 3 = 33 camisetas; somar mais 6 conta a mesma troca de novo. A troca entra uma vez só, a partir da viagem II: 18 + 6 = 24.",
-        "expr": "12 + 3*(4 + 3) + 6",
+        "falta": "Misturou as viagens: as camisetas da II com as calças e os sapatos da I (18 + 7 × 3 = 39). Parta de uma viagem só e faça a troca uma vez.",
+        "expr": "18 + 3*(4 + 3)",
         "paragrafo": "mat-fa.p8.b1.s3"
       }
     ],
     "imagens": [
       {
         "src": "conteudo/img/enem-2021-164.png",
-        "alt": "Descrição da equipe Prumo: tabela com as colunas Viagem, Camisetas, Calças e Sapatos. Viagem I: 12 camisetas, 4 calças e 3 sapatos. Viagem II: 18 camisetas, 3 calças e 2 sapatos.",
+        "alt": "Descrição da equipe Prumo. Tabela com as colunas Viagem, Camisetas, Calças e Sapatos. Viagem I: 12 camisetas, 4 calças e 3 sapatos. Viagem II: 18 camisetas, 3 calças e 2 sapatos.",
         "altFonte": "equipe",
         "original": "https://enem.dev/2021/questions/164/eab2c90e-a45f-482b-997d-a5c2f6931726.png"
       }
     ],
     "atribuicao": "INEP · Enem 2021, 2º dia, Caderno Azul, questão 164 · CC BY-ND 3.0",
-    "transcricao": "Transcrição do projeto enem.dev, em conferência com o PDF oficial.",
+    "transcricao": "Transcrição do projeto enem.dev (commit 938c56f), conferida com o PDF oficial do INEP em 17/11/2026; onde a transcrição diferia do PDF, vale o PDF.",
     "licenca": "CC BY-ND 3.0 (rodapé do portal do INEP; interpretação da equipe, e.1)",
     "licencaUrl": "https://creativecommons.org/licenses/by-nd/3.0/legalcode",
     "blocos": [
@@ -4953,7 +5083,7 @@ export const questoes34 = [
     "exprCerta": "18 + (18 - 12)",
     "teste": {},
     "autoria": {
-      "ia": true,
+      "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
       "modelo": "Claude Opus 5.5",
       "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
       "data": "2026-11-17",
@@ -4982,7 +5112,14 @@ export const questoes34 = [
     "gabarito": "B",
     "gabaritoConferido": true,
     "conferidoITENS_PROVA": "2026-11-17",
-    "textoConferidoPDF": null,
+    "textoConferidoPDF": "2026-11-17",
+    "conferenciaPDF": {
+      "pdf": "https://download.inep.gov.br/enem/provas_e_gabaritos/2023_PV_impresso_D2_CD7.pdf",
+      "sha256": "49e7ad9d0ab25710f6e5c4c3296fc40b63d86a3a87d5f25d83e8ecc81b98415b",
+      "pagina": 29,
+      "nota": "Igual ao PDF.",
+      "correcoes": []
+    },
     "anulada": false,
     "contexto": "<p>O metrô de um município oferece dois tipos de tíquetes com colorações diferentes, azul e vermelha, sendo vendidos em cartelas, cada qual com nove tíquetes da mesma cor e mesmo valor unitário. Duas cartelas de tíquetes azuis e uma cartela de tíquetes vermelhos são vendidas por R$ 32,40. Sabe-se que o preço de um tíquete azul menos o preço de um tíquete vermelho é igual ao preço de um tíquete vermelho mais cinco centavos.</p>",
     "introducao": "Qual o preço, em real, de uma cartela de tíquetes vermelhos?",
@@ -4992,7 +5129,7 @@ export const questoes34 = [
       {
         "letra": "A",
         "texto": "4,68",
-        "falta": "Leu cinco centavos como R$ 0,50: com a = 2v + 0,50 sai v = 0,52, e 9 × 0,52 = 4,68. Cinco centavos são R$ 0,05.",
+        "falta": "Leu cinco centavos como R$ 0,50. Cinco centavos são R$ 0,05.",
         "expr": "9*((3.60 - 2*0.50)/5)",
         "paragrafo": "mat-fa.p7.b1.s3"
       },
@@ -5003,39 +5140,39 @@ export const questoes34 = [
       {
         "letra": "C",
         "texto": "9,30",
-        "falta": "Contou uma cartela azul só e ainda leu cinco centavos como R$ 0,50. São duas cartelas azuis (2a + v = 3,60), e cinco centavos são R$ 0,05.",
+        "falta": "Contou uma cartela azul só e leu cinco centavos como R$ 0,50. São duas cartelas azuis, e cinco centavos são R$ 0,05.",
         "expr": "9*((3.60 - 0.50)/3)",
         "paragrafo": "mat-fa.p7.b1.s3"
       },
       {
         "letra": "D",
         "texto": "10,50",
-        "falta": "Traduziu como se o azul custasse só 5 centavos a mais que o vermelho (a = v + 0,05). A frase diz que a diferença a − v é igual a v + 0,05: a = 2v + 0,05.",
+        "falta": "Leu como “azul = vermelho + 5 centavos”. A frase diz azul − vermelho = vermelho + 0,05, ou seja, azul = 2 × vermelho + 0,05.",
         "expr": "9*((3.60 - 2*0.05)/3)",
         "paragrafo": "mat-fa.p7.b1.s2"
       },
       {
         "letra": "E",
         "texto": "10,65",
-        "falta": "Contou uma cartela azul só: com a + v = 3,60 sai v ≈ 1,18 e 9v = 10,65. São duas cartelas azuis: 2a + v = 3,60.",
+        "falta": "Contou uma cartela azul só. A compra tem duas cartelas azuis e uma vermelha.",
         "expr": "9*((3.60 - 0.05)/3)",
         "paragrafo": "mat-fa.p7.b1.s3"
       }
     ],
     "imagens": [],
     "atribuicao": "INEP · Enem 2023, 2º dia, Caderno Azul, questão 175 · CC BY-ND 3.0",
-    "transcricao": "Transcrição do projeto enem.dev, em conferência com o PDF oficial.",
+    "transcricao": "Transcrição do projeto enem.dev (commit 938c56f), conferida com o PDF oficial do INEP em 17/11/2026.",
     "licenca": "CC BY-ND 3.0 (rodapé do portal do INEP; interpretação da equipe, e.1)",
     "licencaUrl": "https://creativecommons.org/licenses/by-nd/3.0/legalcode",
     "blocos": [
       "mat-fa.p7.b1"
     ],
     "modelo": "mat-fa.p7.m",
-    "explicacao": "Cada cartela tem 9 tíquetes. Duas cartelas azuis e uma vermelha: 18a + 9v = 32,40, então 2a + v = 3,60. A frase da diferença: a − v = v + 0,05, ou seja, a = 2v + 0,05. Substituindo: 2(2v + 0,05) + v = 3,60, então 5v + 0,10 = 3,60 e v = 0,70. A cartela vermelha custa 9 × 0,70 = R$ 6,30. Confere: a = 1,45 e 18 × 1,45 + 9 × 0,70 = 26,10 + 6,30 = 32,40.",
+    "explicacao": "Chame de a o valor, em reais, de cada tíquete azul, e de v o de cada tíquete vermelho. Cada cartela tem 9 tíquetes. Duas cartelas azuis e uma vermelha: 18a + 9v = 32,40, então 2a + v = 3,60. A frase da diferença: a − v = v + 0,05, ou seja, a = 2v + 0,05. Substituindo: 2(2v + 0,05) + v = 3,60, então 5v + 0,10 = 3,60 e v = 0,70. A cartela vermelha custa 9 × 0,70 = R$ 6,30. Confere: a = 1,45 e 18 × 1,45 + 9 × 0,70 = 26,10 + 6,30 = 32,40.",
     "exprCerta": "9*((3.60 - 2*0.05)/5)",
     "teste": {},
     "autoria": {
-      "ia": true,
+      "ia": "Claude Opus 5.5 (Anthropic), via Claude Code, em 17/11/2026",
       "modelo": "Claude Opus 5.5",
       "ferramenta": "Claude Opus 5.5 (Anthropic), via Claude Code",
       "data": "2026-11-17",

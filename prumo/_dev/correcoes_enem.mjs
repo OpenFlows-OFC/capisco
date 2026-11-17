@@ -1,12 +1,15 @@
-// Prumo · conferência das 7 questões dos Caps. 1 e 2 com o PDF oficial do INEP (e.1, g.2, g.6).
-// Lido por _dev/extrai_enem_c12.mjs (aplica as correções ao gerar conteudo/mat-fa-c12-enem.js) e por
-// _dev/valida_pack.mjs (aplica as mesmas correções à transcrição do enem.dev antes de comparar o texto).
+// Prumo · conferência das 12 questões do caderno (7 dos Caps. 1 e 2, 5 dos Caps. 3 e 4) com o PDF oficial
+// do INEP (e.1, g.2, g.6). Lido por _dev/extrai_enem_c12.mjs (Caps. 1 e 2) e por _dev/c34_build.mjs (Caps. 3
+// e 4), que aplicam as correções ao gerar o conteúdo, e por _dev/valida_pack.mjs (aplica as mesmas correções
+// à transcrição do enem.dev antes de comparar o texto).
 //
 // A transcrição do enem.dev tem falhas pontuais; o texto que vale é o impresso no caderno. Cada correção
 // troca um trecho EXATO da transcrição pelo trecho impresso no PDF. Se o trecho "de" não for encontrado,
 // a geração e a validação falham: a transcrição mudou e a conferência tem de ser refeita.
-// Os trechos dos PDFs estão em _dev/fontes/pdf_azul_c12.txt (texto extraído, com URL e SHA-256);
-// as páginas renderizadas da 2019 Q168 e da 2021 Q141 estão em _dev/capturas/pdf-enem-*.png.
+// Os trechos dos PDFs estão em _dev/fontes/pdf_azul_c12.txt e _dev/fontes/pdf_azul_c34.txt (texto extraído,
+// com URL e SHA-256); as páginas renderizadas da 2019 Q168 e da 2021 Q141 estão em _dev/capturas/pdf-enem-*.png.
+// Imagem trocada por recorte do PDF (campo imagem.recorte): mesmo nome de arquivo, renderizada com PyMuPDF,
+// sem mudar o conteúdo (só recorte e formato).
 // Mudanças só de formato (quebra de linha da diagramação, separador de milhar, espaços) são "technically
 // necessary" na CC BY-ND 3.0; nenhuma palavra do INEP é trocada por outra que não esteja no PDF.
 
@@ -35,7 +38,7 @@ export const CONFERENCIA = {
     ] },
   'enem-2023-150': { em: '2026-11-17', pagina: 21, nota: 'Igual ao PDF.', correcoes: [] },
   'enem-2019-168': { em: '2026-11-17', pagina: 26,
-    nota: 'O PDF traz "R$ 1 000,00" e "Cada um deles trabalha"; a transcrição perdeu o "deles", juntou o milhar e partiu o parágrafo em dois (a linha do PDF é justificada: é quebra da diagramação). Alternativas com "1 000".',
+    nota: 'O PDF traz "R$ 1 000,00" e "Cada um deles trabalha"; a transcrição omitia o "deles", juntou o milhar e partiu o parágrafo em dois (a linha do PDF é justificada: é quebra da diagramação). Alternativas com "1 000".',
     correcoes: [
       { campo: 'contexto', de: 'R$ 1000,00 por semana.  \nOs outros', para: `R$ 1${NBSP}000,00 por semana. Os outros` },
       { campo: 'contexto', de: 'Cada um trabalha', para: 'Cada um deles trabalha' },
@@ -55,6 +58,27 @@ export const CONFERENCIA = {
     correcoes: [],
     imagem: { recorte: 'Recorte do gráfico da questão 164 (página 24 do PDF oficial do Enem 2020, 2º dia, Caderno Azul), renderizado em 4× com PyMuPDF em 17/11/2026, com a linha de fonte. Só mudança de formato.' } },
   'enem-2023-151': { em: '2026-11-17', pagina: 21, nota: 'Igual ao PDF (os rótulos dos eixos estão dentro da imagem).', correcoes: [] },
+
+  // ---- Caps. 3 e 4 (lidas em 17/11/2026 no texto extraído e na página renderizada de cada PDF)
+  'enem-2019-143': { em: '2026-11-17', pagina: 19,
+    nota: 'Texto igual ao PDF. A imagem do enem.dev (527 × 259 px) foi trocada por um recorte do gráfico renderizado do PDF oficial (764 × 361 px).',
+    correcoes: [],
+    imagem: { recorte: 'Recorte do gráfico da questão 143 (página 19 do PDF oficial do Enem 2019, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026. Só mudança de formato.' } },
+  'enem-2020-175': { em: '2026-11-17', pagina: 29,
+    nota: 'Texto igual ao PDF, inclusive "Receita – Custo" com meia-risca (U+2013), como no PDF. As seis imagens do enem.dev (fotos do caderno, de 202 × 136 a 225 × 175 px) foram trocadas por recortes do PDF oficial renderizados em 3× (597 × 450 px no gráfico do enunciado; cerca de 530 × 390 px em cada alternativa), sem a letra da alternativa, que o app já mostra.',
+    correcoes: [],
+    imagem: { recorte: 'Recorte da questão 175 (página 29 do PDF oficial do Enem 2020, 2º dia, Caderno Azul), renderizado em 3× com PyMuPDF em 17/11/2026: o gráfico do enunciado e o gráfico de cada alternativa, sem a letra. Só mudança de formato.' } },
+  'enem-2019-179': { em: '2026-11-17', pagina: 31,
+    nota: 'O PDF traz "watt × minuto" (sinal de multiplicação) e "A sequência de deslocamentos" (plural); a transcrição trazia "watt x minuto" (letra x) e "deslocamento". As alternativas conferem (as setas são desenhadas à parte no PDF; lidas na página renderizada). A imagem do enem.dev (648 × 228 px) foi trocada por recortes do PDF oficial: o gráfico e a planta, que no caderno ficam lado a lado, vão um embaixo do outro numa imagem só (881 × 1396 px), para os rótulos de potência ficarem legíveis na largura do celular. Só mudança de formato: nada foi redesenhado.',
+    correcoes: [
+      { campo: 'contexto', de: 'em watt x minuto,', para: 'em watt × minuto,' },
+      { campo: 'introducao', de: 'A sequência de deslocamento pelos cômodos', para: 'A sequência de deslocamentos pelos cômodos' },
+    ],
+    imagem: { recorte: 'Recortes do gráfico e da planta baixa da questão 179 (página 31 do PDF oficial do Enem 2019, 2º dia, Caderno Azul), renderizados com PyMuPDF em 17/11/2026 (gráfico em 4×, planta em cerca de 4,4×, as duas com a mesma largura) e postos um embaixo do outro, e não lado a lado como no caderno. Só mudança de formato.' } },
+  'enem-2021-164': { em: '2026-11-17', pagina: 28,
+    nota: 'O PDF traz "até 10 kg", com espaço, como nas outras duas vezes em que a massa aparece; a transcrição trazia "até 10kg". No PDF, a coluna Viagem da tabela usa fonte sem mapa Unicode: "I" e "II" foram lidos na página renderizada e conferem com a imagem do enem.dev, que foi mantida (nítida, 452 × 103 px).',
+    correcoes: [{ campo: 'contexto', de: 'mala com até 10kg.', para: 'mala com até 10 kg.' }] },
+  'enem-2023-175': { em: '2026-11-17', pagina: 29, nota: 'Igual ao PDF.', correcoes: [] },
 };
 
 function trocar(texto, c, id) {

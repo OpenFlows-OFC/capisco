@@ -100,7 +100,12 @@ export class Nucleo {
   faixas() {
     const dm = this.st.config.demo;
     return {
-      demo: dm.ativo ? { texto: dm.exemplo ? 'Modo demonstração · dados de exemplo' : 'Modo demonstração', dataSimulada: dm.offset ? `data simulada ${R.fmtDiaMes(R.hoje())}` : null, sair: 'Sair' } : null,
+      demo: dm.ativo ? {
+        texto: dm.exemplo ? 'Modo demonstração · dados de exemplo' : 'Modo demonstração', dataSimulada: dm.offset ? `data simulada ${R.fmtDiaMes(R.hoje())}` : null, sair: 'Sair',
+        // formato do Recado (rótulo em negrito + frase), sem cadeia de pontos
+        rotulo: 'Modo demonstração',
+        frase: `${[dm.exemplo ? 'dados de exemplo' : 'nada do seu progresso real muda', dm.offset ? `data simulada ${R.fmtDiaMes(R.hoje())}` : null].filter(Boolean).join(', ')}.`,
+      } : null,
       falhaSalvar: this.falhaSalvar ? { texto: E.MSG_FALHA_SALVAR, acao: 'Salvar uma cópia' } : null,
       carga: this.problemaCarga && this.problemaCarga !== 'armazenamento indisponível' ? 'O progresso salvo neste aparelho não pôde ser lido. Restaure uma cópia, se tiver.' : null,
     };
@@ -111,7 +116,7 @@ export class Nucleo {
      ========================================================= */
   primeiroUso() {
     return {
-      restaurar: { rotulo: 'Já usei o Prumo · restaurar uma cópia' },
+      restaurar: { rotulo: 'Já usei o Prumo: restaurar uma cópia' },
       exemplo: { rotulo: 'Ver com dados de exemplo' },
       provas: TIPOS_PROVA,
       dias: { padrao: [1, 2, 3, 4], min: 3, max: 5, opcoes: [1, 2, 3, 4, 5, 6, 0].map(v => ({ valor: v, rotulo: Plano.NOMES_DIAS[v] })) },
@@ -135,7 +140,7 @@ export class Nucleo {
      Hoje (c.2)
      ========================================================= */
   _nomeCap(id) { const c = this.pack.capitulo(id); return c ? `Cap. ${c.n}` : ''; }
-  _tituloCap(id) { const c = this.pack.capitulo(id); return c ? `Cap. ${c.n} · ${c.titulo}` : ''; }
+  _tituloCap(id) { const c = this.pack.capitulo(id); return c ? `Cap. ${c.n}: ${c.titulo}` : ''; }
   _paginasDe(passos) {
     const ns = [...new Set(passos.filter(p => p.pagina && (p.t === 'leitura' || p.t === 'pre' || p.t === 'checagem')).map(p => this.pack.pagina(p.pagina).n))].sort((a, b) => a - b);
     return ns.length ? (ns.length === 1 ? `p. ${ns[0]}` : `p. ${ns[0]}–${ns[ns.length - 1]}`) : '';
@@ -152,7 +157,7 @@ export class Nucleo {
       }
       if (p.t === 'questao' && p.antecipada) {
         let j = i; while (j + 1 < passos.length && passos[j + 1].antecipada && passos[j + 1].r === p.r) j++;
-        out.push({ n: j > i ? `${n} a ${j + 1}` : `${n}`, texto: `Revisão antecipada do ${this._nomeCap(p.cap)} · ${nDe(j - i + 1, 'questão', 'questões')}`, nota: 'não sobe nível', pagina: '' });
+        out.push({ n: j > i ? `${n} a ${j + 1}` : `${n}`, texto: `Revisão antecipada do ${this._nomeCap(p.cap)}, ${nDe(j - i + 1, 'questão', 'questões')}`, nota: 'não sobe nível', pagina: '' });
         i = j; continue;
       }
       const pg = p.pagina ? `p. ${pk.pagina(p.pagina).n}` : '';
@@ -162,8 +167,8 @@ export class Nucleo {
       else if (p.t === 'checagem') texto = 'Confira';
       else if (p.t === 'questao') texto = 'Questão da equipe';
       else if (p.t === 'revisao') texto = `Revisão do ${this._nomeCap(p.cap)}`;
-      else if (p.t === 'dia') texto = `Questão do dia · ${this._nomeCap(p.cap)}`;
-      else if (p.t === 'cards') texto = `Cards · ${nDe(p.ids.length, 'card', 'cards')} · ≈ ${Cards.minutosDaMao(p.ids.length)} min`;
+      else if (p.t === 'dia') texto = `Questão do dia do ${this._nomeCap(p.cap)}`;
+      else if (p.t === 'cards') texto = `Cards: ${nDe(p.ids.length, 'card', 'cards')} para lembrar`;
       out.push({ n: `${n}`, texto, pagina: pg });
     }
     return out;
@@ -175,22 +180,49 @@ export class Nucleo {
     const ap = ps.filter(p => p.t === 'questao' && p.papel === 'aplicar' && !p.antecipada);
     if (ap.length) partes.push(`até ${ap.length} ${ap.every(p => p.origem === 'enem') ? (ap.length === 1 ? 'questão do Enem' : 'questões do Enem') : (ap.length === 1 ? 'questão de aplicar' : 'questões de aplicar')}`);
     const ant = ps.filter(p => p.antecipada).length;
-    if (ant) partes.push(`revisão antecipada · ${nDe(ant, 'questão', 'questões')}`);
+    if (ant) partes.push(`${nDe(ant, 'questão', 'questões')} de revisão antecipada`);
     const rv = ps.filter(p => p.t === 'revisao').length;
     if (rv) partes.push(nDe(rv, 'revisão', 'revisões'));
     const dia = ps.filter(p => p.t === 'dia').length;
     if (dia) partes.push(nDe(dia, 'questão do dia', 'questões do dia'));
     const cd = ps.find(p => p.t === 'cards');
     if (cd) partes.push(nDe(cd.ids.length, 'card', 'cards'));
-    return partes.join(' · ');
+    // uma frase, não uma cadeia de metadados: "2 páginas, até 3 questões do Enem e 5 cards."
+    const frase = partes.length > 1 ? `${partes.slice(0, -1).join(', ')} e ${partes[partes.length - 1]}` : (partes[0] || '');
+    return frase ? `${cap1(frase)}.` : '';
+  }
+  /** Cabeçalho de prova da missão (Capítulo | Páginas | Tempo): rótulo impresso e valor curto, sem a data. */
+  _cabecalho(m) {
+    const caps = [...new Set(m.passos.map(p => p.cap).filter(Boolean))].map(c => this.pack.capitulo(c)).filter(Boolean).map(c => c.n).sort((a, b) => a - b);
+    const pgs = this._paginasDe(m.passos).replace(/^p\. /, '');
+    const cel = [];
+    if (caps.length) cel.push({ rotulo: caps.length === 1 ? 'Capítulo' : 'Capítulos', valor: caps.join(', ') });
+    if (pgs) cel.push({ rotulo: pgs.includes('–') ? 'Páginas' : 'Página', valor: pgs });
+    if (m.minutos) cel.push({ rotulo: 'Tempo', valor: String(m.minutos), unidade: 'min' });
+    return cel;
+  }
+  /** Texto da regra em Hoje: o ganho anunciado antes, com o nome do nível explicado na primeira vez, e o visto. */
+  _regraHoje(m, d) {
+    const ganho = this._ganho(m);
+    if (!ganho) return 'No fim, o visto do dia.';
+    const nome = NIVEL.slice(1).find(x => new RegExp(`(^|[^\\p{L}])${x}([^\\p{L}]|$)`, 'u').test(ganho));
+    let explica = '';
+    if (nome) {
+      const k = NIVEL.indexOf(nome), iv = Plano.intervalos(this.st, d);
+      const quando = iv && iv[k] ? R.fmtDiaMes(R.addDias(d, iv[k])) : null;
+      explica = k === 1
+        ? ` Aprendendo: você acertou duas seguidas${quando ? `, e a primeira revisão fica para ${quando}` : ''}.`
+        : ` ${nome}: você lembra${quando ? `, e a próxima revisão fica para ${quando}` : ''}.`;
+    }
+    return `${ganho}${explica} No fim, o visto do dia.`;
   }
   _titulo(m) {
     if (m.tipo === 'novo' || m.tipo === 'pratica') return this._tituloCap(m.cap);
-    if (m.tipo === 'antecipada') return `Revisão antecipada · ${this._nomeCap(m.cap)}`;
+    if (m.tipo === 'antecipada') return `Revisão antecipada do ${this._nomeCap(m.cap)}`;
     if (m.tipo === 'questaoDoDia') return 'Questão do dia';
     const revs = m.passos.filter(p => p.t === 'revisao');
-    if (revs.length) return `${revs.length === 1 ? 'Revisão' : 'Revisões'} · ${listaCaps(revs.map(p => this.pack.capitulo(p.cap).n))}`;
-    if (m.tipo === 'prereq') return `Revisão antecipada · ${this._nomeCap(m.cap)}`;
+    if (revs.length) return `${revs.length === 1 ? 'Revisão do' : 'Revisões dos'} ${listaCaps(revs.map(p => this.pack.capitulo(p.cap).n))}`;
+    if (m.tipo === 'prereq') return `Revisão antecipada do ${this._nomeCap(m.cap)}`;
     return 'Missão de hoje';
   }
   _ganho(m) {
@@ -216,8 +248,8 @@ export class Nucleo {
     const mm = montarMissao(st, this.pack, this.M, prox);
     const revs = mm.passos.filter(p => p.t === 'revisao');
     let o;
-    if (mm.tipo === 'novo') o = `${this._tituloCap(mm.cap)} (novo)${revs.length ? ' + ' + (revs.length === 1 ? 'revisão do ' + this._nomeCap(revs[0].cap) : 'revisões dos ' + listaCaps(revs.map(p => this.pack.capitulo(p.cap).n))) : ''}`;
-    else if (mm.tipo === 'pratica') o = `${this._tituloCap(mm.cap)}, continuação`;
+    if (mm.tipo === 'novo') o = `${this._nomeCap(mm.cap)} (novo)${revs.length ? ' e ' + (revs.length === 1 ? 'revisão do ' + this._nomeCap(revs[0].cap) : 'revisões dos ' + listaCaps(revs.map(p => this.pack.capitulo(p.cap).n))) : ''}`;
+    else if (mm.tipo === 'pratica') o = `${this._nomeCap(mm.cap)}, continuação`;
     else if (mm.tipo === 'antecipada') o = `revisão antecipada do ${this._nomeCap(mm.cap)}`;
     else if (mm.tipo === 'questaoDoDia') o = 'Questão do dia';
     else if (revs.length) o = revs.length === 1 ? `revisão do ${this._nomeCap(revs[0].cap)}` : `revisões dos ${listaCaps(revs.map(p => this.pack.capitulo(p.cap).n))}`;
@@ -234,16 +266,17 @@ export class Nucleo {
       }
     } else if (mm.tipo === 'novo') porque = `É o próximo capítulo liberado pela ordem do caderno (regra ${mm.regra}).`;
     else if (mm.tipo === 'questaoDoDia') porque = 'Nada vence nesse dia: a missão é a Questão do dia.';
-    return { dia: prox, data: R.fmtDiaSemana(prox), texto: `${R.fmtDiaSemana(prox)} · ${o}`, gancho, porque, regra: mm.regra };
+    return { dia: prox, data: R.fmtDiaSemana(prox), texto: `${R.fmtDiaSemana(prox)}: ${o}.`, gancho, porque, regra: mm.regra };
   }
   hoje() {
     const st = this.st, m = st.missao, d = R.hoje();
     if (!st.perfil || !m) return null;
     const cons = Plano.constancia(st, d);
     const vm = {
-      data: R.fmtCabecalho(d), dia: d,
-      constancia: { simbolo: cons.simbolo, diasEstudados: cons.diasEstudados, rotulo: cons.rotulo, miniRegua: cons.miniRegua, chama: { acesa: cons.chama.acesa, acesas: cons.chama.acesas } },
-      faixa: m.faixa, estado: null, texto: null, bloco: null, acao: null, links: [], prova: null, feito: null, porQue: null,
+      data: R.fmtTitulo(d), dia: d,
+      constancia: { simbolo: cons.simbolo, diasEstudados: cons.diasEstudados, rotulo: cons.rotulo },
+      faixa: m.faixa, recado: m.recado || (m.faixa ? { rotulo: null, texto: m.faixa } : null),
+      estado: null, texto: null, bloco: null, acao: null, links: [], prova: null, feito: null, porQue: null,
     };
     const temPassos = m.passos.length > 0;
     const firme = this.M.topicosAtivos(st).every(id => (st.topicos[id] || {}).caixa >= Math.min(3, st.config.nivelMaximo || 5));
@@ -252,11 +285,11 @@ export class Nucleo {
       vm.estado = m.parcial ? 'encerradoAntes' : 'feito';
       vm.texto = m.parcial ? `Hoje você encerrou no passo ${m.encerradoNoPasso} de ${m.passos.length}. O resto vai para o próximo dia de estudo.` : 'Hoje está feito.';
       const prox = this._proximoDia(d);
-      vm.feito = prox ? { previa: prox.gancho ? `${prox.data} · ${prox.gancho.replace(/^(Amanhã|Na \S+|No \S+) /, '')}` : prox.texto, proxima: prox } : null;
+      vm.feito = prox ? { previa: prox.gancho ? `${prox.data}: ${prox.gancho.replace(/^(Amanhã|Na \S+|No \S+) /, '')}` : prox.texto, proxima: prox } : null;
       vm.links = [{ rotulo: 'Abrir o caderno', aba: 'caderno' }];
     } else if (m.iniciada) {
       vm.estado = 'emCurso';
-      vm.acao = { evento: 'CONTINUAR', rotulo: `Continuar · passo ${m.i + 1} de ${m.passos.length} (até a meia-noite)` };
+      vm.acao = { evento: 'CONTINUAR', rotulo: `Continuar do passo ${m.i + 1} de ${m.passos.length}`, nota: 'A missão fica aberta até a meia-noite.' };
     } else if (m.tipo === 'folga') {
       vm.estado = 'folga'; vm.texto = 'Hoje é folga. Nada vence por isso.';
       vm.acao = { evento: 'ESTUDAR_MESMO_ASSIM', rotulo: 'Estudar mesmo assim', nota: 'Conta como dia estudado; não conta para a meta da semana.' };
@@ -270,7 +303,7 @@ export class Nucleo {
       else if (vm.estado === 'reta') vm.texto = m.frase;
       else if (vm.estado === 'retorno') vm.texto = `${m.boasVindas ? 'Bem-vindo de volta. ' : ''}${nDe(m.venc.length, 'revisão passou', 'revisões passaram')} para hoje; a missão de hoje tem só revisões.`;
       else if (vm.estado === 'firme') vm.texto = `${this.pack.titulo} está firme. As revisões continuam quando vencerem.`;
-      else if (vm.estado === 'questaoDoDia') vm.texto = `Questão do dia · ${nDe(m.passos.filter(p => p.t === 'dia').length, 'questão', 'questões')} dos capítulos que você já abriu · ≈ ${m.minutos} min`;
+      else if (vm.estado === 'questaoDoDia') vm.texto = `${cap1(nDe(m.passos.filter(p => p.t === 'dia').length, 'questão', 'questões'))} dos capítulos que você já abriu.`;
       else if (m.boasVindas) vm.texto = 'Bem-vindo de volta.';
       if (vm.estado === 'provaPassou') vm.links.push({ rotulo: 'Marcar data', aba: 'plano' });
     }
@@ -283,6 +316,8 @@ export class Nucleo {
         composicao: this._composicao(m),
         atrasada: atrasadas ? (atrasadas === 1 ? '1 revisão atrasada vem primeiro.' : `${atrasadas} revisões atrasadas vêm primeiro.`) : null,
         ganho: this._ganho(m),
+        cabecalho: this._cabecalho(m),
+        regra: this._regraHoje(m, d),
         esmaecido: !!m.hojeNao,
         passos: this._verPassos(m.passos),
         totalPassos: m.passos.length,
@@ -314,6 +349,10 @@ export class Nucleo {
       imagens: item.imagens || [], dados: item.dados || null, figura: item.figura || null,
       alternativas: item.alternativas.map(a => ({ letra: a.letra, texto: a.texto, imagem: a.imagem || null })),
       rodape: item.rodape, licencaUrl: item.licencaUrl,
+      // cabeçalho do caderno impresso: "QUESTÃO 162" e a prova; questão da equipe: "QUESTÃO DA EQUIPE" e a página
+      cabecalho: item.origem === 'enem'
+        ? { num: `Questão ${item.numero}`, fonte: item.prova || null }
+        : { num: 'Questão da equipe', fonte: item.pagina && this.pack.pagina(item.pagina) ? `p. ${this.pack.pagina(item.pagina).n}` : null },
       imagemFalhou: 'A imagem não carregou; a descrição está abaixo.',
     };
   }
@@ -321,14 +360,14 @@ export class Nucleo {
     const pk = this.pack;
     if (p.t === 'pre') {
       const pg = pk.pagina(p.pagina);
-      if (p.alvo === 'bloco') { const n = pk.localDoBloco(p.bloco).n; return { tipo: 'preBloco', rotulo: `ANTES DO § ${n}`, sub: null, aviso: `Tente antes de ler. O § ${n} responde.` }; }
-      return { tipo: 'pre', rotulo: `ANTES DE LER · P. ${pg.n}`, sub: null, aviso: 'Tente antes de ler. Esta página responde.' };
+      if (p.alvo === 'bloco') { const n = pk.localDoBloco(p.bloco).n; return { tipo: 'preBloco', rotulo: `Antes do parágrafo ${n}`, sub: null, aviso: `Tente antes de ler. O parágrafo ${n} responde.` }; }
+      return { tipo: 'pre', rotulo: `Antes de ler a p. ${pg.n}`, sub: null, aviso: 'Tente antes de ler. Esta página responde.' };
     }
-    if (p.t === 'checagem') return { tipo: 'checagem', rotulo: `CONFIRA · P. ${pk.pagina(p.pagina).n}`, sub: null };
-    if (p.t === 'revisao') return { tipo: 'revisao', rotulo: `REVISÃO · CAP. ${pk.capitulo(p.cap).n}`, sub: 'Vale a primeira resposta.' };
-    if (p.t === 'dia') return { tipo: 'dia', rotulo: 'QUESTÃO DO DIA', sub: 'Não muda nível nem agenda.' };
-    if (p.antecipada) return { tipo: 'antecipada', rotulo: 'REVISÃO ANTECIPADA', sub: `${this._nomeCap(p.cap)} · não sobe nível` };
-    return item.origem === 'enem' ? { tipo: 'enem', rotulo: 'QUESTÃO DO ENEM', sub: item.rotulo } : { tipo: 'equipe', rotulo: 'QUESTÃO DA EQUIPE', sub: 'Texto e números da equipe Prumo · CC BY-SA 4.0' };
+    if (p.t === 'checagem') return { tipo: 'checagem', rotulo: `Confira a p. ${pk.pagina(p.pagina).n}`, sub: null };
+    if (p.t === 'revisao') return { tipo: 'revisao', rotulo: `Revisão do Cap. ${pk.capitulo(p.cap).n}`, sub: 'Vale a primeira resposta.' };
+    if (p.t === 'dia') return { tipo: 'dia', rotulo: 'Questão do dia', sub: 'Não muda nível nem agenda.' };
+    if (p.antecipada) return { tipo: 'antecipada', rotulo: 'Revisão antecipada', sub: `${this._nomeCap(p.cap)}: não sobe nível.` };
+    return item.origem === 'enem' ? { tipo: 'enem', rotulo: 'Questão do Enem', sub: item.rotulo } : { tipo: 'equipe', rotulo: 'Questão da equipe', sub: 'Texto e números da equipe Prumo · CC BY-SA 4.0' };
   }
   _medidor(p) {
     const m = this.st.missao;
@@ -347,6 +386,14 @@ export class Nucleo {
     else if (!casa1.cheia && casa2.cheia) texto = 'Falta mais um acerto seguido';
     return { casas: [casa1, casa2], texto, regra: `${regra.frase}. ${regra.insercao}` };
   }
+  /** "faltam 2 questões" (ou "faltam até 3 questões", quando a rodada pode fechar antes); null sem questões pela frente. */
+  _faltam(m) {
+    const feito = ['feedback', 'trecho', 'fimDaRodada', 'fimDaMao'].includes(this.estado());
+    const resto = m.passos.slice(m.i + (feito ? 1 : 0)).filter(p => ['pre', 'checagem', 'questao', 'revisao', 'dia'].includes(p.t));
+    if (!resto.length) return null;
+    const ate = resto.some(p => p.t === 'questao' && p.papel === 'aplicar' && !p.inserido);
+    return `${resto.length === 1 ? 'falta' : 'faltam'} ${ate ? 'até ' : ''}${nDe(resto.length, 'questão', 'questões')}`;
+  }
   _topo(p, etapa) {
     const m = this.st.missao, total = m.passos.length;
     const primeiroDaRodada = p && p.r ? m.passos.findIndex(x => x.r === p.r) === m.i : false;
@@ -354,6 +401,8 @@ export class Nucleo {
     return {
       etapa, encerrar: 'Encerrar',
       passo: { n: m.i + 1, total }, progresso: total ? m.i / total : 0,
+      // legenda da Régua: o passo e o que falta (nunca tempo)
+      legenda: { passo: `passo ${Math.min(m.i + 1, total)} de ${total}`, falta: this._faltam(m) },
       medidor: this._medidor(p),
       regra: regra ? { texto: `${regra.frase}. ${regra.insercao}`, mostrarAgora: primeiroDaRodada, rotulo: 'ver a regra' } : null,
     };
@@ -378,20 +427,20 @@ export class Nucleo {
       }
       const temPergunta = m.passos.slice(m.i + 1).some(x => x.t !== 'leitura' && x.t !== 'cards');
       return {
-        estado: 'leitura', topo: this._topo(p, `Leitura · p. ${pg.n}`),
-        cabeco: `${MATERIAS[pk.materia] || pk.materia} · ${pk.titulo} · Cap. ${cap.n}`,
+        estado: 'leitura', topo: this._topo(p, `Leitura da p. ${pg.n}`),
+        cabeco: `${pk.titulo}, Cap. ${cap.n}`,
         pagina: { id: pg.id, n: pg.n, titulo: pg.titulo, pe: `p. ${pg.n}` },
         blocos: p.blocos.map(b => this._blocoVM(pk.bloco(b))),
         faixa,
-        jaSei: temPergunta ? { evento: 'JA_SEI', rotulo: 'Já sei isto · ir para a próxima pergunta' } : null,
-        botao: { evento: 'TERMINEI_TRECHO', rotulo: prox && prox.t === 'pre' && prox.alvo === 'bloco' ? `Continuar: pergunta antes do § ${pk.localDoBloco(prox.bloco).n}` : 'Terminei de ler' },
+        jaSei: temPergunta ? { evento: 'JA_SEI', rotulo: 'Já sei isto: ir para a próxima pergunta' } : null,
+        botao: { evento: 'TERMINEI_TRECHO', rotulo: prox && prox.t === 'pre' && prox.alvo === 'bloco' ? `Continuar: pergunta antes do parágrafo ${pk.localDoBloco(prox.bloco).n}` : 'Terminei de ler' },
         nota: p.fimDaPagina && pg.notaPrompt ? { prompt: pg.notaPrompt, texto: ((st.notas || []).find(n => n.pagina === pg.id) || {}).texto || '', evento: 'SALVAR_NOTA' } : null,
       };
     }
     // pergunta
     const item = pk.item(p.id), r = this._rotulos(p, item);
     const primeiraChecagem = p.t === 'checagem' && !Object.values(st.topicos).some(t => (t.tentativas || []).some(x => x.tipo === 'checagem'));
-    const etapa = p.t === 'pre' ? `Pergunta · p. ${pk.pagina(p.pagina).n}` : p.t === 'checagem' ? `Confira · p. ${pk.pagina(p.pagina).n}` : p.t === 'revisao' ? `Revisão · ${this._nomeCap(p.cap)}` : p.t === 'dia' ? 'Questão do dia' : r.tipo === 'enem' ? 'Questão do Enem' : r.tipo === 'antecipada' ? 'Revisão antecipada' : 'Questão da equipe';
+    const etapa = p.t === 'pre' ? `Pergunta da p. ${pk.pagina(p.pagina).n}` : p.t === 'checagem' ? `Confira a p. ${pk.pagina(p.pagina).n}` : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : p.t === 'dia' ? 'Questão do dia' : r.tipo === 'enem' ? 'Questão do Enem' : r.tipo === 'antecipada' ? 'Revisão antecipada' : 'Questão da equipe';
     return {
       estado: 'pergunta', tipo: r.tipo, rotulo: r.rotulo, subrotulo: r.sub, aviso: r.aviso || null,
       avisoPrimeiraChecagem: primeiraChecagem ? 'Isso fica só no seu celular. Ninguém da escola vê.' : null,
@@ -410,7 +459,7 @@ export class Nucleo {
     const pk = this.pack, loc = pk.local(parId);
     if (!loc) return null;
     const pg = pk.pagina(loc.pagina), cap = pk.capitulo(loc.cap);
-    return { cabeco: `${MATERIAS[pk.materia] || pk.materia} · ${pk.titulo} · Cap. ${cap.n}`, pagina: { id: pg.id, n: pg.n, titulo: pg.titulo, pe: `p. ${pg.n}` }, blocos: pg.blocos.map(b => this._blocoVM(b)), ancora: parId, rotulo: loc.rotulo };
+    return { cabeco: `${pk.titulo}, Cap. ${cap.n}`, pagina: { id: pg.id, n: pg.n, titulo: pg.titulo, pe: `p. ${pg.n}` }, blocos: pg.blocos.map(b => this._blocoVM(b)), ancora: parId, rotulo: loc.rotulo, titulo: `p. ${pg.n}, parágrafo ${loc.n}` };
   }
   /** Feedback (c.3e/c.3h): a questão continua na tela com "sua" e "certa", o que faltou e o trecho. */
   feedback() {
@@ -427,14 +476,14 @@ export class Nucleo {
       falta: ok ? null : (alt.falta || null),
       item: this._itemVM(item),
       alternativas: item.alternativas.map(a => ({ letra: a.letra, texto: a.texto, imagem: a.imagem || null, marca: a.letra === u.alt && a.certa ? 'sua-certa' : a.letra === u.alt ? 'sua' : a.certa ? 'certa' : null })),
-      trecho: loc ? { evento: 'VOLTAR_AO_TRECHO', rotulo: `Voltar ao trecho · ${loc.rotulo}` } : null,
+      trecho: loc ? { evento: 'VOLTAR_AO_TRECHO', rotulo: `Voltar ao parágrafo ${loc.n}` } : null,
       resolucao: { evento: 'VER_RESOLUCAO', rotulo: 'Ver a resolução da equipe', aberta: !!m.resolucaoAberta, texto: item.explicacao || '' },
       proxima: u.inserida && !u.inserida.cancelada ? `A próxima é uma questão da equipe sobre a ${u.inserida.rotulo}.` : null,
       revisao: null, fimRodada: null,
       medidor: p.r && p.papel ? this._medidorDepois(u, p) : null,
       continuar: { evento: 'CONTINUAR', rotulo: 'Continuar', texto: 'Leia a explicação', pausaMs: this.M.pausa(item), liberaEm: (m.feedbackEm || 0) + this.M.pausa(item), restanteMs: Math.max(0, (m.feedbackEm || 0) + this.M.pausa(item) - R.agora()) },
       som: ok ? 'acerto' : 'erro',
-      topo: this._topo(p, r.tipo === 'revisao' ? `Revisão · ${this._nomeCap(p.cap)}` : 'Resultado'),
+      topo: this._topo(p, r.tipo === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : 'Resultado'),
     };
     if (u.revisao) {
       const fr = u.revisao, cn = this._nomeCap(p.cap);
@@ -505,12 +554,14 @@ export class Nucleo {
     if (nome === 'fimDaMao') return { estado: 'fimDaMao', resumo: (m.resumo.cards || {}).texto || '', acao: { evento: 'SEGUIR', rotulo: 'Seguir' }, topo: this._topo(m.passos[m.i], 'Cards') };
     const id = mao.pendente ? mao.pendente.id : Cards.cardAtual(mao);
     const k = pk.card(id), loc = pk.localDoCard(k), e = st.cards[id] || {};
-    const trecho = loc ? { rotulo: `ver o trecho · ${loc.rotulo}`, evento: 'VER_TRECHO', pagina: loc.pagina, paragrafo: loc.paragrafo } : null;
+    const trecho = loc ? { rotulo: `Ver o parágrafo ${loc.n} da p. ${loc.paginaN}`, evento: 'VER_TRECHO', pagina: loc.pagina, paragrafo: loc.paragrafo } : null;
     if (nome === 'trechoCard') return Object.assign({ estado: 'trechoCard' }, this._trecho(loc.paragrafo), { acao: { evento: 'VOLTAR', rotulo: 'Voltar ao card' } });
     const repeticao = mao.respostas[id] !== undefined && !mao.pendente;
     return {
       estado: 'cards', id, frente: k.frente, verso: k.verso, virado: !!mao.virado,
-      caixa: { n: e.caixa, nome: NIVEL[e.caixa] }, repeticao, rotulo: repeticao ? 'CARD · DE VOLTA' : 'CARD',
+      // a ficha mostra "revisão N de 5" (a caixa de Leitner do card, de 1 a 5) e o capítulo
+      caixa: { n: e.caixa, nome: NIVEL[e.caixa], rotulo: `revisão ${Math.max(1, e.caixa || 1)} de 5` }, cap: loc ? `Cap. ${loc.capN}` : '',
+      repeticao, rotulo: repeticao ? 'Card de volta' : 'Card',
       posicao: `${Math.min(mao.i + 1, mao.fila.length)} de ${mao.fila.length}`,
       acoes: mao.pendente ? [{ evento: 'SEGUIR', rotulo: 'Próximo card' }] : mao.virado ? [{ evento: 'LEMBREI', rotulo: 'Lembrei' }, { evento: 'AINDA_NAO', rotulo: 'Ainda não' }] : [{ evento: 'VIRAR', rotulo: 'Virar' }],
       pendente: mao.pendente ? { texto: mao.pendente.repeticao ? 'Ainda não. Ele volta em outro dia, pela agenda.' : 'Ainda não. Este card volta uma vez no fim desta mão.', trecho } : null,
@@ -531,15 +582,15 @@ export class Nucleo {
     const mud = [];
     for (const fr of res.rodadas) {
       const c = pk.capitulo(fr.cap);
-      if (fr.extra) mud.push({ tipo: 'antecipada', texto: fr.venceu ? `Cap. ${c.n} · revisão antecipada vencida. O nível só sobe na revisão do dia certo.` : `Cap. ${c.n} · revisão marcada para amanhã.` });
-      else if (fr.venceu) mud.push({ tipo: 'nivel', texto: `Cap. ${c.n} · ${c.titulo} entrou em ${NIVEL[fr.caixaDepois]}. Revisão: ${dataRevisao(fr.proxima, d)}.`, nivel: { cap: fr.cap, de: fr.caixaAntes, para: fr.caixaDepois, animar: true } });
-      else mud.push({ tipo: 'teto', texto: `Cap. ${c.n} · ${this._textoFimRodada(fr).texto}` });
+      if (fr.extra) mud.push({ tipo: 'antecipada', texto: fr.venceu ? `A revisão antecipada do Cap. ${c.n} fechou. O nível só sobe na revisão do dia certo.` : `A revisão do Cap. ${c.n} ficou para amanhã.` });
+      else if (fr.venceu) mud.push({ tipo: 'nivel', texto: `O Cap. ${c.n} entrou em ${NIVEL[fr.caixaDepois]}. Próxima revisão: ${dataRevisao(fr.proxima, d)}.`, nivel: { cap: fr.cap, de: fr.caixaAntes, para: fr.caixaDepois, animar: true } });
+      else mud.push({ tipo: 'teto', texto: `Cap. ${c.n}: ${this._textoFimRodada(fr).texto}` });
       if (fr.cardsRecebidos) mud.push({ tipo: 'cards', texto: `Os ${fr.cardsRecebidos} cards do Cap. ${c.n} entraram no seu baralho.` });
     }
     for (const rv of res.revisoes) {
       const c = pk.capitulo(rv.cap);
-      mud.push(rv.venceu ? { tipo: 'revisao', texto: `Cap. ${c.n} · ${NIVEL[rv.caixaDepois]}. Próxima revisão: ${R.fmtCurta(rv.proxima)}.`, nivel: { cap: rv.cap, de: rv.caixaAntes, para: rv.caixaDepois, animar: rv.caixaDepois > rv.caixaAntes } }
-        : { tipo: 'revisao', texto: `Cap. ${c.n} · revisão marcada para ${R.diff(d, rv.proxima) === 1 ? 'amanhã' : R.fmtCurta(rv.proxima)}.`, nivel: { cap: rv.cap, de: rv.caixaAntes, para: rv.caixaDepois, animar: false } });
+      mud.push(rv.venceu ? { tipo: 'revisao', texto: `O Cap. ${c.n} ${rv.caixaDepois > rv.caixaAntes ? 'sobe para' : 'continua'} ${NIVEL[rv.caixaDepois]}. Próxima revisão: ${R.fmtCurta(rv.proxima)}.`, nivel: { cap: rv.cap, de: rv.caixaAntes, para: rv.caixaDepois, animar: rv.caixaDepois > rv.caixaAntes } }
+        : { tipo: 'revisao', texto: `A revisão do Cap. ${c.n} ficou para ${R.diff(d, rv.proxima) === 1 ? 'amanhã' : R.fmtCurta(rv.proxima)}.`, nivel: { cap: rv.cap, de: rv.caixaAntes, para: rv.caixaDepois, animar: false } });
     }
     const pres = m.passos.filter(p => p.t === 'pre'), ultimoFeito = m.parcial ? m.i - 1 : m.passos.length - 1;
     if (pres.length && res.pres > 0 && pres.every(p => m.passos.indexOf(p) <= ultimoFeito || (!m.parcial))) mud.push({ tipo: 'antes', texto: 'Você tentou antes de ler em todos os trechos cobrados.' });
@@ -557,9 +608,15 @@ export class Nucleo {
     const ultimaRodada = res.rodadas.length ? res.rodadas[res.rodadas.length - 1] : null;
     const prox = this._proximoDia(d);
     const umaVezPorSemana = !st.config.ultimaCopia || R.diff(st.config.ultimaCopia, d) >= 7;
+    // o visto do dia (só quando o dia conta como estudado): a data e o que mudou, em poucas palavras
+    const revOk = res.revisoes.filter(x => x.venceu).slice(-1)[0];
+    const obsVisto = ultimaRodada && ultimaRodada.venceu && !ultimaRodada.extra ? `Cap. ${pk.capitulo(ultimaRodada.cap).n} em ${NIVEL[ultimaRodada.caixaDepois]}`
+      : revOk ? `Cap. ${pk.capitulo(revOk.cap).n} ${revOk.caixaDepois > revOk.caixaAntes ? 'em' : 'continua'} ${NIVEL[revOk.caixaDepois]}` : null;
     return {
-      estado: 'encerramento', titulo: 'Pronto por hoje.', data: R.fmtLonga(d),
-      constancia: { simbolo: cons.simbolo, diasEstudados: cons.diasEstudados, rotulo: cons.rotulo, regua: cons.miniRegua, tracoDeHoje: !!st.dias[d], chama: cons.chama },
+      estado: 'encerramento', titulo: 'Pronto por hoje', data: R.fmtLonga(d),
+      visto: st.dias[d] ? { palavra: 'Visto', data: R.fmtCompleta(d), obs: obsVisto, rotulo: `Visto de ${R.fmtCompleta(d)}${obsVisto ? `. ${obsVisto}` : ''}` } : null,
+      fecho: 'Por hoje é isso. Está tudo guardado neste aparelho.',
+      constancia: { simbolo: cons.simbolo, diasEstudados: cons.diasEstudados, rotulo: cons.rotulo, tracoDeHoje: !!st.dias[d] },
       semanaPassada: st.dias[d] ? Plano.linhaSemanaPassada(st, d) : null,
       mudancas: mud,
       nivelAnimado: ultimaRodada && ultimaRodada.venceu && !ultimaRodada.extra ? { cap: ultimaRodada.cap, de: ultimaRodada.caixaAntes, para: ultimaRodada.caixaDepois, nome: NIVEL[ultimaRodada.caixaDepois] } : null,
@@ -583,7 +640,7 @@ export class Nucleo {
     if (nome === 'provaResultado') return Object.assign({ estado: 'provaResultado', acao: { evento: 'FECHAR', rotulo: 'Fechar' } }, Prova.vmResultadoProva(this.st, pk, pr, R.hoje()));
     const f = pr.fila[pr.i], item = pk.item(f.id);
     const topo = { etapa: 'Prova do caderno', encerrar: 'Encerrar', casas: Prova.casasProva(pk, pr), tentativa: `tentativa ${pr.rodada.tentativas + (nome === 'provaPergunta' ? 1 : 0)} de ${P.chefe.teto}`, regra: Prova.regraProva(pk), eventoEncerrar: 'ENCERRAR_PROVA', avisoEncerrar: 'Encerrar a prova no meio não muda nada.' };
-    const r = item.origem === 'enem' ? { rotulo: 'QUESTÃO DO ENEM', sub: item.rotulo } : { rotulo: 'QUESTÃO DA EQUIPE', sub: 'Texto e números da equipe Prumo · CC BY-SA 4.0' };
+    const r = item.origem === 'enem' ? { rotulo: 'Questão do Enem', sub: item.rotulo } : { rotulo: 'Questão da equipe', sub: 'Texto e números da equipe Prumo · CC BY-SA 4.0' };
     if (nome === 'provaPergunta') return { estado: 'provaPergunta', rotulo: r.rotulo, subrotulo: r.sub, item: this._itemVM(item), topo, acao: { evento: 'RESPONDER', rotulo: 'Responder', exige: 'alt' }, reaproveita: pr.reaproveita ? 'Nesta demo, a prova reaproveita questões.' : null };
     const u = pr.ultima, ok = u.res === 'ok', alt = item.alternativas.find(a => a.letra === u.alt) || {}, loc = u.paragrafo ? pk.local(u.paragrafo) : null;
     const fb = {
@@ -591,7 +648,7 @@ export class Nucleo {
       titulo: ok ? 'Certa.' : `Você marcou ${u.alt}. A certa é ${item.gabarito}.`, porque: ok ? item.explicacao || null : null, falta: ok ? null : alt.falta || null,
       item: this._itemVM(item),
       alternativas: item.alternativas.map(a => ({ letra: a.letra, texto: a.texto, imagem: a.imagem || null, marca: a.letra === u.alt && a.certa ? 'sua-certa' : a.letra === u.alt ? 'sua' : a.certa ? 'certa' : null })),
-      trecho: loc ? { evento: 'VOLTAR_AO_TRECHO', rotulo: `Voltar ao trecho · ${loc.rotulo}` } : null,
+      trecho: loc ? { evento: 'VOLTAR_AO_TRECHO', rotulo: `Voltar ao parágrafo ${loc.n}` } : null,
       resolucao: { evento: 'VER_RESOLUCAO', rotulo: 'Ver a resolução da equipe', aberta: !!pr.resolucaoAberta, texto: item.explicacao || '' },
       continuar: { evento: 'CONTINUAR', rotulo: pr.resultado ? 'Ver o resultado' : 'Continuar', texto: 'Leia a explicação', pausaMs: this.M.pausa(item), liberaEm: (pr.feedbackEm || 0) + this.M.pausa(item), restanteMs: Math.max(0, (pr.feedbackEm || 0) + this.M.pausa(item) - R.agora()) },
       topo, som: ok ? 'acerto' : 'erro',
@@ -783,7 +840,7 @@ export class Nucleo {
     const c = this.st.config, d = R.hoje();
     return {
       som: { valor: !!c.som, rotulo: 'Som', nota: 'Desligado por padrão. O retorno nunca depende do som.' },
-      simbolo: { valor: c.simboloConstancia, rotulo: 'Símbolo da constância', opcoes: [{ valor: 'chama', rotulo: 'Chama' }, { valor: 'regua', rotulo: 'Régua' }], nota: 'Os dois mostram "dias estudados", que só cresce. A chama acende na semana em que a meta foi cumprida, depois que ela termina, e nunca apaga.' },
+
       dados: {
         copia: { rotulo: 'Salvar uma cópia do meu progresso', ultima: c.ultimaCopia ? `Última cópia: ${R.fmtDiaMes(c.ultimaCopia)}` : 'Nenhuma cópia salva ainda.' },
         csv: { rotulo: 'Baixar minhas tentativas (CSV)' },
@@ -798,8 +855,9 @@ export class Nucleo {
   creditos() {
     const c = this.pack.creditos();
     c.app = [
-      { item: 'Poppins (marca e títulos)', licenca: 'SIL Open Font License 1.1', fonte: 'Google Fonts' },
-      { item: 'Inter (texto)', licenca: 'SIL Open Font License 1.1', fonte: 'Google Fonts' },
+      { item: 'Gabarito (marca e títulos)', licenca: 'SIL Open Font License 1.1', fonte: 'Google Fonts' },
+      { item: 'Atkinson Hyperlegible Next (texto)', licenca: 'SIL Open Font License 1.1', fonte: 'Google Fonts' },
+      { item: 'Atkinson Hyperlegible Mono (números)', licenca: 'SIL Open Font License 1.1', fonte: 'Google Fonts' },
       { item: 'Código do Prumo', licenca: 'da equipe do TCC', fonte: 'ETEC Jornalista Roberto Marinho' },
     ];
     c.ia = 'Uso de IA declarado: textos, modelos e explicações com "rascunho por IA" foram redigidos com Claude (Anthropic), via Claude Code, e aguardam revisão de um aluno. O diário de uso de IA da equipe registra cada caso.';
@@ -810,7 +868,7 @@ export class Nucleo {
   /* ---------------- ações (cada uma salva) ---------------- */
   _acao(fn) { return this.missao.transicao(() => { const r = fn(); return r === undefined ? null : r; }); }
   definirSom(v) { return this._acao(() => { this.st.config.som = !!v; }); }
-  definirSimbolo(v) { return this._acao(() => { this.st.config.simboloConstancia = v === 'regua' ? 'regua' : 'chama'; }); }
+
   definirAlarme(v) { return this._acao(() => { this.st.config.alarme = ['criado', 'agora-nao'].includes(v) ? v : null; }); }
   /** Muda o plano (prova, dias, minutos, meta, horário). A missão de hoje é remontada se não começou. */
   mudarPlano(mud) {
@@ -866,13 +924,13 @@ export class Nucleo {
   refazer() {
     const rf = this.st.refazer;
     if (!rf) return null;
-    const item = this.pack.item(rf.item), base = { estado: rf.estado, rotulo: 'REFAZER · OUTROS NÚMEROS', subrotulo: 'Não muda nível nem agenda.', item: this._itemVM(item) };
+    const item = this.pack.item(rf.item), base = { estado: rf.estado, rotulo: 'Refazer com outros números', subrotulo: 'Não muda nível nem agenda.', item: this._itemVM(item) };
     if (rf.estado === 'pergunta') return Object.assign(base, { acao: { rotulo: 'Responder', exige: 'alt' } });
     const ok = rf.res === 'ok', alt = item.alternativas.find(a => a.letra === rf.alt) || {}, loc = alt.paragrafo ? this.pack.local(alt.paragrafo) : null;
     return Object.assign(base, {
       certa: ok, titulo: ok ? 'Certa.' : `Você marcou ${rf.alt}. A certa é ${item.gabarito}.`, falta: ok ? null : alt.falta || null, porque: ok ? item.explicacao : null,
       alternativas: item.alternativas.map(a => ({ letra: a.letra, texto: a.texto, marca: a.letra === rf.alt && a.certa ? 'sua-certa' : a.letra === rf.alt ? 'sua' : a.certa ? 'certa' : null })),
-      trecho: loc ? { rotulo: `Voltar ao trecho · ${loc.rotulo}`, pagina: loc.pagina, paragrafo: loc.paragrafo } : null,
+      trecho: loc ? { rotulo: `Voltar ao parágrafo ${loc.n} da p. ${loc.paginaN}`, pagina: loc.pagina, paragrafo: loc.paragrafo } : null,
       acao: { rotulo: 'Fechar' },
     });
   }

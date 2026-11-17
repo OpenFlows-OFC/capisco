@@ -10,8 +10,9 @@ const TCC = resolve(aqui, '../../../..');
 const INEP = resolve(TCC, 'rebranding/anexos/inep');
 const RAW = resolve(TCC, 'prototipo/dados_enem/raw');
 
-// CO_PROVA do Caderno Azul da 1ª aplicação (o menor código "Azul" de MT em cada ano).
-export const PROVA_AZUL = { 2019: 515, 2020: 587, 2021: 899, 2022: 1085, 2023: 1211 };
+// CO_PROVA do Caderno Azul da 1ª aplicação (o menor código "Azul" de MT em cada ano), conferido nos
+// ITENS_PROVA_2019 a 2023 em 17/11/2026. conferir() recalcula e falha se o arquivo der outro código.
+export const PROVA_AZUL = { 2019: 515, 2020: 587, 2021: 899, 2022: 1075, 2023: 1211 };
 
 export const ALVO = [
   { ano: 2019, n: 143, cap: 'mat-fa.c3' },
@@ -33,6 +34,7 @@ export function conferir({ ano, n }) {
   const azul = itens.filter(r => r.SG_AREA === 'MT' && /^AZUL$/i.test(r.TX_COR));
   const provas = [...new Set(azul.map(r => +r.CO_PROVA))].sort((a, b) => a - b);
   const coProva = provas[0];
+  if (coProva !== PROVA_AZUL[ano]) throw new Error(`ITENS_PROVA_${ano}: o menor CO_PROVA Azul de MT é ${coProva}, e PROVA_AZUL diz ${PROVA_AZUL[ano]}`);
   const linha = azul.find(r => +r.CO_PROVA === coProva && +r.CO_POSICAO === n);
   const raw = JSON.parse(readFileSync(resolve(RAW, `enem_${ano}.json`), 'utf8'))
     .filter(q => q.index === n && q.language == null);
