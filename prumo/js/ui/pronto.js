@@ -14,7 +14,7 @@ import { trilhaDe } from './missao.js';
 /** "Quando e onde": dia (o próximo dia de estudo), hora e uma âncora da rotina. Vira o horário do lembrete. */
 function quando(q) {
   if (!q) return '';
-  return h`<form class="quando secao" data-enviar="guardarQuando" data-dia="${q.dia}" novalidate aria-labelledby="quando-t">
+  return h`<details class="quando-detalhes" ${q.salvo ? cru('open') : ''}><summary>Marcar quando estudar de novo</summary><form class="quando secao" data-enviar="guardarQuando" data-dia="${q.dia}" novalidate aria-labelledby="quando-t">
     <h2 class="titulo-pequeno" id="quando-t">${q.pergunta}</h2>
     <p style="margin:0 0 8px">${q.rotuloDia}</p>
     ${q.salvo ? h`<p class="intencao" role="status">${q.salvo}</p>` : ''}
@@ -27,7 +27,7 @@ function quando(q) {
     </fieldset>
     <p class="pequeno texto-2">${q.lembrete}</p>
     <button type="submit" class="botao-sec botao-largo">Guardar meu plano</button>
-  </form>`;
+  </form></details>`;
 }
 
 export function telaPronto(ctx, vm) {
@@ -39,7 +39,8 @@ export function telaPronto(ctx, vm) {
   const tr = vm.parcial ? null : trilhaDe(ctx, vm, 'encerramento');
   const frases = [
     vm.parcial, vm.vazio, vm.naoContou,
-    ...(vm.mudancas || []).map(m => m.texto),
+    // só o que mudou de verdade; o comentário sobre o aquecimento sai
+    ...(vm.mudancas || []).map(m => m.texto).filter(t => !/^Você fez o aquecimento/.test(t)),
     vm.semanaPassada,
   ].filter(Boolean);
   return {
@@ -57,9 +58,7 @@ export function telaPronto(ctx, vm) {
         ${p.porque ? h`<details class="porque"><summary class="link">${p.rotuloPorque || 'Por quê?'}</summary><p class="texto-2">${p.porque}</p></details>` : ''}
       </section>` : ''}
       ${quando(vm.quando)}
-      ${vm.amanha ? h`<section class="amanha" aria-labelledby="amanha-t"><h2 class="titulo-pequeno" id="amanha-t">${vm.amanha.rotulo}</h2><div class="enunciado amanha-enunciado">${cru(vm.amanha.html)}</div>${vm.amanha.fonte ? rodape(vm.amanha.aviso, vm.amanha.licencaUrl) : h`<p class="pequeno texto-2">${vm.amanha.aviso}</p>`}</section>` : ''}
       ${constancia(vm.constancia)}
-      <p class="fecho">${vm.fecho}</p>
       ${vm.continuar ? h`<p class="continuar-livre">${vm.continuar.texto} <button type="button" class="link" data-acao="continuarEstudando">${vm.continuar.rotulo}</button></p>` : ''}
       ${vm.copia ? h`<p><button type="button" class="link" data-acao="salvarCopia">${vm.copia.rotulo}</button></p>` : ''}
       <div class="fechar"><button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>

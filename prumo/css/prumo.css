@@ -928,3 +928,22 @@ body.modo-missao .bilhete { bottom: calc(16px + var(--seguro-baixo)); }
   .sumario-item:hover > span:last-child { text-decoration-color: var(--tinta); }
   .sumario-abrir:hover, details > summary:hover { color: var(--tinta); }
 }
+
+/* Hoje: o essencial à vista; capítulo, tempo, regra e passos recolhidos em "Detalhes da missão" */
+.detalhes-missao { margin: 0; }
+.rosto > .detalhes-missao { margin-top: calc(-1 * var(--space-3)); }
+.rosto > .detalhes-missao + .acoes-rosto { margin-top: calc(-1 * var(--space-4)); }
+.detalhes-missao > summary { cursor: pointer; min-height: 48px; display: flex; align-items: center; font-weight: 600; color: var(--tinta); list-style: none; }
+.detalhes-missao > summary::-webkit-details-marker { display: none; }
+.detalhes-missao > summary::after { content: "▾"; margin-left: var(--space-2); transition: transform .15s; }
+.detalhes-missao[open] > summary::after { transform: rotate(180deg); }
+.detalhes-missao[open] > * + * { margin-top: var(--space-3); }
+@media (prefers-reduced-motion: reduce) { .detalhes-missao > summary::after { transition: none; } }
+
+/* Topo do tópico: só a trilha e o contador */
+.contador { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+/* Pronto: o "quando e onde" fica recolhido; abre para quem quiser */
+.quando-detalhes > summary { cursor: pointer; min-height: 48px; display: flex; align-items: center; font-weight: 600; color: var(--tinta); list-style: none; }
+.quando-detalhes > summary::-webkit-details-marker { display: none; }
+.quando-detalhes > summary::after { content: "▾"; margin-left: var(--space-2); }
+.quando-detalhes[open] > summary::after { transform: rotate(180deg); }

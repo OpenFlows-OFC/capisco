@@ -84,7 +84,7 @@ const jogar = (alvo) => {
     await auditar('primeiro-uso');
     await pg.evaluate(() => { window.__prumo.nucleo.concluirPrimeiroUso({ provaTipo: 'escola', prova: '2026-12-15', dias: [1, 2, 3, 4], minutos: 25 }); window.__prumo.app.render(); });
     await auditar('hoje');
-    await pg.click('[data-folha="porQue"]'); await pg.click('[data-acao="verRegraPorQue"]'); await auditar('folha-por-que');
+    await pg.evaluate(() => document.querySelectorAll('.detalhes-missao').forEach(d => d.open = true)); await pg.click('[data-folha="porQue"]'); await pg.click('[data-acao="verRegraPorQue"]'); await auditar('folha-por-que');
     await pg.click('#folha-raiz .folha-pe [data-acao="fecharFolha"]');
     await pg.evaluate(() => { window.__prumo.nucleo.despachar('HOJE_NAO'); window.__prumo.app.render(); }); await auditar('hoje-nao-esmaecido');
     await pg.evaluate(() => { window.__prumo.nucleo.despachar('COMECAR'); window.__prumo.app.render(); }); await auditar('pre-pergunta');

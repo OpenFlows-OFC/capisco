@@ -44,6 +44,10 @@ function botaoAcao(a) {
   return h`<div class="topico-acao"><button type="button" class="botao botao-largo" data-acao="estudarTopico" data-arg="${a.id || ''}" data-evento="${a.evento}">${a.rotulo}</button>${a.nota ? h`<p class="nota-acao">${a.nota}</p>` : ''}</div>`;
 }
 
+/** "Como funciona" em frases curtas: sai a ressalva do fim da rodada (fica para quando acontecer). */
+function curto(itens) {
+  return itens ? itens.map(x => ({ ...x, texto: x.texto.replace(/\s*Se não der mais[^.]*\./u, '') })) : undefined;
+}
 function paginaTopico(p) {
   if (!p) return h`<p>Tópico não encontrado.</p><p><a class="link" href="#/estudar">Voltar ao mapa</a></p>`;
   return h`<p class="voltar-mapa"><a class="link" href="#/estudar">Voltar ao mapa</a></p>
@@ -54,16 +58,11 @@ function paginaTopico(p) {
       <p style="margin:8px 0 0">${p.estadoTexto}</p>
       ${p.progresso ? h`<p class="texto-2" style="margin:4px 0 0">${p.progresso.texto}</p>` : ''}
       ${botaoAcao(p.acao)}
-      ${p.comoFunciona === null ? '' : comoFunciona({ aberto: !jaViuComo(), itens: p.comoFunciona || undefined })}
+      ${p.comoFunciona === null ? '' : comoFunciona({ aberto: !jaViuComo(), itens: curto(p.comoFunciona) })}
       <section class="secao" aria-labelledby="pq-t"><h2 class="titulo-pequeno" id="pq-t">Por que cai no Enem</h2><p>${p.porQueCai}</p></section>
       ${p.ideias && p.ideias.length ? h`<section class="secao" aria-labelledby="id-t"><h2 class="titulo-pequeno" id="id-t">O essencial</h2><ul class="teoria-lista">${cada(p.ideias, x => h`<li>${x}</li>`)}</ul></section>` : ''}
-      <section class="secao" aria-labelledby="co-t"><h2 class="titulo-pequeno" id="co-t">Como é o estudo</h2><p>${p.composicao}</p>
-        ${p.regraHoje ? h`<p>${p.regraHoje}</p>` : ''}
-        ${p.capitulos ? h`<ul class="lista-topicos">${cada(p.capitulos, c => h`<li class="topico-linha"><span class="topico-titulo">Cap. ${c.n}: ${c.titulo}</span>${nivel({ cheios: c.nivel.cheios, nome: c.nivel.rotulo })}</li>`)}</ul>` : ''}
-        <p class="pequeno texto-2">${p.regraNivel}</p>
-        <p>${p.leitura.aba ? h`<a class="link" href="#/${p.leitura.aba}">${p.leitura.rotulo}</a>` : h`<a class="link" href="#/estudar/${p.id}/teoria">${p.leitura.rotulo}</a>`}</p>
-        ${p.leitura.nota ? h`<p class="pequeno texto-2" style="margin:0">${p.leitura.nota}</p>` : ''}
-      </section>`
+      ${p.capitulos ? h`<ul class="lista-topicos">${cada(p.capitulos, c => h`<li class="topico-linha"><span class="topico-titulo">Cap. ${c.n}: ${c.titulo}</span>${nivel({ cheios: c.nivel.cheios, nome: c.nivel.rotulo })}</li>`)}</ul>` : ''}
+      <p class="secao">${p.leitura.aba ? h`<a class="link" href="#/${p.leitura.aba}">${p.leitura.rotulo}</a>` : h`<a class="link" href="#/estudar/${p.id}/teoria">${p.leitura.rotulo}</a>`}</p>`
     : h`<p>${p.estadoTexto}</p>`}`;
 }
 

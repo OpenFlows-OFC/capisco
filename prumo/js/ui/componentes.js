@@ -144,6 +144,12 @@ export function medidor(md) {
     ${md.texto ? h`<span class="medidor-texto">${md.texto}</span>` : ''}
   </div>`;
 }
+/** No tópico: uma linha só, "2 certas seguidas: falta 1". */
+function contador(md) {
+  const cheias = (md.casas || []).filter(c => c.cheia).length, total = (md.casas || []).length || 2;
+  const falta = total - cheias;
+  return h`<p class="contador">${falta <= 0 ? `${total} certas seguidas: feito` : `${total} certas seguidas: falta${falta > 1 ? 'm' : ''} ${falta}`}</p>`;
+}
 /**
  * Topo da missão: a etapa e "Encerrar"; no tópico de prática, a trilha logo abaixo (sempre no mesmo lugar);
  * a Régua (passo N de M e o que falta) e o medidor nos passos que contam. No tópico, a régua só aparece
@@ -153,10 +159,11 @@ export function medidor(md) {
 export function topo(t, { medidor: md, encerrar = 'encerrar', semRegra = false, rotuloDaTela = null, trilha: tr = null } = {}) {
   if (!t) return '';
   const m = md === undefined ? t.medidor : md;
-  const verRegra = t.regra && !t.regra.mostrarAgora && !semRegra;
-  const etapa = rotuloDaTela && t.etapa && String(rotuloDaTela).toLowerCase().startsWith(String(t.etapa).toLowerCase()) ? '' : t.etapa;
   const comTrilha = !!(tr && tr.fase);
-  const comRegua = !comTrilha || tr.fase === 'questoes';
+  // no tópico, a regra já foi dita no "Como funciona": o topo fica só com a trilha e o contador
+  const verRegra = t.regra && !t.regra.mostrarAgora && !semRegra && !comTrilha;
+  const etapa = rotuloDaTela && t.etapa && String(rotuloDaTela).toLowerCase().startsWith(String(t.etapa).toLowerCase()) ? '' : t.etapa;
+  const comRegua = !comTrilha;
   return h`<header class="topo ${comTrilha ? 'topo-topico' : ''}">
     <div class="topo-linha">
       <p class="topo-etapa">${etapa}</p>
@@ -168,10 +175,10 @@ export function topo(t, { medidor: md, encerrar = 'encerrar', semRegra = false, 
     ${comTrilha ? trilha(tr.fase, { livre: tr.livre }) : ''}
     ${comRegua || m ? h`<div class="topo-progresso">
       ${comRegua ? regua(t, { semPasso: comTrilha }) : ''}
-      ${m ? h`<div class="topo-medidor">${medidor(m)}</div>` : ''}
+      ${m ? h`<div class="topo-medidor">${comTrilha ? contador(m) : medidor(m)}</div>` : ''}
     </div>` : ''}
   </header>
-  ${t.regra && t.regra.mostrarAgora && !semRegra ? h`<p class="regra-linha">${t.regra.texto}</p>` : ''}`;
+  ${t.regra && t.regra.mostrarAgora && !semRegra && !comTrilha ? h`<p class="regra-linha">${t.regra.texto}</p>` : ''}`;
 }
 
 /* ---------------- questão: cabeçalho, enunciado, cartão-resposta, rodapé ---------------- */

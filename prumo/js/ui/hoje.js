@@ -20,9 +20,11 @@ export function topoAba({ data, constancia: c, saudacao } = {}) {
     ${c ? h`<div class="linha-data constancia-destaque">${constancia(c)}</div>` : ''}`;
 }
 
-function links(vm) {
-  if (!vm.links || !vm.links.length) return '';
-  return h`<ul class="links">${cada(vm.links, l => {
+const DETALHE = new Set(['ver passos', 'Por que esta missão?']);
+function links(vm, { detalhe = false } = {}) {
+  const lista = (vm.links || []).filter(l => DETALHE.has(l.rotulo) === detalhe);
+  if (!lista.length) return '';
+  return h`<ul class="links">${cada(lista, l => {
     if (l.evento) return h`<li><button type="button" class="link" data-ev="${l.evento}">${l.rotulo}</button></li>`;
     if (l.aba) return h`<li><a class="link" href="#/${l.aba}">${l.rotulo}</a></li>`;
     if (l.rotulo === 'ver passos') return h`<li><button type="button" class="link" data-folha="passos">Ver os passos</button></li>`;
@@ -63,15 +65,17 @@ function rosto(vm) {
     <div class="proximo">
       <p class="rotulo">${vm.proximoRotulo || 'Seu próximo conteúdo'}${b.rotulo ? h`<span class="so-leitor">, ${b.rotulo}</span>` : ''}</p>
       <h1 class="manchete" id="manchete" tabindex="-1" data-foco-inicial>${b.titulo}</h1>
-      ${composicao ? h`<p class="composicao">${composicao}</p>` : ''}
       ${recado(vm.recado, { papel: 'status' })}
       ${acao(vm)}
     </div>
-    <div class="bloco-titulo">
+    ${atrasada ? h`<p class="atrasada">${atrasada}</p>` : ''}
+    <details class="detalhes-missao">
+      <summary>Detalhes da missão</summary>
+      ${composicao ? h`<p class="composicao">${composicao}</p>` : ''}
       ${cabecalhoProva(b.cabecalho)}
-      ${atrasada ? h`<p class="atrasada">${atrasada}</p>` : ''}
       ${b.regra ? h`<p class="ganho">${b.regra}</p>` : ''}
-    </div>
+      ${links(vm, { detalhe: true })}
+    </details>
     <div class="acoes-rosto">
       ${links(vm)}
     </div>
@@ -90,7 +94,7 @@ function semMissao(vm) {
     <div class="acoes-rosto">
       ${recado(vm.recado, { papel: 'status' })}
       ${acao(vm)}
-      ${links(vm)}
+      ${links(vm)}${links(vm, { detalhe: true })}
     </div>
   </section>`;
 }
@@ -109,8 +113,6 @@ function recomeco(r) {
   return h`<section class="recomeco" aria-labelledby="recomeco-t">
     <h2 class="titulo-pequeno" id="recomeco-t">${r.titulo}</h2>
     ${r.risquinhos ? h`<p>${r.risquinhos}</p>` : ''}
-    <p>${r.prova}</p>
-    <p class="texto-2">${r.visto}</p>
   </section>`;
 }
 /** "Hoje vence": o marca-texto só no que vence hoje. O atraso vai em texto normal, sem destaque: é um

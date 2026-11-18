@@ -101,7 +101,8 @@ async function roteiro(motor, tema) {
     await foto('pronto');
     confere(await tem('Se quiser, pode continuar estudando por conta própria.'), 'Pronto: convite neutro ao estudo livre');
     // "Amanhã começa por aqui" (só o enunciado) e "quando e onde" (vira o lembrete e aparece em Hoje)
-    confere(await tem('Amanhã começa por aqui') && (await pg.$('.amanha .alternativas')) === null, 'Pronto: a pergunta de amanhã, sem alternativas');
+    confere(!(await tem('Amanhã começa por aqui')), 'Pronto: sem a pergunta de amanhã (tela enxuta)');
+    await pg.click('.quando-detalhes > summary');
     await pg.fill('#quando-hora', '18:00');
     await pg.click('.quando label.escolha:has(input[value="depois que eu chegar da escola"])');
     await pg.click('.quando button[type="submit"]');

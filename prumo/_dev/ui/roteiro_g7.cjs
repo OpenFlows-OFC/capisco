@@ -29,15 +29,16 @@ async function roteiro(motor, tema) {
     await pg.waitForSelector('.manchete');
     confere((await U.texto(pg)).toUpperCase().includes('MISSÃO 1'), 'Hoje: "Missão 1"');
     confere(await tem('Funções afins: Parte fixa e parte que varia'), 'Hoje: manchete com o nome do capítulo');
+    await pg.click('.detalhes-missao > summary');
     confere((await pg.$('.pr-cabecalho')) !== null && await tem('Capítulo') && await tem('Tempo') && !(await tem('Data')), 'Hoje: Cabecalho (Capítulo | Páginas | Tempo), sem Data');
     confere(await tem('No fim, o visto do dia.'), 'Hoje: regra anuncia o visto');
     confere(await tem('0 dias estudados'), 'Hoje: 0 dias estudados');
     confere((await pg.evaluate(() => window.__prumo.nucleo.st.perfil.prova)) === '2026-12-15', 'perfil com a prova em 15/12');
     await cap(pg, 'hoje-primeiro-dia', true);
-    await pg.click('[data-folha="passos"]'); await cap(pg, 'ver-passos');
+    await pg.evaluate(() => document.querySelectorAll('.detalhes-missao').forEach(d => d.open = true)); await pg.click('[data-folha="passos"]'); await cap(pg, 'ver-passos');
     confere(await tem('Pergunta antes do § 4'), 'ver passos: "Pergunta antes do § 4"');
     await pg.click('#folha-raiz .folha-pe [data-acao="fecharFolha"]');
-    await pg.click('[data-folha="porQue"]'); await cap(pg, 'por-que');
+    await pg.evaluate(() => document.querySelectorAll('.detalhes-missao').forEach(d => d.open = true)); await pg.click('[data-folha="porQue"]'); await cap(pg, 'por-que');
     await pg.click('[data-acao="verRegraPorQue"]'); await cap(pg, 'ver-a-regra');
     confere(/\d+\. sim: /.test(await U.texto(pg)), 'ver a regra: a linha da regra que decidiu ("N. sim: …")');
     await pg.click('#folha-raiz .folha-pe [data-acao="fecharFolha"]');
