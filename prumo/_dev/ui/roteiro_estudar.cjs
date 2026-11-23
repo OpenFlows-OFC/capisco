@@ -140,9 +140,11 @@ async function roteiro(motor, tema) {
     confere(await tem('Leitura livre'), 'teoria em leitura livre');
     // Perfil: nome
     await pg.click('.trilho .aba[href="#/perfil"]');
-    await pg.waitForSelector('#pf-nome');
+    await pg.waitForSelector('#pf-nome', { state: 'attached' });   // fica em "Seu nome e seu plano", recolhido
     confere((await pg.inputValue('#pf-nome')) === 'Daniel', 'Perfil: nome');
-    confere(await tem('Apagar tudo'), 'Perfil: dados');
+    confere(!(await tem('Apagar tudo')), 'Perfil: ajustes recolhidos');
+    for (const sm of await pg.$$('.perfil-grupo > summary')) await sm.click();
+    confere(await tem('Apagar tudo'), 'Perfil: dados (em Ajustes)');
     confere(await tem('Coleção de vistos') && (await pg.$$('.calendario .mini-visto')).length >= 1, 'Perfil: coleção de vistos com o carimbo de hoje');
     await foto('perfil');
     await U.recarregar(pg);

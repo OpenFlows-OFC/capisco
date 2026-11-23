@@ -6,7 +6,7 @@
    ========================================================= */
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { marca, trofeu } from './componentes.js';
+import { marca, trofeu, iconeArea } from './componentes.js';
 import { secoesAjustes } from './ajustes.js';
 
 const SEM_DATA = new Set(['enem', 'naosei']);
@@ -30,6 +30,7 @@ export function telaPerfil(ctx) {
       ${colecao(n.colecao(ctx.ui.memoria.mesColecao))}
       ${trofeus(n)}
 
+      <details class="detalhes-missao perfil-grupo"><summary>Seu nome e seu plano</summary>
       <form class="secao" data-enviar="pfNome" novalidate aria-labelledby="pf-nome-t">
         <h2 class="titulo-pequeno" id="pf-nome-t">Seu nome</h2>
         <div class="campo-linha"><label for="pf-nome" class="so-leitor">Seu nome</label>
@@ -53,12 +54,15 @@ export function telaPerfil(ctx) {
         <fieldset style="border:0;margin:16px 0 0;padding:0;min-width:0"><legend style="font-weight:600;margin-bottom:8px;padding:0">Minutos por dia</legend>
           <ul class="chips">${cada(pl.minutos.opcoes, m => h`<li class="chip"><label><input type="radio" name="minutos" value="${m}" ${p.minutos === m ? cru('checked') : ''}><span>${m} min</span></label></li>`)}</ul></fieldset>
         <fieldset style="border:0;margin:16px 0 0;padding:0;min-width:0"><legend style="font-weight:600;margin-bottom:8px;padding:0">Matérias</legend>
-          <ul class="escolhas">${cada(v.areas, a => h`<li><label class="escolha"><input type="checkbox" name="areas" value="${a.valor}" ${a.marcada ? cru('checked') : ''} ${a.disponivel ? '' : cru('disabled')}><span class="marcador" aria-hidden="true"></span><span>${a.rotulo}${a.disponivel ? '' : h` <span class="etiqueta">em breve</span>`}</span></label></li>`)}</ul></fieldset>
+          <ul class="escolhas">${cada(v.areas, a => h`<li><label class="escolha"><input type="checkbox" name="areas" value="${a.valor}" ${a.marcada ? cru('checked') : ''} ${a.disponivel ? '' : cru('disabled')}><span class="marcador" aria-hidden="true"></span>${iconeArea(a.valor)}<span>${a.rotulo}${a.disponivel ? "" : h` <span class="etiqueta">em breve</span>`}</span></label></li>`)}</ul></fieldset>
         <p class="ajuda-campo">Se a missão de hoje ainda não começou, ela é montada de novo com o plano novo.</p>
         <div style="margin-top:16px"><button type="submit" class="botao botao-largo">Guardar o plano</button></div>
       </form>
-
-      ${secoesAjustes(ctx)}`,
+      </details>
+      <details class="detalhes-missao perfil-grupo"><summary>Ajustes, dados e créditos</summary>
+      ${secoesAjustes(ctx)}
+      </details>
+      <p class="secao"><button type="button" class="link" data-folha="instalar">Como instalar no celular</button></p>`,
   };
 }
 

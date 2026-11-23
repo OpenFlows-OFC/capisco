@@ -9,7 +9,7 @@
    ========================================================= */
 import { h, cru, cada, escolherArquivo } from './dom.js';
 import { registrar } from './registro.js';
-import { marca as marcaPrumo } from './componentes.js';
+import { marca as marcaPrumo, iconeArea } from './componentes.js';
 
 function estadoInicial(vm) {
   return {
@@ -54,7 +54,7 @@ function passoPerguntas(ctx, vm, pu) {
 
       <div class="secao-pu">
         <h2 class="pergunta-pu" id="q-areas">2. Quais matérias você quer estudar?</h2>
-        <ul class="escolhas" aria-labelledby="q-areas">${cada(vm.areas, a => h`<li><label class="escolha"><input type="checkbox" name="areas" value="${a.valor}" data-mudar="puArea" ${pu.areas.includes(a.valor) ? cru('checked') : ''} ${a.disponivel ? '' : cru('disabled')}><span class="marcador" aria-hidden="true"></span><span>${a.rotulo}${a.disponivel ? '' : h` <span class="etiqueta">em breve</span>`}</span></label></li>`)}</ul>
+        <ul class="escolhas" aria-labelledby="q-areas">${cada(vm.areas, a => h`<li><label class="escolha"><input type="checkbox" name="areas" value="${a.valor}" data-mudar="puArea" ${pu.areas.includes(a.valor) ? cru('checked') : ''} ${a.disponivel ? '' : cru('disabled')}><span class="marcador" aria-hidden="true"></span>${iconeArea(a.valor)}<span>${a.rotulo}${a.disponivel ? '' : h` <span class="etiqueta">em breve</span>`}</span></label></li>`)}</ul>
         <p class="ajuda-campo">As áreas marcadas "em breve" chegam nas próximas versões. Dá para mudar depois, no Perfil.</p>
       </div>
 
@@ -121,6 +121,7 @@ function onboarding(ctx, vm, pu) {
       <button type="button" class="botao" data-acao="puProximo">${pu.onb + 1 < total ? 'Próximo' : 'Montar meu plano'}</button>
     </div>
     <p style="margin-top:24px"><button type="button" class="link" data-acao="puExemplo">${vm.exemplo.rotulo}</button></p>
+    <p><button type="button" class="link" data-folha="instalar">Como instalar no celular</button></p>
   </section>`;
 }
 
@@ -137,6 +138,13 @@ export function telaPrimeiroUso(ctx, vm) {
     titulo: 'Primeiro uso',
     html: h`<main class="pu">${marca()}${corpo}</main>`,
   };
+}
+
+/** Android/Chrome: o pedido de instalação fica guardado para o botão "Instalar agora" (um toque). */
+let pedidoInstalar = null;
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); pedidoInstalar = e; });
+  window.addEventListener('appinstalled', () => { pedidoInstalar = null; });
 }
 
 function irPara(ctx, passo) {
@@ -206,6 +214,13 @@ registrar({
       ctx.ui.aviso = r.mensagem;
       ctx.render();
     },
+    async instalarAgora(ctx) {
+      const p = pedidoInstalar;
+      if (!p) return;
+      pedidoInstalar = null;
+      ctx.fecharFolha();
+      try { p.prompt(); const r = await p.userChoice; if (r && r.outcome === 'accepted') ctx.avisar('Prumo instalado. Ele abre pela tela inicial.'); } catch (e) { /* o navegador decide */ }
+    },
     puExemplo(ctx) {
       ctx.ui.pu = null;
       ctx.nucleo.carregarExemplo();
@@ -218,7 +233,7 @@ registrar({
       const vm = ctx.nucleo.primeiroUso();
       return {
         rotulo: 'Como instalar',
-        corpo: h`<ul class="lista-fios"><li>${vm.instalar.iphone}</li><li>${vm.instalar.android}</li></ul>
+        corpo: h`${pedidoInstalar ? h`<button type="button" class="botao botao-largo" data-acao="instalarAgora" style="margin-bottom:16px">Instalar agora</button>` : ''}<ul class="lista-fios"><li>${vm.instalar.iphone}</li><li>${vm.instalar.android}</li></ul>
           <p class="pequeno texto-2" style="margin-top:12px">Instalado, o Prumo abre sem internet e o iPhone guarda os dados por mais tempo.</p>`,
         pe: h`<button type="button" class="botao botao-largo" data-acao="fecharFolha">Entendi</button>`,
       };

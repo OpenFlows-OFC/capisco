@@ -71,6 +71,7 @@ function rosto(vm) {
     ${atrasada ? h`<p class="atrasada">${atrasada}</p>` : ''}
     <details class="detalhes-missao">
       <summary>Detalhes da missão</summary>
+      ${venceHoje(vm.venceHoje)}
       ${composicao ? h`<p class="composicao">${composicao}</p>` : ''}
       ${cabecalhoProva(b.cabecalho)}
       ${b.regra ? h`<p class="ganho">${b.regra}</p>` : ''}
@@ -137,7 +138,7 @@ export function telaHoje(ctx, t) {
     html: h`${topoAba({ data: vm.data, constancia: vm.constancia, saudacao: vm.saudacao })}
       ${recomeco(vm.recomeco)}
       ${vm.intencao ? h`<p class="intencao">${vm.intencao.texto}</p>` : ''}
-      ${venceHoje(vm.venceHoje)}
+      ${vm.bloco ? '' : venceHoje(vm.venceHoje)}
       ${corpo}
       ${semana(vm.semana)}
       ${blocoProva(vm.prova)}`,

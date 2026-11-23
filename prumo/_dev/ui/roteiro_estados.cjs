@@ -26,8 +26,9 @@ async function parteA(motor, tema) {
     // atraso: um só recado. Se o "Hoje vence" do topo já conta as atrasadas, o bloco não repete a linha;
     // e o marca-texto fica só no que vence hoje (atraso em texto normal, sem cobrança em destaque)
     const vh = vm.venceHoje;
+    if (await pg.$('.detalhes-missao > summary')) await pg.click('.detalhes-missao > summary');   // o aviso fica em Detalhes da missão
     if (vh && vh.atrasadas) {
-      confere(await tem(vh.vence), 'aviso das revisões atrasadas no topo');
+      confere(await tem(vh.vence), 'aviso das revisões atrasadas (em Detalhes da missão)');
       if (vm.bloco && vm.bloco.atrasada) confere(!(await tem(vm.bloco.atrasada)), 'atraso sem repetir no bloco da missão');
       if (!vh.hoje) confere((await pg.$('.vence-hoje .grifo')) === null, 'atraso sem marca-texto');
     } else if (vm.bloco && vm.bloco.atrasada) confere(await tem(vm.bloco.atrasada), 'linha da revisão atrasada');

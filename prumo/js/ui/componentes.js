@@ -298,7 +298,7 @@ export function animarContinuar(raiz) {
  * se a imagem não carregou (offline), mostra o aviso e a descrição.
  */
 export function prepararFiguras(raiz, { aoAmpliar, textoFalha = 'A imagem não carregou; a descrição está abaixo.' } = {}) {
-  const alvos = raiz.querySelectorAll('.teoria-figura svg, .enunciado img, .alt-texto img, .par-texto figure.grafico-equipe, .enunciado figure.grafico-equipe, .par-texto img');
+  const alvos = raiz.querySelectorAll('.teoria-figura svg, .teoria-imagem img, .enunciado img, .alt-texto img, .par-texto figure.grafico-equipe, .enunciado figure.grafico-equipe, .par-texto img');
   // com mouse, "clique"; no toque, "toque"
   const comMouse = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
   alvos.forEach((el, i) => {
@@ -369,6 +369,34 @@ export function idDaAncora(a) {
 }
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
+/** "Confira": pergunta de recordação no fim da seção. Tocar numa opção mostra na hora se acertou e o porquê.
+ *  Não conta para o nível nem fica salva: é só para o aluno testar a memória antes de seguir (prática de recordação). */
+function confira(c, n) {
+  const id = `confira-${n}`;
+  return h`<div class="confira" role="group" aria-labelledby="${id}-p" data-certa="${c.certa}">
+    <p class="confira-rotulo">Confira</p>
+    <p class="confira-pergunta" id="${id}-p">${c.pergunta}</p>
+    <ul class="confira-opcoes">${cada(c.opcoes, (o, i) => h`<li><button type="button" class="confira-op" data-acao="conferir" data-arg="${i}">${o}</button></li>`)}</ul>
+    <p class="confira-resposta" role="status" aria-live="polite" data-porque="${c.porque}"></p>
+  </div>`;
+}
+/** Toque numa opção do "Confira": marca a escolhida e a certa, sem redesenhar a página (a leitura não pula). */
+export function conferir(el) {
+  const box = el.closest('.confira');
+  if (!box || box.classList.contains('respondida')) return;
+  const certa = Number(box.dataset.certa), i = Number(el.dataset.arg);
+  box.classList.add('respondida');
+  box.querySelectorAll('.confira-op').forEach((b, k) => {
+    b.setAttribute('aria-disabled', 'true');
+    if (k === certa) b.classList.add('certa');
+    if (k === i && i !== certa) b.classList.add('errada');
+    if (k === i) b.setAttribute('aria-pressed', 'true');
+  });
+  const r = box.querySelector('.confira-resposta');
+  const op = box.querySelectorAll('.confira-op')[certa];
+  r.textContent = `${i === certa ? 'Isso.' : `A certa é: ${op ? op.textContent.replace(/\.$/, '') : ''}.`} ${r.dataset.porque || ''}`.trim();
+}
+
 /**
  * t = teoria do núcleo: seções (parágrafos, figura, tabela, quadro "No Enem", exemplos), armadilhas e resumo.
  * naFolha: dentro da folha "Rever a apostila" (sem capa: o título já está na folha; uma coluna em qualquer tela).
@@ -408,9 +436,11 @@ export function teoria(t, { tituloComoH1 = true, naFolha = false, ancora = null,
     ${sumario}
     <div class="apostila-corpo">
       ${t.porQueCai ? h`<p class="apostila-abre"><strong>Por que cai no Enem.</strong> ${t.porQueCai}</p>` : ''}
+      ${t.termos && t.termos.length ? h`<aside class="apostila-quadro quadro-termos" aria-labelledby="termos-t"><h2 class="quadro-rotulo" id="termos-t">Termos que você vai ver</h2><dl class="termos">${cada(t.termos, x => h`<div><dt>${x.termo}</dt><dd>${x.def}</dd></div>`)}</dl></aside>` : ''}
       ${cada(secoes, sc => h`<section class="teoria-secao ${alvo === idSecao(sc.n) ? 'ancora' : ''}" id="${idSecao(sc.n)}" aria-labelledby="${idSecao(sc.n)}-t">
         <h2 class="teoria-sub" id="${idSecao(sc.n)}-t" tabindex="-1"><span class="teoria-n" aria-hidden="true">${sc.n}</span><span>${tituloSecao(idSecao(sc.n), sc.titulo)}</span></h2>
         ${cada(sc.paragrafos, p => h`<p>${p}</p>`)}
+        ${sc.imagem ? h`<figure class="teoria-imagem"><img src="${sc.imagem.src}" alt="${sc.imagem.alt}" loading="lazy" decoding="async"><figcaption>${sc.imagem.legenda ? h`<span>${sc.imagem.legenda}</span>` : ''}<span class="credito-imagem">${sc.imagem.credito}</span></figcaption></figure>` : ''}
         ${sc.figura ? h`<figure class="teoria-figura" role="group" aria-label="${sc.figura.alt}">${cru(sc.figura.svg)}${sc.figura.legenda ? h`<figcaption>${sc.figura.legenda}</figcaption>` : ''}</figure>` : ''}
         ${sc.tabela ? h`<div class="teoria-tabela-rolagem"><table class="teoria-tabela">${sc.tabela.legenda ? h`<caption>${sc.tabela.legenda}</caption>` : ''}
           ${sc.tabela.cabecalho.length ? h`<thead><tr>${cada(sc.tabela.cabecalho, c => h`<th scope="col">${c}</th>`)}</tr></thead>` : ''}
@@ -422,6 +452,7 @@ export function teoria(t, { tituloComoH1 = true, naFolha = false, ancora = null,
           <ol class="exemplo-passos">${cada(ex.resolucao, r => h`<li>${r}</li>`)}</ol>
         </div>`)}
         ${sc.atencao ? h`<aside class="apostila-quadro quadro-enem teoria-enem"><p class="quadro-rotulo"><span class="grifo">${sc.atencao.rotulo}</span></p><p>${sc.atencao.texto}</p></aside>` : ''}
+        ${sc.confira ? confira(sc.confira, sc.n) : ''}
       </section>`)}
       ${temCuidado ? h`<aside class="apostila-quadro quadro-cuidado teoria-secao ${alvo === 'secao-cuidado' ? 'ancora' : ''}" id="secao-cuidado" aria-labelledby="secao-cuidado-t"><h2 class="quadro-rotulo" id="secao-cuidado-t" tabindex="-1"><span class="grifo">${tituloSecao('secao-cuidado', 'Cuidado: erros comuns')}</span></h2><ul class="teoria-lista">${cada(t.armadilhas, a => h`<li>${a}</li>`)}</ul></aside>` : ''}
       ${temResumo ? h`<section class="apostila-quadro quadro-resumo teoria-secao teoria-resumo ${alvo === 'secao-resumo' ? 'ancora' : ''}" id="secao-resumo" aria-labelledby="secao-resumo-t"><h2 class="quadro-rotulo" id="secao-resumo-t" tabindex="-1">${tituloSecao('secao-resumo', 'Resumo do tópico')}</h2><ul class="teoria-lista">${cada(t.resumo, a => h`<li>${a}</li>`)}</ul></section>` : ''}
@@ -429,6 +460,7 @@ export function teoria(t, { tituloComoH1 = true, naFolha = false, ancora = null,
     ${t.habilidades && t.habilidades.length ? h`<section class="teoria-rodape"><p class="rotulo">Habilidades do Enem</p><ul class="teoria-lista pequeno">${cada(t.habilidades, x => h`<li>${x.codigo}: ${x.descricao}</li>`)}</ul></section>` : ''}
     ${t.fontes && t.fontes.length ? h`<section class="teoria-rodape"><p class="rotulo">Fontes</p>
       <ul class="teoria-lista pequeno">${cada(t.fontes, f => h`<li>${f.adaptado ? 'Adaptado de ' : ''}${f.url ? h`<a href="${f.url}" target="_blank" rel="noopener">${f.titulo}</a>` : f.titulo}${f.licenca ? h` (${f.licencaUrl ? h`<a href="${f.licencaUrl}" target="_blank" rel="noopener">${f.licenca}</a>` : f.licenca})` : ''}</li>`)}</ul>
+      ${secoes.some(x => x.imagem) ? h`<p class="rotulo" style="margin-top:12px">Imagens</p><ul class="teoria-lista pequeno">${cada(secoes.filter(x => x.imagem), x => h`<li>${x.imagem.credito}</li>`)}</ul>` : ''}
       ${t.adaptacao ? h`<p class="pequeno texto-2">${t.adaptacao}</p>` : ''}</section>` : ''}
     ${t.credito ? h`<p class="rodape-licenca">${t.credito}</p>` : ''}
   </article>`;
@@ -503,6 +535,7 @@ export function comoFunciona({ aberto = false, itens = COMO_FUNCIONA } = {}) {
 /* ---------------- ações da apostila (sumário) ---------------- */
 registrar({
   acoes: {
+    conferir(ctx, el) { conferir(el); },
     /** Item do sumário: leva até a seção (não usa href="#…": o roteador usa o hash). */
     irSecao(ctx, el) {
       const nav = el.closest('.apostila-sumario');
@@ -518,3 +551,18 @@ registrar({
     },
   },
 });
+
+/* ---------------- ícone da área (a única cor fora da tinta: uma por área do Enem) ---------------- */
+const AREA_ID = { 'Matemática': 'MT', 'Linguagens': 'LC', 'Ciências da Natureza': 'CN', 'Ciências Humanas': 'CH' };
+const AREA_TRACO = {
+  MT: '<path d="M7 4v6M4 7h6M14 7h6M5 15l4 4M9 15l-4 4M14 16h6M14 19h6"/>',
+  LC: '<path d="M4 5.5c2.5-1 5-1 8 1 3-2 5.5-2 8-1V19c-2.5-1-5-1-8 1-3-2-5.5-2-8-1z"/><path d="M12 6.5V20"/>',
+  CN: '<path d="M9.5 3.5h5M10.5 3.5v5.5L5 18.5A1.5 1.5 0 0 0 6.3 20.5h11.4A1.5 1.5 0 0 0 19 18.5L13.5 9V3.5"/><path d="M7.5 14.5h9"/>',
+  CH: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.6 5.2 3.6 8.5S14.6 18.1 12 20.5M12 3.5C9.4 5.9 8.4 8.7 8.4 12s1 6.1 3.6 8.5"/>',
+};
+/** Ícone da área do Enem, na cor da área. Aceita o id (MT, LC, CN, CH) ou o nome. Decorativo: o nome da área vem ao lado. */
+export function iconeArea(area) {
+  const id = AREA_TRACO[area] ? area : AREA_ID[area];
+  if (!id) return '';
+  return cru(`<span class="icone-area area-${id.toLowerCase()}" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${AREA_TRACO[id]}</svg></span>`);
+}

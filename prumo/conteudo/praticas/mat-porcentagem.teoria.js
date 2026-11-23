@@ -5,6 +5,13 @@ export const teoria = {
   id: 'mat-porcentagem',
   titulo: 'Porcentagem e juros',
   porQueCai: 'O Enem cobra porcentagem em compras, salários, contas, vagas de emprego e financiamentos. Quase sempre há mais de uma variação seguida, e a dificuldade está em saber sobre qual valor cada porcentagem é calculada.',
+  termos: [
+    { termo: 'Taxa percentual', def: 'A taxa escrita com o símbolo %, como 20%.' },
+    { termo: 'Taxa unitária', def: 'A mesma taxa escrita como decimal: 20% = 0,20.' },
+    { termo: 'Fator multiplicativo', def: 'Número que multiplica o valor numa variação: 1 + taxa ou 1 − taxa.' },
+    { termo: 'Montante', def: 'Capital mais juros: o total no fim da aplicação ou da dívida.' },
+    { termo: 'Descapitalizar', def: 'Trazer um valor futuro para hoje, dividindo pelo fator dos juros.' },
+  ],
   habilidades: [
     { codigo: 'H3', descricao: 'Resolver situação-problema envolvendo conhecimentos numéricos.' },
     { codigo: 'H4', descricao: 'Avaliar a razoabilidade de um resultado numérico na construção de argumentos sobre afirmações quantitativas.' },
@@ -46,6 +53,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: a porcentagem quase nunca aparece sozinha. Ela é o primeiro passo de uma conta maior, então vale treinar até ela sair rápido.',
+      confira: { pergunta: 'Quanto é 15% de 60?', opcoes: ['6', '9', '15'], certa: 1, porque: '10% de 60 é 6, e 5% é a metade disso, 3. Somando, 6 + 3 = 9.' },
     },
     {
       titulo: 'Aumentos e descontos: o fator multiplicativo',
@@ -94,6 +102,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: em perguntas de desconto necessário, a porcentagem é calculada sobre o preço sem desconto, nunca sobre o dinheiro que se tem.',
+      confira: { pergunta: 'Um preço vai ter desconto de 30%. Por qual número basta multiplicá-lo?', opcoes: ['0,70', '0,30', '1,30'], certa: 0, porque: 'Quem tem 30% de desconto paga 70% do preço. O fator do desconto é 1 − 0,30 = 0,70.' },
     },
     {
       titulo: 'Variações em sequência',
@@ -137,6 +146,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: a alternativa errada mais comum é a que soma ou subtrai as taxas. Outra é a que aplica uma porcentagem sobre o valor errado.',
+      confira: { pergunta: 'Um valor sobe 50% e depois cai 50%. Em relação ao valor inicial, ele fica:', opcoes: ['igual', '50% maior', '25% menor'], certa: 2, porque: 'Os fatores se multiplicam: 1,5 · 0,5 = 0,75. O valor final é 75% do inicial, ou seja, 25% menor.' },
     },
     {
       titulo: 'Voltar ao valor de antes',
@@ -165,6 +175,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: as alternativas costumam trazer o resultado de multiplicar por (1 + taxa). Sempre confira aplicando a variação ao valor encontrado.',
+      confira: { pergunta: 'Depois de um aumento de 25%, um produto passou a custar R$ 100,00. Qual era o preço antes?', opcoes: ['R$ 75,00', 'R$ 80,00', 'R$ 125,00'], certa: 1, porque: 'Para voltar, divida pelo fator: 100 ÷ 1,25 = 80. Conferindo: 25% de 80 é 20, e 80 + 20 = 100.' },
     },
     {
       titulo: 'Juros simples e juros compostos',
@@ -208,6 +219,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: juros compostos aparecem em compras parceladas e financiamentos. A potência costuma ser pequena (2 ou 3 períodos) ou vem dada no enunciado.',
+      confira: { pergunta: 'R$ 200,00 ficam aplicados a juros compostos de 10% ao mês, por 2 meses. Qual é o montante?', opcoes: ['R$ 242,00', 'R$ 240,00', 'R$ 220,00'], certa: 0, porque: 'Nos juros compostos, o juro do 1º mês também rende: 200 · 1,1 · 1,1 = 242. R$ 240,00 seria o montante a juros simples.' },
     },
     {
       titulo: 'Descapitalização: quanto vale hoje um pagamento futuro',
@@ -233,6 +245,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: o enunciado fala em “valor à vista” ou “nota fiscal” de uma compra financiada. As alternativas trazem a soma das parcelas como distrator.',
+      confira: { pergunta: 'Uma parcela de R$ 110,00 será paga daqui a 1 mês, com juros de 10% ao mês. Quanto ela vale hoje?', opcoes: ['R$ 99,00', 'R$ 121,00', 'R$ 100,00'], certa: 2, porque: 'Para trazer a parcela para hoje, divida pelo fator: 110 ÷ 1,10 = 100. Tirar 10% de 110 daria 99, o que está errado.' },
     },
   ],
   armadilhas: [
@@ -264,7 +277,7 @@ export const teoria = {
     { titulo: 'Wikilivros, Matemática financeira/Juros simples', url: 'https://pt.wikibooks.org/w/index.php?oldid=290594', revisao: '290594 (28/08/2015)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
     { titulo: 'Wikilivros, Matemática financeira/Juros compostos', url: 'https://pt.wikibooks.org/w/index.php?oldid=478154', revisao: '478154 (15/03/2022)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
     { titulo: 'Wikilivros, Matemática financeira/Fluxo de caixa', url: 'https://pt.wikibooks.org/w/index.php?oldid=458976', revisao: '458976 (28/07/2019)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
-    { titulo: 'INEP, Matriz de Referência do Enem (habilidades H3, H4, H5, H18 e H23)', url: 'https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/matriz-de-referencia', licenca: 'reprodução permitida com citação da fonte', adaptado: false },
+    { titulo: 'INEP, Matriz de Referência do Enem (habilidades H3, H4, H5, H18 e H23)', url: 'https://download.inep.gov.br/download/enem/matriz_referencia.pdf', licenca: 'reprodução permitida com citação da fonte', adaptado: false },
   ],
   adaptacao: 'Texto adaptado do livro Matemática financeira, do Wikilivros (capítulos Porcentagem, Conceitos básicos, Juros simples, Juros compostos e Fluxo de caixa; autores: ver o histórico de cada página), CC BY-SA 3.0. Adaptação da equipe Prumo em CC BY-SA 4.0. Alterações: linguagem simplificada, definições reorganizadas, notação t para o prazo, exemplos, figuras e tabelas novos. As seções 2, 3 e 4 (aumentos e descontos, variações em sequência e voltar ao valor de antes) são texto original da equipe Prumo.',
   autoria: { equipe: 'Prumo', ia: 'Claude Opus 5.5 (Anthropic), via Claude Code', revisao: 'pendente' },

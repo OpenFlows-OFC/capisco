@@ -38,8 +38,7 @@ function sumario(n) {
     </li>`)}</ul>
     <section class="secao"><p class="rotulo">Prova do caderno</p><p>${s.prova.regra}</p><p class="texto-2 pequeno">${s.prova.texto}</p>
       ${s.prova.trofeu && s.prova.trofeu.ganho ? trofeu(s.prova.trofeu) : ''}</section>
-    <section class="secao"><p class="rotulo">Marcos</p><ul class="lista-fios">${cada(s.marcos, m => h`<li><strong>${m.nome}</strong> <span class="texto-2 pequeno">${m.texto || m.condicao}</span></li>`)}</ul></section>
-    <p class="pequeno texto-2" style="margin-top:16px">${s.regraNivel}</p>`;
+    <details class="secao detalhes-missao"><summary>Marcos do caderno</summary><ul class="lista-fios">${cada(s.marcos, m => h`<li><strong>${m.nome}</strong> <span class="texto-2 pequeno">${m.texto || m.condicao}</span></li>`)}</ul></details>`;
 }
 
 /** Erros agrupados pela fonte: o caderno (capítulos do pack, sob o título dele) e cada tópico de prática

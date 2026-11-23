@@ -32,6 +32,7 @@
   --latao: #c8963e;
   --foco: var(--tinta);
   --scrim: rgba(36, 38, 42, .48);
+  --area-mt: #c2462e; --area-lc: #2f7d55; --area-cn: #1d7a9a; --area-ch: #9a6418;   /* cor só no ícone de cada área */
   --marca-anel: #0B1B33;          /* símbolo sem alteração: anel marinho no claro… */
   --marca-esquadro: #2348C9;
   /* apostila: capa em tinta e quadro "No Enem" em marca-texto claro; no escuro, capa em papel de trás
@@ -57,13 +58,14 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --papel: #1b1e24; --papel-2: #23272f; --ficha: #262b34;
-    --pauta: #33405a; --pauta-forte: #56637a; --margem-caderno: #7d4757;
-    --grafite: #ecece7; --grafite-2: #a9aeb8;
+    --papel: #15171c; --papel-2: #1d2027; --ficha: #21252d;
+    --pauta: #2e3646; --pauta-forte: #586379; --margem-caderno: #7d4757;
+    --grafite: #e9e8e3; --grafite-2: #a3a9b4;
     --tinta: #9db3ff; --on-tinta: #10183a;
-    --marca-texto: #e2cd4f; --on-marca-texto: #16181b;
+    --marca-texto: #d4c15a; --on-marca-texto: #15171c;
     --carimbo: #b9a3f0;
     --scrim: rgba(5, 7, 10, .62);
+    --area-mt: #f2937c; --area-lc: #7fd0a2; --area-cn: #78c6e3; --area-ch: #e3b06a;
     --marca-anel: #FFFFFF;        /* …e branco no escuro (prumo-simbolo-negativo.svg) */
     --apostila-capa-fundo: var(--papel-2); --apostila-capa-texto: var(--grafite); --apostila-capa-selo: var(--tinta); --apostila-capa-fio: var(--tinta);
     --quadro-enem-fundo: var(--ficha); --quadro-enem-borda: var(--pauta-forte); --quadro-enem-grifo: var(--marca-texto);
@@ -71,13 +73,14 @@
   }
 }
 :root[data-theme="dark"] {
-  --papel: #1b1e24; --papel-2: #23272f; --ficha: #262b34;
-  --pauta: #33405a; --pauta-forte: #56637a; --margem-caderno: #7d4757;
-  --grafite: #ecece7; --grafite-2: #a9aeb8;
+  --papel: #15171c; --papel-2: #1d2027; --ficha: #21252d;
+  --pauta: #2e3646; --pauta-forte: #586379; --margem-caderno: #7d4757;
+  --grafite: #e9e8e3; --grafite-2: #a3a9b4;
   --tinta: #9db3ff; --on-tinta: #10183a;
-  --marca-texto: #e2cd4f; --on-marca-texto: #16181b;
+  --marca-texto: #d4c15a; --on-marca-texto: #15171c;
   --carimbo: #b9a3f0;
   --scrim: rgba(5, 7, 10, .62);
+  --area-mt: #f2937c; --area-lc: #7fd0a2; --area-cn: #78c6e3; --area-ch: #e3b06a;
   --marca-anel: #FFFFFF;
   --apostila-capa-fundo: var(--papel-2); --apostila-capa-texto: var(--grafite); --apostila-capa-selo: var(--tinta); --apostila-capa-fio: var(--tinta);
   --quadro-enem-fundo: var(--ficha); --quadro-enem-borda: var(--pauta-forte); --quadro-enem-grifo: var(--marca-texto);
@@ -947,3 +950,36 @@ body.modo-missao .bilhete { bottom: calc(16px + var(--seguro-baixo)); }
 .quando-detalhes > summary::-webkit-details-marker { display: none; }
 .quando-detalhes > summary::after { content: "▾"; margin-left: var(--space-2); }
 .quando-detalhes[open] > summary::after { transform: rotate(180deg); }
+
+/* ---------------- ícone da área: a única cor além da tinta ---------------- */
+.icone-area { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-caixa); color: var(--area); background: color-mix(in srgb, var(--area) 12%, transparent); flex: none; vertical-align: middle; margin-right: var(--space-2); }
+.icone-area svg { width: 20px; height: 20px; }
+.area-mt { --area: var(--area-mt); } .area-lc { --area: var(--area-lc); } .area-cn { --area: var(--area-cn); } .area-ch { --area: var(--area-ch); }
+.mapa-area-titulo { display: flex; align-items: center; flex-wrap: wrap; }
+.rotulo-area { display: flex; align-items: center; }
+.rotulo-area .icone-area { width: 24px; height: 24px; margin-right: 6px; }
+.rotulo-area .icone-area svg { width: 16px; height: 16px; }
+.escolha .icone-area { width: 28px; height: 28px; margin: 0 2px 0 0; }
+.escolha input:disabled ~ .icone-area { filter: grayscale(1); opacity: .55; }
+
+/* ---------------- apostila: termos, imagem com crédito e "Confira" ---------------- */
+.quadro-termos { background: var(--ficha); border: 1px solid var(--pauta); }
+.termos { margin: 0; display: grid; gap: var(--space-3); }
+.termos dt { font-weight: 700; }
+.termos dd { margin: 2px 0 0; color: var(--grafite-2); }
+.teoria-imagem { margin: var(--space-4) 0; }
+.teoria-imagem img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: contain; background: var(--papel-2); border: 1px solid var(--pauta); border-radius: var(--radius-caixa); }
+.teoria-imagem figcaption { display: grid; gap: 2px; margin-top: var(--space-2); font: 400 14px/20px var(--font-texto); color: var(--grafite-2); }
+.credito-imagem { font-size: 12px; line-height: 16px; }
+.confira { margin: var(--space-6) 0 var(--space-2); padding: var(--space-4); border: 1px dashed var(--pauta-forte); border-radius: var(--radius-ficha); }
+.confira-rotulo { margin: 0 0 var(--space-1); font: 700 13px/16px var(--font-texto); color: var(--tinta); letter-spacing: .02em; }
+.confira-pergunta { margin: 0 0 var(--space-3); font-weight: 600; }
+.confira-opcoes { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.confira-op { width: 100%; min-height: var(--alvo); text-align: left; font: inherit; color: var(--grafite); background: var(--ficha); border: 1px solid var(--pauta-forte); border-radius: var(--radius-controle); padding: 10px var(--space-4); cursor: pointer; }
+.confira-op:hover { border-color: var(--tinta); }
+.confira.respondida .confira-op { cursor: default; }
+.confira-op.certa { border: 2px solid var(--tinta); font-weight: 700; }
+.confira-op.certa::before { content: "✓ "; color: var(--tinta); }
+.confira-op.errada { text-decoration: line-through; color: var(--grafite-2); }
+.confira-resposta:empty { display: none; }
+.confira-resposta { margin: var(--space-3) 0 0; }

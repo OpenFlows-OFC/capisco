@@ -7,7 +7,7 @@
    ========================================================= */
 import { h, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { nivel, teoria, prepararFiguras, ampliarFigura, comoFunciona, acompanharSumario, idDaAncora, irParaSecao } from './componentes.js';
+import { nivel, teoria, prepararFiguras, ampliarFigura, comoFunciona, acompanharSumario, idDaAncora, irParaSecao, iconeArea } from './componentes.js';
 
 /* "Como funciona um tópico": aberta até o aluno começar o primeiro tópico (logo abaixo do botão, que fica
    à vista); depois, recolhida. */
@@ -30,7 +30,7 @@ function mapa(v) {
   return h`<h1 class="titulo" tabindex="-1" data-foco-inicial>${v.titulo}</h1>
     <p>${v.intro}</p>
     ${cada(v.areas, a => h`<section class="mapa-area" aria-labelledby="area-${a.id}">
-      <h2 class="mapa-area-titulo" id="area-${a.id}">${a.nome}${a.disponivel ? '' : h`<span class="etiqueta">em breve</span>`}</h2>
+      <h2 class="mapa-area-titulo" id="area-${a.id}">${iconeArea(a.id)}${a.nome}${a.disponivel ? '' : h`<span class="etiqueta">em breve</span>`}</h2>
       ${a.disponivel ? cada(a.materias, mt => h`
         ${a.materias.length > 1 || mt.nome !== a.nome ? h`<p class="rotulo mapa-materia">${mt.nome}</p>` : ''}
         <ul class="lista-topicos">${cada(mt.topicos, linhaTopico)}</ul>`) : h`<p class="mapa-embreve">${a.frase}</p>`}
@@ -51,7 +51,7 @@ function curto(itens) {
 function paginaTopico(p) {
   if (!p) return h`<p>Tópico não encontrado.</p><p><a class="link" href="#/estudar">Voltar ao mapa</a></p>`;
   return h`<p class="voltar-mapa"><a class="link" href="#/estudar">Voltar ao mapa</a></p>
-    <p class="rotulo">${p.area}${p.materia && p.materia !== p.area ? h`, ${p.materia}` : ''}</p>
+    <p class="rotulo rotulo-area">${iconeArea(p.area)}${p.area}${p.materia && p.materia !== p.area ? h`, ${p.materia}` : ''}</p>
     <h1 class="titulo" tabindex="-1" data-foco-inicial>${p.titulo}</h1>
     ${p.disponivel ? h`
       ${nivel({ cheios: p.nivel.cheios, nome: p.nivel.cheios ? p.nivel.rotulo : null })}

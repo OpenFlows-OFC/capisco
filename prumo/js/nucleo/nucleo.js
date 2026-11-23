@@ -755,10 +755,19 @@ export class Nucleo {
           const fig = x.figura && limparSvg(x.figura.svg) ? { n: ++nFig, svg: limparSvg(x.figura.svg), alt: typeof x.figura.alt === 'string' ? x.figura.alt : '', legenda: typeof x.figura.legenda === 'string' ? x.figura.legenda : null } : null;
           const tb = x.tabela && Array.isArray(x.tabela.linhas) ? { cabecalho: s(x.tabela.cabecalho), linhas: x.tabela.linhas.filter(Array.isArray).map(l => l.map(c => String(c == null ? '' : c))), legenda: typeof x.tabela.legenda === 'string' ? x.tabela.legenda : null } : null;
           const exemplos = [x.exemplo, ...(Array.isArray(x.exemplos) ? x.exemplos : [])].map(ex).filter(Boolean);
-          return { n: i + 1, titulo: x.titulo || '', paragrafos: s(x.paragrafos), figura: fig, tabela: tb, atencao: typeof x.atencao === 'string' && x.atencao ? { rotulo: 'No Enem', texto: x.atencao } : null, exemplos };
+          // imagem real (domínio público ou licença livre), com crédito embaixo; só arquivo local do pacote
+          const im = x.imagem && /^\.\/conteudo\/[\w./-]+\.(png|jpe?g|webp|svg)$/.test(x.imagem.src || '') && typeof x.imagem.credito === 'string'
+            ? { src: x.imagem.src, alt: typeof x.imagem.alt === 'string' ? x.imagem.alt : '', legenda: typeof x.imagem.legenda === 'string' ? x.imagem.legenda : null, credito: x.imagem.credito } : null;
+          // "Confira": uma pergunta rápida de recordação no fim da seção, com a resposta na hora (não conta nível)
+          const cf = x.confira;
+          const confira = cf && typeof cf.pergunta === 'string' && Array.isArray(cf.opcoes) && cf.opcoes.length >= 2 && Number.isInteger(cf.certa) && cf.certa >= 0 && cf.certa < cf.opcoes.length
+            ? { pergunta: cf.pergunta, opcoes: s(cf.opcoes), certa: cf.certa, porque: typeof cf.porque === 'string' ? cf.porque : '' } : null;
+          return { n: i + 1, titulo: x.titulo || '', paragrafos: s(x.paragrafos), figura: fig, imagem: im, tabela: tb, atencao: typeof x.atencao === 'string' && x.atencao ? { rotulo: 'No Enem', texto: x.atencao } : null, exemplos, confira };
         });
       })(),
       armadilhas: s(te.armadilhas), resumo: s(te.resumo),
+      // pré-treino: os termos do tópico, com uma linha cada, antes da primeira seção
+      termos: (Array.isArray(te.termos) ? te.termos : []).filter(x => x && typeof x.termo === 'string' && typeof x.def === 'string').map(x => ({ termo: x.termo, def: x.def })),
       pagina: { titulo: te.titulo || t.titulo, pe: 'Teoria' },
       // "revisado por … em …" só quando o conteúdo registra a revisão (campo revisao: { por, em } no *.teoria.js)
       credito: `Texto da equipe Prumo · CC BY-SA 4.0${rev ? ` · revisado por ${rev.por.trim()}${R.ehData(rev.em) ? ` em ${R.fmtCompleta(rev.em)}` : ''}` : ''}`,

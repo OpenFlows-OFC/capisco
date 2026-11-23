@@ -6,6 +6,13 @@ export const teoria = {
   id: 'mat-proporcao',
   titulo: 'Razão, proporção e escala',
   porQueCai: 'O Enem usa proporção em receitas, doses de remédio, consumo de combustível, mapas, plantas de casas e maquetes. Quase toda questão exige também converter unidades no meio da conta.',
+  termos: [
+    { termo: 'Razão', def: 'Divisão entre duas quantidades; a ordem delas importa.' },
+    { termo: 'Proporção', def: 'Igualdade entre duas razões, como 2/4 = 3/6.' },
+    { termo: 'Grandezas inversamente proporcionais', def: 'Quando uma é multiplicada por k, a outra fica dividida por k.' },
+    { termo: 'Escala', def: 'Razão entre a medida no desenho e a medida real, escrita 1 : n.' },
+    { termo: 'Densidade demográfica', def: 'Número de habitantes por unidade de área, em hab/km².' },
+  ],
   habilidades: [
     { codigo: 'H11', descricao: 'Utilizar a noção de escalas na leitura de representação de situação do cotidiano.' },
     { codigo: 'H12', descricao: 'Resolver situação-problema que envolva medidas de grandezas.' },
@@ -14,6 +21,7 @@ export const teoria = {
   secoes: [
     {
       titulo: 'Razão: comparar por divisão',
+      imagem: {src: "./conteudo/praticas/img/ap-vitruviano.jpg",alt: "Desenho de um homem nu em duas posições sobrepostas, inscrito num círculo e num quadrado, com anotações em escrita espelhada.",legenda: "O Homem Vitruviano compara as partes do corpo por razões: a envergadura dos braços é igual à altura, uma razão de 1 para 1.",credito: "Leonardo da Vinci, Homem Vitruviano, c. 1492. Domínio público. Wikimedia Commons."},
       paragrafos: [
         'A razão entre duas quantidades é o quociente entre elas. A razão de a para b se escreve a/b ou a : b, e a ordem importa: a razão de 3 para 5 é 3/5 = 0,6, e a de 5 para 3 é outra.',
         'Quando as duas quantidades têm unidades diferentes, a razão ganha uma unidade composta e, muitas vezes, um nome próprio. Velocidade é distância ÷ tempo (km/h), e desempenho de um carro é distância ÷ combustível (km/L).',
@@ -41,6 +49,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: quando uma razão muda, volte para as quantidades. Calcule quanto se gasta num trecho fixo e divida de novo.',
+      confira: { pergunta: 'Um carro percorre 150 km com 10 L de combustível. Qual é o desempenho dele?', opcoes: ['15 km/L', '1,5 km/L', '160 km/L'], certa: 0, porque: 'Desempenho é distância ÷ combustível: 150 ÷ 10 = 15 km/L.' },
     },
     {
       titulo: 'Proporção: grandezas diretas e inversas',
@@ -75,6 +84,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: frases como “proporcional ao número de alunos” ou “a dose máxima por quilograma” avisam que a relação é direta. Use a razão por unidade e multiplique.',
+      confira: { pergunta: 'Três costureiras fazem uma encomenda em 8 dias. No mesmo ritmo, em quantos dias 6 costureiras fariam a mesma encomenda?', opcoes: ['16 dias', '11 dias', '4 dias'], certa: 2, porque: 'Mais costureiras levam menos tempo: grandezas inversas. O produto fica constante, 3 · 8 = 24, e 24 ÷ 6 = 4.' },
     },
     {
       titulo: 'Unidades de medida e conversões',
@@ -107,6 +117,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: as alternativas costumam ser o mesmo número em unidades diferentes, como 50 mL e 500 mL. Escreva a unidade em cada passo.',
+      confira: { pergunta: 'Quantos mililitros cabem em 2 dm³?', opcoes: ['200 mL', '2 000 mL', '20 000 mL'], certa: 1, porque: 'Como 1 dm³ = 1 L = 1 000 mL, 2 dm³ correspondem a 2 000 mL.' },
     },
     {
       titulo: 'Escala em mapas, plantas e maquetes',
@@ -157,6 +168,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: as questões de escala quase sempre misturam metro e centímetro. Na planta com folgas, leia se a folga é só de um lado ou dos dois.',
+      confira: { pergunta: 'Em uma planta na escala 1 : 100, uma parede mede 5 cm. Qual é o comprimento real dela?', opcoes: ['5 m', '50 cm', '50 m'], certa: 0, porque: 'Do desenho para o real, multiplique pelo denominador: 5 · 100 = 500 cm, ou seja, 5 m.' },
     },
     {
       titulo: 'Escala em áreas e volumes',
@@ -200,6 +212,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: se a questão dá volumes ou litros e pede a escala, a resposta errada mais comum é usar a razão dos volumes como se fosse a dos comprimentos.',
+      confira: { pergunta: 'Uma maquete está na escala 1 : 10. A área real de um piso é quantas vezes a área dele na maquete?', opcoes: ['10', '1 000', '100'], certa: 2, porque: 'A área tem duas dimensões, então o fator é 10² = 100. O 1 000 = 10³ vale para o volume.' },
     },
   ],
   armadilhas: [
@@ -227,7 +240,7 @@ export const teoria = {
   fontes: [
     { titulo: 'Wikilivros, Matemática para concursos/Razão e proporção', url: 'https://pt.wikibooks.org/w/index.php?oldid=589558', revisao: '589558 (26/10/2026)', licenca: 'CC BY-SA 4.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/4.0/deed.pt', adaptado: true },
     { titulo: 'Wikilivros, Matemática financeira/Porcentagem (seção Proporções e razões)', url: 'https://pt.wikibooks.org/w/index.php?oldid=456617', revisao: '456617 (02/02/2019)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
-    { titulo: 'INEP, Matriz de Referência do Enem (habilidades H11, H12 e H14)', url: 'https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/matriz-de-referencia', licenca: 'reprodução permitida com citação da fonte', adaptado: false },
+    { titulo: 'INEP, Matriz de Referência do Enem (habilidades H11, H12 e H14)', url: 'https://download.inep.gov.br/download/enem/matriz_referencia.pdf', licenca: 'reprodução permitida com citação da fonte', adaptado: false },
   ],
   adaptacao: 'Seções 1 e 2 adaptadas do Wikilivros: Matemática para concursos/Razão e proporção (CC BY-SA 4.0) e Matemática financeira/Porcentagem, seção Proporções e razões (CC BY-SA 3.0); autores: ver o histórico de cada página. Adaptação da equipe Prumo em CC BY-SA 4.0. Alterações: linguagem simplificada, exemplos e figura novos. As seções 3, 4 e 5 (unidades, escala e escala em áreas e volumes) são texto original da equipe Prumo.',
   autoria: { equipe: 'Prumo', ia: 'Claude Opus 5.5 (Anthropic), via Claude Code', revisao: 'pendente' },

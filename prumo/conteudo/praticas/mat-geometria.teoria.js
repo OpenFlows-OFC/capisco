@@ -6,6 +6,13 @@ export const teoria = {
   id: 'mat-geometria',
   titulo: 'Geometria: áreas e volumes',
   porQueCai: 'O Enem pede a área de terrenos, pisos e cartões, a capacidade de caixas-d’água e a massa de peças recortadas ou derretidas. Quase sempre é preciso dividir a figura em partes conhecidas.',
+  termos: [
+    { termo: 'Área', def: 'Medida de uma superfície, em unidades ao quadrado, como m².' },
+    { termo: 'Volume', def: 'Espaço que um sólido ocupa, em unidades ao cubo, como cm³.' },
+    { termo: 'Capacidade', def: 'Quanto cabe dentro de um recipiente; 1 dm³ = 1 L.' },
+    { termo: 'Raio', def: 'Distância do centro até a borda do círculo; metade do diâmetro.' },
+    { termo: 'Densidade', def: 'Massa por unidade de volume: massa = densidade · volume.' },
+  ],
   habilidades: [
     { codigo: 'H8', descricao: 'Resolver situação-problema que envolva conhecimentos geométricos de espaço e forma.' },
     { codigo: 'H9', descricao: 'Utilizar conhecimentos geométricos de espaço e forma na seleção de argumentos propostos como solução de problemas do cotidiano.' },
@@ -51,6 +58,7 @@ export const teoria = {
           ],
         },
       ],
+      confira: { pergunta: 'Qual é a área de um triângulo com base de 10 cm e altura de 6 cm?', opcoes: ['60 cm²', '30 cm²', '16 cm²'], certa: 1, porque: 'O triângulo tem metade da área do retângulo de mesma base e altura: 10 · 6 / 2 = 30 cm².' },
     },
     {
       titulo: 'Círculo, triângulo equilátero e hexágono regular',
@@ -85,6 +93,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: as medidas vêm misturadas, umas em lado, outras em diâmetro. Calcule todas as áreas antes de comparar e confira o limite de custo.',
+      confira: { pergunta: 'Um círculo tem 8 m de diâmetro. Qual é a área dele? Use π ≈ 3.', opcoes: ['192 m²', '24 m²', '48 m²'], certa: 2, porque: 'Use o raio, que é metade do diâmetro: 4 m. A = 3 · 4² = 3 · 16 = 48 m².' },
     },
     {
       titulo: 'Figuras compostas e revestimentos',
@@ -121,6 +130,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: a figura mostra uma só parede lateral, mas o texto diz que todas serão revestidas. Conte as faces repetidas e arredonde para cima peças e caixas.',
+      confira: { pergunta: 'Um piso de 2 m² será coberto com peças de 50 cm por 50 cm. Quantas peças são necessárias?', opcoes: ['8', '4', '80'], certa: 0, porque: 'Cada peça tem 0,5 · 0,5 = 0,25 m², e 2 ÷ 0,25 = 8. Ponha as medidas na mesma unidade antes de dividir.' },
     },
     {
       titulo: 'Prismas e cilindros: volume e capacidade',
@@ -150,6 +160,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: o volume aparece em litros nas alternativas. Passe tudo para decímetro antes de calcular e o resultado já sai em litros.',
+      confira: { pergunta: 'Uma caixa tem 2 dm de comprimento, 3 dm de largura e 5 dm de altura. Quantos litros cabem nela?', opcoes: ['10 L', '30 L', '300 L'], certa: 1, porque: 'V = 2 · 3 · 5 = 30 dm³, e 1 dm³ = 1 L. Cabem 30 litros.' },
     },
     {
       titulo: 'Pirâmides, cones e esferas; sólidos recortados',
@@ -199,6 +210,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: as alternativas trazem o volume no lugar da massa, ou o cálculo que esquece de tirar o cone de cima. Confira cada parte retirada.',
+      confira: { pergunta: 'Um cone e um cilindro têm a mesma base e a mesma altura. O cilindro tem 90 cm³. Qual é o volume do cone?', opcoes: ['90 cm³', '45 cm³', '30 cm³'], certa: 2, porque: 'O cone tem um terço do volume do cilindro de mesma base e altura: 90 ÷ 3 = 30 cm³.' },
     },
     {
       titulo: 'Ampliar, reduzir ou mudar uma medida só',
@@ -236,6 +248,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: as opções dizem “o dobro do raio” ou “metade da área da base”. Repare se a mudança é no raio ou na área: raio dobrado é área quatro vezes maior.',
+      confira: { pergunta: 'Todas as medidas de uma caixa são multiplicadas por 3. O volume fica multiplicado por:', opcoes: ['27', '9', '3'], certa: 0, porque: 'O volume tem três dimensões: 3³ = 27. O 9 = 3² vale para a área de cada face.' },
     },
   ],
   armadilhas: [
@@ -268,7 +281,7 @@ export const teoria = {
     { titulo: 'Wikilivros, Matemática elementar/Geometria plana/Polígonos', url: 'https://pt.wikibooks.org/w/index.php?oldid=457879', revisao: '457879 (14/05/2019)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
     { titulo: 'Wikilivros, Matemática elementar/Geometria espacial/Cilindros', url: 'https://pt.wikibooks.org/w/index.php?oldid=212813', revisao: '212813 (07/03/2011)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
     { titulo: 'Wikilivros, Matemática elementar/Geometria espacial/Pirâmides', url: 'https://pt.wikibooks.org/w/index.php?oldid=212814', revisao: '212814 (07/03/2011)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
-    { titulo: 'INEP, Matriz de Referência do Enem (habilidades H8, H9 e H13)', url: 'https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/matriz-de-referencia', licenca: 'reprodução permitida com citação da fonte', adaptado: false },
+    { titulo: 'INEP, Matriz de Referência do Enem (habilidades H8, H9 e H13)', url: 'https://download.inep.gov.br/download/enem/matriz_referencia.pdf', licenca: 'reprodução permitida com citação da fonte', adaptado: false },
   ],
   adaptacao: 'Definições e fórmulas das seções 1, 2, 4 e 5 adaptadas do livro Matemática elementar, do Wikilivros (Geometria plana/Áreas e volumes, Circunferência e círculo e Polígonos; Geometria espacial/Cilindros e Pirâmides; autores: ver o histórico de cada página), CC BY-SA 3.0. Adaptação da equipe Prumo em CC BY-SA 4.0. Alterações: linguagem simplificada, exemplos, figuras e tabelas novos. São texto original da equipe Prumo: triângulo equilátero e hexágono, figuras compostas, cones, esferas, troncos, densidade e a seção 6, sobre mudança de medidas.',
   autoria: { equipe: 'Prumo', ia: 'Claude Opus 5.5 (Anthropic), via Claude Code', revisao: 'pendente' },

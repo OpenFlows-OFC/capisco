@@ -5,6 +5,13 @@ export const teoria = {
   id: 'mat-estatistica',
   titulo: 'Estatística: média, mediana, moda e gráficos',
   porQueCai: 'O Enem traz tabelas e gráficos com dados reais, como empregos, terremotos, notas e viagens. Ele pede média, mediana ou moda e cobra a leitura correta do gráfico antes de qualquer conta.',
+  termos: [
+    { termo: 'Média aritmética', def: 'Soma dos valores dividida pela quantidade de valores.' },
+    { termo: 'Mediana', def: 'Valor do meio depois que os dados são colocados em ordem.' },
+    { termo: 'Moda', def: 'Valor que mais se repete em um conjunto de dados.' },
+    { termo: 'Frequência', def: 'Quantas vezes um valor aparece nos dados.' },
+    { termo: 'Frequência acumulada', def: 'Soma das frequências desde a primeira linha da tabela até aquela.' },
+  ],
   habilidades: [
     { codigo: 'H27', descricao: 'Calcular medidas de tendência central ou de dispersão de um conjunto de dados expressos em uma tabela de frequências de dados agrupados (não em classes) ou em gráficos.' },
     { codigo: 'H29', descricao: 'Utilizar conhecimentos de estatística e probabilidade como recurso para a construção de argumentação.' },
@@ -13,6 +20,7 @@ export const teoria = {
   secoes: [
     {
       titulo: 'Para que serve a estatística e a média aritmética',
+      imagem: {src: "./conteudo/praticas/img/ap-nightingale.jpg",alt: "Dois diagramas circulares divididos em fatias de tamanhos diferentes, em azul, vermelho e preto, com texto explicativo em inglês.",legenda: "Florence Nightingale usou gráficos em 1858 para provar que a maioria das mortes de soldados vinha de doenças evitáveis (fatias azuis), não de ferimentos. Os dados viraram argumento e mudaram os hospitais.",credito: "Florence Nightingale, Diagram of the causes of mortality in the army in the East, 1858. Domínio público. Wikimedia Commons."},
       paragrafos: [
         'A estatística é a parte da Matemática que coleta, organiza e analisa dados. A estatística descritiva resume muitos números em poucos: as medidas de tendência central (média, mediana e moda) dizem qual é o valor típico de um conjunto.',
         'A média aritmética é a soma de todos os valores dividida pela quantidade de valores. Ela é o valor que cada um teria se o total fosse repartido igualmente.',
@@ -48,6 +56,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: quase nunca pede só a média. Pede o valor que falta para chegar a uma média, ou o efeito de trocar alguns elementos. Trabalhe sempre com a soma.',
+      confira: { pergunta: 'Quatro amigos têm média de idade de 15 anos. Qual é a soma das idades deles?', opcoes: ['15 anos', '19 anos', '60 anos'], certa: 2, porque: 'Soma = média · quantidade: 15 · 4 = 60 anos.' },
     },
     {
       titulo: 'Média ponderada e tabelas de frequência',
@@ -87,6 +96,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: as frequências aparecem em quadros, como famílias por número de filhos. Divida pelo total de famílias, não pelo número de linhas do quadro.',
+      confira: { pergunta: 'Em uma tabela, o valor 2 aparece 3 vezes e o valor 4 aparece 1 vez. Qual é a média?', opcoes: ['2,5', '3', '2'], certa: 0, porque: 'A frequência é o peso: (2 · 3 + 4 · 1) ÷ (3 + 1) = 10 ÷ 4 = 2,5. A média simples de 2 e 4, que dá 3, ignora as frequências.' },
     },
     {
       titulo: 'Mediana e moda',
@@ -118,6 +128,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: o enunciado pode dizer que “a mediana representa o valor típico”. As alternativas trazem o termo do meio sem ordenar e a média no lugar da mediana.',
+      confira: { pergunta: 'Qual é a mediana de 7, 1, 9, 4 e 3?', opcoes: ['9', '4', '4,8'], certa: 1, porque: 'Em ordem: 1, 3, 4, 7, 9, e o termo central, o 3º, vale 4. O 9 é o termo do meio sem ordenar, e 4,8 é a média.' },
     },
     {
       titulo: 'Mediana em tabelas de frequência',
@@ -148,6 +159,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: a armadilha é a linha que fecha exatamente na posição central. Confira se as duas posições do meio caem na mesma linha ou em linhas vizinhas.',
+      confira: { pergunta: 'Uma tabela de frequência tem 20 dados no total. Em que posições estão os termos centrais?', opcoes: ['só na 10ª', '20ª e 21ª', '10ª e 11ª'], certa: 2, porque: 'Com n par, os centrais ficam nas posições n ÷ 2 e n ÷ 2 + 1, ou seja, 10ª e 11ª. A frequência acumulada mostra em que linha cada uma está.' },
     },
     {
       titulo: 'Gráfico de barras como tabela de frequência',
@@ -173,9 +185,11 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: o gráfico pode ter um valor sem barra, com frequência zero. Ele não soma nada na média, mas a leitura dos outros valores no eixo precisa continuar certa.',
+      confira: { pergunta: 'Em um gráfico de barras, o valor 5 tem a barra mais comprida, com 9 pessoas. Qual é a moda?', opcoes: ['5', '9', '14'], certa: 0, porque: 'A moda é o valor que a barra representa, 5. O 9 é a frequência desse valor.' },
     },
     {
       titulo: 'Gráficos de colunas e de linhas',
+      imagem: {src: "./conteudo/praticas/img/ap-minard.jpg",alt: "Mapa antigo com uma faixa larga bege indo para a direita e uma faixa fina preta voltando, com um gráfico de linha de temperaturas embaixo.",legenda: "Minard mostrou num só gráfico o tamanho do exército de Napoleão na campanha da Rússia: a largura da faixa é o número de soldados, e a linha de baixo, a temperatura na volta.",credito: "Charles Minard, Carte figurative de la campagne de Russie 1812-1813, 1869. Domínio público. Wikimedia Commons."},
       paragrafos: [
         'Gráficos de colunas comparam categorias, e com duas colunas por categoria comparam duas séries, como receita e despesa. Gráficos de linhas mostram como um valor muda ao longo do tempo.',
         'Às vezes a questão pede uma medida só de parte dos dados. Primeiro filtre (por exemplo, só os meses com lucro), depois ordene e calcule.',
@@ -197,6 +211,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: em gráficos com duas séries, a questão pede uma conta entre elas (diferença, lucro, saldo) antes da medida estatística. Faça a tabela da diferença mês a mês.',
+      confira: { pergunta: 'Em um gráfico de receita e despesa, um mês teve receita 6 e despesa 8. Como ele entra na mediana dos lucros?', opcoes: ['com lucro 2', 'fica de fora', 'com lucro 14'], certa: 1, porque: 'Receita menos despesa dá −2: o mês teve prejuízo. Na mediana dos lucros, ele fica de fora.' },
     },
     {
       titulo: 'Gráfico de setores',
@@ -221,6 +236,7 @@ export const teoria = {
         },
       ],
       atencao: 'Como o Enem cobra isso: a questão pode dar o ângulo e pedir a porcentagem (divida por 3,6) ou dar a porcentagem e pedir quantas pessoas são (multiplique pelo total).',
+      confira: { pergunta: 'Em um gráfico de setores, um setor representa 20% do total. Qual é o ângulo dele?', opcoes: ['20°', '36°', '72°'], certa: 2, porque: 'Cada 1% vale 3,6°, então o ângulo é 20 · 3,6 = 72°.' },
     },
   ],
   armadilhas: [
@@ -249,7 +265,7 @@ export const teoria = {
   fontes: [
     { titulo: 'Wikilivros, Matemática elementar/Estatística', url: 'https://pt.wikibooks.org/w/index.php?oldid=457338', revisao: '457338 (28/03/2019)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
     { titulo: 'Wikilivros, Matemática elementar/Médias', url: 'https://pt.wikibooks.org/w/index.php?oldid=212833', revisao: '212833 (07/03/2011)', licenca: 'CC BY-SA 3.0', licencaUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.pt', adaptado: true },
-    { titulo: 'INEP, Matriz de Referência do Enem (habilidades H27, H29 e H30)', url: 'https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/matriz-de-referencia', licenca: 'reprodução permitida com citação da fonte', adaptado: false },
+    { titulo: 'INEP, Matriz de Referência do Enem (habilidades H27, H29 e H30)', url: 'https://download.inep.gov.br/download/enem/matriz_referencia.pdf', licenca: 'reprodução permitida com citação da fonte', adaptado: false },
   ],
   adaptacao: 'Seções 1 a 3 adaptadas do Wikilivros: Matemática elementar/Estatística e Matemática elementar/Médias (autores: ver o histórico de cada página), CC BY-SA 3.0. Adaptação da equipe Prumo em CC BY-SA 4.0. Alterações: linguagem simplificada, regra da mediana para quantidade par acrescentada, exemplos e tabelas novos. As seções 4 a 7 (tabelas de frequência e gráficos) são texto original da equipe Prumo.',
   autoria: { equipe: 'Prumo', ia: 'Claude Opus 5.5 (Anthropic), via Claude Code', revisao: 'pendente' },
