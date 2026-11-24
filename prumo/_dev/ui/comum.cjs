@@ -43,7 +43,7 @@ function criarConferencia(prefixo) {
 
 const pronto = pg => pg.waitForFunction(() => document.documentElement.dataset.pronto === '1', null, { timeout: 20000 });
 const estado = pg => pg.evaluate(() => window.__prumo.nucleo.estado());
-const texto = pg => pg.evaluate(() => document.getElementById('app').innerText);
+const texto = pg => pg.evaluate(() => document.getElementById('app').innerText.replace(/ /g, ' '));
 const gabarito = pg => pg.evaluate(() => { const n = window.__prumo.nucleo, m = n.st.missao; return n.missao.itemDe(m.passos[m.i].id).gabarito; });
 const erradaDe = (pg, pref = 'E') => pg.evaluate(p => { const n = window.__prumo.nucleo, m = n.st.missao; const e = n.missao.itemDe(m.passos[m.i].id).alternativas.filter(a => !a.certa).map(a => a.letra); return e.includes(p) ? p : e[0]; }, pref);
 const tentativas = pg => pg.evaluate(() => Object.values(window.__prumo.nucleo.st.topicos).reduce((s, t) => s + (t.tentativas || []).length, 0));

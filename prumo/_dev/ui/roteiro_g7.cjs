@@ -8,22 +8,44 @@ async function roteiro(motor, tema) {
   const { falhas, confere, cap } = U.criarConferencia(`g7-${motor}-${tema}`);
   const tem = async s => (await U.texto(pg)).includes(s);
   try {
-    // 1 · Primeiro uso
+    // 1 · Primeiro uso: Pular → configuração → Hoje
     await pg.goto(U.BASE); await U.pronto(pg);
-    confere(await tem('Ver com dados de exemplo'), 'onboarding: atalho dos dados de exemplo');
+    confere(await tem('Ver com dados de exemplo'), 'apresentação: atalho dos dados de exemplo');
     await pg.click('[data-acao="puPular"]');
     confere(await tem('Já usei o Prumo: restaurar uma cópia'), 'link "Já usei o Prumo: restaurar uma cópia"');
     confere(await tem('Ver com dados de exemplo'), 'link "Ver com dados de exemplo"');
+    confere(await pg.evaluate(() => document.activeElement && document.activeElement.matches('h1[data-foco-inicial]')), 'configuração: foco no título');
     await cap(pg, 'primeiro-uso', true);
+    await pg.click('[data-folha="instalar"]');
+    confere(await tem('Adicionar à Tela de Início'), 'folha "Como instalar"');
+    await pg.click('#folha-raiz .folha-pe [data-acao="fecharFolha"]');
+    await pg.waitForTimeout(150);
     await pg.click('label.escolha:has(input[value="escola"])');
     await pg.fill('#pu-data', '2026-12-15');
+    // "Mudar dias e minutos agora": abre, continua aberto depois de cada escolha
+    await pg.click('#pu-mudar > summary');
+    await pg.click('label:has(input[name="minutos"][value="40"])');
+    confere(await pg.$eval('#pu-mudar', d => d.open), '"Mudar dias e minutos" segue aberto depois de escolher');
+    confere(await tem('40 min por dia'), 'padrões em texto acompanham a escolha');
     await pg.click('label:has(input[name="minutos"][value="25"])');
+    confere((await pg.inputValue('#pu-data')) === '2026-12-15', 'a data fica depois de redesenhar');
+    // com menos de 3 dias o botão não some: avisa e segura
+    const marcados = await pg.$$eval('input[name="dias"]:checked', l => l.map(i => i.value));
+    for (const v of marcados.slice(2)) await pg.click(`.chip label:has(input[name="dias"][value="${v}"])`);
+    confere(await tem('Escolha pelo menos 3 dias.'), 'aviso de 3 dias');
     await pg.click('button[type="submit"]');
-    confere(await tem('"Prumo", às 19:00, segunda, terça, quarta e quinta'), 'texto do alarme');
-    await cap(pg, 'alarme');
-    await pg.click('[data-acao="puAlarme"][data-arg="criado"]');
-    await cap(pg, 'fecho');
-    await pg.click('[data-acao="puConcluir"]');
+    confere((await U.estado(pg)) === 'primeiroUso', 'com 2 dias, segue na configuração');
+    for (const v of marcados.slice(2)) await pg.click(`.chip label:has(input[name="dias"][value="${v}"])`);
+    await cap(pg, 'mudar-dias', true);
+    await pg.click('button[type="submit"]');
+    // o lembrete saiu do cadastro: o Plano mostra o alarme "Prumo" às 19:00 com os dias
+    await pg.waitForSelector('.manchete');
+    confere((await pg.evaluate(() => window.__prumo.nucleo.st.missao.tipo)) !== 'folga', 'primeiro dia não é folga');
+    await pg.click('.trilho .aba[href="#/plano"]');
+    await pg.waitForTimeout(200);
+    confere(/"Prumo", às 19:00, segunda, terça, quarta(,| e) quinta/.test(await U.texto(pg)), 'Plano: texto do alarme');
+    await cap(pg, 'plano-alarme');
+    await pg.click('.trilho .aba[href="#/hoje"]');
 
     // 2 · Hoje como folha de rosto; "Por que esta missão?" → "ver a regra"
     await pg.waitForSelector('.manchete');
@@ -50,7 +72,8 @@ async function roteiro(motor, tema) {
     await pg.waitForSelector('.alternativas');
     confere(await tem('Antes de ler a p. 1'), 'rótulo Antes de ler a p. 1');
     confere(await tem('Tente antes de ler. Esta página responde.'), 'aviso da pré-pergunta');
-    confere(await tem('2 acertos seguidos, um deles numa questão do Enem'), 'regra da rodada no início');
+    // a regra da rodada não abre na pergunta de antes de ler: aparece na primeira pergunta que conta (checagem)
+    confere(!(await tem('2 acertos seguidos, um deles numa questão do Enem')), 'pré-pergunta sem a regra da rodada');
     confere((await pg.getAttribute('[data-acao="responder"]', 'aria-disabled')) === 'true', 'Responder começa desabilitado');
     await cap(pg, 'pre-p1', true);
     await U.escolher(pg, await U.erradaDe(pg, 'A'));
@@ -76,6 +99,7 @@ async function roteiro(motor, tema) {
     await pg.waitForSelector('.alternativas');
     confere(await tem('Confira a p. 1'), 'checagem da p. 1');
     confere(await tem('Isso fica só neste aparelho. Ninguém da escola vê.'), 'aviso da primeira checagem');
+    confere(await tem('2 acertos seguidos, um deles numa questão do Enem'), 'regra da rodada na primeira pergunta que conta');
     await cap(pg, 'checagem-p1');
     await U.responderCerta(pg);
     await pg.waitForSelector('.feedback');
@@ -175,6 +199,9 @@ async function roteiro(motor, tema) {
     await pg.waitForSelector('.colofao');
     confere((await U.estado(pg)) === 'encerramento', 'direto ao Pronto por hoje');
     confere(await tem('Pronto por hoje'), 'título do colofão');
+    confere(await tem('Marcar quando estudar de novo'), 'Pronto: "Marcar quando estudar de novo"');
+    confere(/Se quiser, crie um alarme "Prumo" às/.test(await pg.textContent('.quando-detalhes')), 'Pronto: lembrete sem alarme criado');
+    confere(await tem('Salvar uma cópia do meu progresso'), 'Pronto: "Salvar uma cópia do meu progresso"');
     confere(await tem('1 dia estudado'), '"1 dia estudado"');
     confere(await tem('O capítulo Parte fixa e parte que varia entrou no nível 1 de 5. Próxima revisão: amanhã'), 'linha do nível novo');
     confere(await tem('Amanhã você vê se acertou a pergunta antes da p. 2.'), 'gancho do próximo dia');   // núcleo: "pergunta antes da p. N"

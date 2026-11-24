@@ -21,7 +21,7 @@ for (const pk of await packs()) {
     responder(n, 'errada');
     t = n.tela();
     assert.equal(t.nome, 'leitura');
-    assert.equal(t.vm.faixa, 'Resposta guardada.');
+    assert.equal(t.vm.faixa, 'Resposta guardada. Depois da leitura, uma pergunta parecida mostra se você entendeu.');
     assert.equal(t.vm.jaSei.rotulo, 'Já sei isto: ir para a próxima pergunta');
     n.despachar('TERMINEI_TRECHO');
     t = n.tela();

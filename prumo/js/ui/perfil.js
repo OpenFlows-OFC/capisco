@@ -15,7 +15,8 @@ function avatar(v) {
   return v.foto ? h`<span class="avatar"><img src="${v.foto}" alt="Sua foto"></span>` : h`<span class="avatar" aria-hidden="true">${v.iniciais || cru('<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.75"/><path d="M4.5 20.5c.8-3.9 3.9-6 7.5-6s6.7 2.1 7.5 6"/></svg>')}</span>`;
 }
 
-export function telaPerfil(ctx) {
+export function telaPerfil(ctx, t, rota) {
+  const abrirPlano = !!rota && rota.sub === 'plano';   // vindo do Plano: abre "Seu nome e seu plano"
   const n = ctx.nucleo, v = n.perfil();
   if (!v) return { chave: 'perfil:vazio', html: h`<p>Sem perfil ainda.</p>` };
   const pl = v.plano, p = n.st.perfil, hoje = ctx.relogio.hoje();
@@ -30,7 +31,7 @@ export function telaPerfil(ctx) {
       ${colecao(n.colecao(ctx.ui.memoria.mesColecao))}
       ${trofeus(n)}
 
-      <details class="detalhes-missao perfil-grupo"><summary>Seu nome e seu plano</summary>
+      <details class="detalhes-missao perfil-grupo" id="pf-plano" ${abrirPlano ? cru('open') : ''}><summary>Seu nome e seu plano</summary>
       <form class="secao" data-enviar="pfNome" novalidate aria-labelledby="pf-nome-t">
         <h2 class="titulo-pequeno" id="pf-nome-t">Seu nome</h2>
         <div class="campo-linha"><label for="pf-nome" class="so-leitor">Seu nome</label>
@@ -43,9 +44,11 @@ export function telaPerfil(ctx) {
         <p>${pl.prova.texto}</p>
         <label for="pf-tipo" style="display:block;font-weight:600;margin:8px 0">Qual prova vem primeiro?</label>
         <select id="pf-tipo" class="campo" name="provaTipo">${cada(pl.tiposProva, t => h`<option value="${t.valor}" ${p.provaTipo === t.valor ? cru('selected') : ''}>${t.rotulo}</option>`)}</select>
-        <label for="pf-data" style="display:block;font-weight:600;margin:16px 0 8px">Data da prova</label>
-        <input id="pf-data" class="campo campo-data" type="date" name="prova" min="${hoje}" value="${p.prova || ''}">
-        <p class="ajuda-campo">Sem data (ou no Enem, enquanto a data não sai), o Prumo planeja para os próximos 90 dias.</p>
+        <div class="pf-data">
+          <label for="pf-data" style="display:block;font-weight:600;margin:16px 0 8px">Data da prova</label>
+          <input id="pf-data" class="campo campo-data" type="date" name="prova" min="${hoje}" value="${p.prova || ''}" aria-describedby="pf-data-ajuda">
+          <p class="ajuda-campo" id="pf-data-ajuda">As questões do Prumo são do Enem. Com a data da sua prova, o Prumo marca as revisões até ela.</p>
+        </div>
 
         <h2 class="titulo-pequeno" style="margin-top:24px">Dias e minutos</h2>
         <p>${pl.dias.texto}</p>
@@ -63,6 +66,10 @@ export function telaPerfil(ctx) {
       ${secoesAjustes(ctx)}
       </details>
       <p class="secao"><button type="button" class="link" data-folha="instalar">Como instalar no celular</button></p>`,
+    depois(raiz, { mudou } = {}) {
+      const d = abrirPlano && mudou && raiz.querySelector('#pf-prova-t');
+      if (d) d.scrollIntoView({ block: 'start' });
+    },
   };
 }
 

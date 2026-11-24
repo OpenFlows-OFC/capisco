@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 360" width="680" height="720" font-family="Atkinson Hyperlegible Next, Arial, Helvetica, sans-serif" font-size="13.5" fill="#24262a">
+<rect width="340" height="360" fill="#fbfbf9"/>
+<text x="12" y="22" font-size="15.5" font-weight="700">Planta de um quarto</text>
+<path d="M75 61H273.0V289.0H75Z M84 70V280.0H264.0V70Z" fill="#24262a" fill-rule="evenodd"/>
+<rect x="144.0" y="61" width="72.0" height="9" fill="#fbfbf9" stroke="#24262a" stroke-width="1"/>
+<path d="M144.0 65.5H216.0" stroke="#24262a" stroke-width="1"/>
+<rect x="198.0" y="280.0" width="48.0" height="9" fill="#fbfbf9"/>
+<path d="M246.0 280.0V232.0" stroke="#24262a" stroke-width="2"/>
+<path d="M198.0 280.0A48.0 48.0 0 0 1 246.0 232.0" fill="none" stroke="#24262a" stroke-width="1" stroke-dasharray="3 3"/>
+<rect x="86" y="72" width="54.0" height="114.0" fill="#eef0ef" stroke="#24262a" stroke-width="1.5"/>
+<rect x="92" y="78" width="42.0" height="18" rx="5" fill="#fbfbf9" stroke="#24262a" stroke-width="1"/>
+<text x="113.0" y="139.0" text-anchor="middle">cama</text>
+<rect x="226.0" y="88.0" width="36.0" height="90.0" fill="#eef0ef" stroke="#24262a" stroke-width="1.5"/>
+<text transform="translate(248.0 133.0) rotate(-90)" text-anchor="middle">armário</text>
+<text x="178.0" y="218.0" text-anchor="middle" font-weight="700" font-size="14.5">Quarto</text>
+<text x="178.0" y="234.0" text-anchor="middle">10,50 m²</text>
+<g stroke="#24262a" stroke-width="1"><path d="M84 46H264.0M84 40v12M264.0 40v12"/></g>
+<text x="174.0" y="41" text-anchor="middle" font-weight="700">3,00 m</text>
+<g stroke="#24262a" stroke-width="1"><path d="M58 70V280.0M52 70h12M52 280.0h12"/></g>
+<text transform="translate(52 175.0) rotate(-90)" text-anchor="middle" font-weight="700">3,50 m</text>
+<rect x="84" y="324.0" width="60" height="7" fill="#24262a" stroke="#24262a" stroke-width="1"/>
+<rect x="144" y="324.0" width="60" height="7" fill="#fbfbf9" stroke="#24262a" stroke-width="1"/>
+<rect x="204" y="324.0" width="60" height="7" fill="#24262a" stroke="#24262a" stroke-width="1"/>
+<g text-anchor="middle"><text x="84" y="346.0">0</text><text x="144" y="346.0">1</text><text x="204" y="346.0">2</text><text x="270" y="346.0">3 m</text></g>
+<text x="84" y="316" fill="#5b5e66">escala gráfica (cada trecho vale 1 m)</text>
+</svg>

@@ -1,6 +1,6 @@
 // Auditoria das telas do núcleo (g.8): contraste WCAG de todo texto visível, nenhum vermelho,
 // alvos de toque de 48 px, uma só barra fixa por tela, sem rolagem horizontal, tabular-nums.
-// Uso (na pasta prumo/): NODE_PATH="$(npm root -g)" node _dev/ui/auditoria.cjs [chromium|webkit]
+// Uso (na pasta prumo/): NODE_PATH="$(npm root -g)" node _dev/ui/auditoria.cjs [chromium|webkit] [light|dark]
 const U = require('./comum.cjs');
 
 const AUDITAR = () => {
@@ -76,7 +76,8 @@ const jogar = (alvo) => {
 (async () => {
   const motores = process.argv[2] ? [process.argv[2]] : ['chromium', 'webkit'];
   let total = 0;
-  for (const motor of motores) for (const tema of ['light', 'dark']) {
+  const temas = process.argv[3] ? [process.argv[3]] : ['light', 'dark'];
+  for (const motor of motores) for (const tema of temas) {
     const { nav, pg, erros } = await U.abrir(motor, tema);
     await pg.goto(U.BASE); await U.pronto(pg);
     const telas = [];

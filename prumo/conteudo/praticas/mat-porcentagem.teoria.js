@@ -58,7 +58,7 @@ export const teoria = {
     {
       titulo: 'Aumentos e descontos: o fator multiplicativo',
       paragrafos: [
-        'Um desconto é calculado como o juro: valor vezes a taxa unitária. Um produto de R$ 500,00 com 5% de desconto sai por 500 − 0,05 · 500 = 475 reais.',
+        'O valor do desconto é o preço vezes a taxa unitária. Um produto de R$ 500,00 com 5% de desconto sai por 500 − 0,05 · 500 = 475 reais.',
         'Há um caminho mais curto. Quem tem 5% de desconto paga 95% do preço, então basta multiplicar por 0,95. Esse número é o fator multiplicativo: aumento de taxa i é fator (1 + i), e desconto de taxa i é fator (1 − i).',
         'Para achar a variação percentual entre dois valores, use (valor novo − valor antigo) ÷ valor antigo. A base da conta é sempre o valor de antes.',
       ],
@@ -110,6 +110,7 @@ export const teoria = {
         'Quando um valor sofre duas ou mais variações seguidas, multiplique os fatores. Cada nova porcentagem é calculada sobre o valor que já foi alterado, por isso não dá para somar as taxas.',
         'Leia com cuidado expressões como “10% maior que o preço normal” ou “25% menor que o deste ano”. Elas dizem qual é a base daquela porcentagem.',
       ],
+      imagem: {src: "./conteudo/praticas/img/ap-ipca-2021-2022.svg",alt: "Gráfico de colunas da inflação, o IPCA. Coluna de 2021: 10,06%. Coluna de 2022: 5,79%. Coluna mais alta, em azul, de 2021 e 2022 juntos: 16,43%. Uma linha tracejada, um pouco abaixo do topo dessa coluna, marca 15,85%, o que daria somar as duas taxas. Embaixo: 1,1006 vezes 1,0579 é aproximadamente 1,1643.",legenda: "Inflação de 2021 e de 2022. Nos dois anos juntos, os preços subiram, em média, 16,43%, e não 15,85%: a alta de 2022 incidiu sobre preços que já tinham subido em 2021.",credito: "Gráfico da equipe Prumo com dados do IBGE (Sidra, tabela 1737, IPCA acumulado no ano). CC BY-SA 4.0."},
       figura: {
         svg: '<svg viewBox="0 0 320 134" role="img" xmlns="http://www.w3.org/2000/svg" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="13" fill="currentColor"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="30" width="64" height="40" rx="6"/><rect x="128" y="30" width="64" height="40" rx="6"/><rect x="248" y="30" width="64" height="40" rx="6" stroke-width="3"/><path d="M74 50H118M194 50H238"/><path d="M40 74Q160 128 272 79" stroke-dasharray="5 4"/></g><path d="M126 50L116 45V55zM246 50L236 45V55zM279.3 75.7L274.1 83.6L269.9 74.4z" fill="currentColor"/><g text-anchor="middle"><text x="40" y="56" font-size="16">500</text><text x="160" y="56" font-size="16">600</text><text x="280" y="56" font-size="16">540</text><text x="100" y="42">× 1,20</text><text x="100" y="68">+20%</text><text x="220" y="42">× 0,90</text><text x="220" y="68">−10%</text><text x="160" y="124">no total: × 1,08 (+8%)</text></g></svg>',
         alt: 'Esquema com três caixas em linha: 500, 600 e 540. Uma seta da primeira para a segunda indica vezes 1,20, aumento de 20%. Uma seta da segunda para a terceira indica vezes 0,90, desconto de 10%. Uma seta curva tracejada liga a primeira caixa à última, com a indicação: no total, vezes 1,08, aumento de 8%.',
@@ -180,7 +181,7 @@ export const teoria = {
     {
       titulo: 'Juros simples e juros compostos',
       paragrafos: [
-        'Juro (J) é a remuneração paga pelo uso do dinheiro. O capital (C) é o valor no início, a taxa (i) é a razão entre o juro de um período e o capital, e o montante (M) é capital mais juro: M = C + J.',
+        'Juro (J) é a remuneração paga pelo uso do dinheiro. O capital (C) é o valor no início, a taxa (i) é a porcentagem de juro cobrada em cada período (ao mês, ao ano), e o montante (M) é capital mais juro: M = C + J.',
         'Nos juros simples, a taxa incide só sobre o capital inicial, e o juro de cada período é sempre o mesmo: J = C · i · t e M = C · (1 + i · t). Nos juros compostos, o juro de cada período é somado ao capital e passa a render também: M = C · (1 + i)ᵗ.',
         'A expressão (1 + i)ᵗ é o fator de capitalização. Taxa e tempo devem estar na mesma unidade, e a taxa entra na forma unitária.',
       ],

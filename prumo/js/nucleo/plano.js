@@ -136,7 +136,9 @@ export function resumoProva(st, d) {
   const temNome = p.provaTipo && p.provaTipo !== 'naosei';
   const faltamTxt = pv.dias === 0 ? 'A prova é hoje.' : pv.dias === 1 ? 'Falta 1 dia.' : `Faltam ${pv.dias} dias.`;
   let texto, cabecalho = null;
-  if (!p.prova) texto = `${temNome ? `${nome}, ainda sem data` : 'Prova ainda sem data'}. Até você marcar, o Prumo planeja as revisões para os próximos 90 dias.`;
+  // no Enem não há data para marcar (o Perfil esconde o campo, como o cadastro)
+  if (!p.prova && p.provaTipo === 'enem') texto = 'A data do Enem 2027 ainda não saiu. Até lá, o Prumo planeja as revisões para os próximos 90 dias.';
+  else if (!p.prova) texto = `${temNome ? `${nome}, ainda sem data` : 'Prova ainda sem data'}. Até você marcar, o Prumo planeja as revisões para os próximos 90 dias.`;
   else if (pv.passou) texto = `A prova de ${R.fmtDiaMes(p.prova)} passou. Até você marcar a próxima, o Prumo planeja as revisões para os próximos 90 dias.`;
   else {
     texto = `${nome} em ${R.fmtCompleta(p.prova)}. ${faltamTxt}`;

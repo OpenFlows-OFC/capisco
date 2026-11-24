@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 252" width="680" height="504" font-family="Atkinson Hyperlegible Next, Arial, Helvetica, sans-serif" font-size="13.5" fill="#24262a">
+<rect width="340" height="252" fill="#fbfbf9"/>
+<text x="12" y="22" font-size="15.5" font-weight="700">Inflação anual no Brasil (IPCA, em %)</text>
+<g stroke="#cdd9ea" stroke-width="1"><path d="M40 158H330"/><path d="M40 102H330"/><path d="M40 46H330"/></g>
+<g text-anchor="end" fill="#5b5e66"><text x="34" y="218">0</text><text x="34" y="162">4</text><text x="34" y="106">8</text><text x="34" y="50">12</text></g>
+<path d="M40 214H330" stroke="#24262a" stroke-width="1.5"/>
+<g stroke="#24262a" stroke-width="1.5"><path d="M46.0 214v5"/><path d="M73.4 214v5"/><path d="M100.8 214v5"/><path d="M128.2 214v5"/><path d="M155.6 214v5"/><path d="M183.0 214v5"/><path d="M210.4 214v5"/><path d="M237.8 214v5"/><path d="M265.2 214v5"/><path d="M292.6 214v5"/><path d="M320.0 214v5"/></g>
+<g text-anchor="middle" fill="#5b5e66"><text x="46.0" y="232">2015</text><text x="100.8" y="232">2017</text><text x="155.6" y="232">2019</text><text x="210.4" y="232">2021</text><text x="265.2" y="232">2023</text><text x="320.0" y="232">2025</text></g>
+<path d="M40 135.0H330" stroke="#b4441c" stroke-width="2" stroke-dasharray="7 4"/>
+<path d="M40 149.3H330" stroke="#24262a" stroke-width="1.5" stroke-dasharray="2 3"/>
+<polyline points="46.0,64.6 73.4,125.9 100.8,172.7 128.2,161.5 155.6,153.7 183.0,150.7 210.4,73.2 237.8,132.9 265.2,149.3 292.6,146.4 320.0,154.4" fill="none" stroke="#1f3a9e" stroke-width="2.5" stroke-linejoin="round"/>
+<g fill="#1f3a9e" stroke="#fbfbf9" stroke-width="1.5"><circle cx="73.4" cy="125.9" r="4"/><circle cx="100.8" cy="172.7" r="4"/><circle cx="128.2" cy="161.5" r="4"/><circle cx="155.6" cy="153.7" r="4"/><circle cx="183.0" cy="150.7" r="4"/><circle cx="237.8" cy="132.9" r="4"/><circle cx="265.2" cy="149.3" r="4"/><circle cx="292.6" cy="146.4" r="4"/><circle cx="320.0" cy="154.4" r="4"/></g>
+<g fill="#ffe76a" stroke="#24262a" stroke-width="1.5"><circle cx="46.0" cy="64.6" r="5.5"/><circle cx="210.4" cy="73.2" r="5.5"/></g>
+<text x="55.0" y="59" font-weight="700">10,67</text>
+<text x="210.4" y="63" text-anchor="middle" font-weight="700">10,06</text>
+<text x="92" y="129" font-weight="700">média: 5,64</text>
+<text x="326" y="170" text-anchor="end" font-weight="700">mediana: 4,62</text>
+<text x="12" y="247" font-size="11.5" fill="#5b5e66">Fonte: IBGE, Sidra, tabela 1737 (IPCA acumulado no ano)</text>
+</svg>

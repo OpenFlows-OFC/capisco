@@ -22,19 +22,19 @@ export const teoria = {
   secoes: [
     {
       titulo: 'Toda língua varia',
-      imagem: {src: "./conteudo/praticas/img/ap-gazeta-1808.jpg",alt: "Primeira página de um jornal antigo, com o título Gazeta do Rio de Janeiro, o brasão real e texto em colunas com grafia antiga.",legenda: "Primeira página do primeiro jornal impresso no Brasil, em 1808. Compare a grafia e as palavras com as de hoje: é a variação histórica (diacrônica) da língua.",credito: "Imprensa Régia, Gazeta do Rio de Janeiro n. 1, 1808. Domínio público. Wikimedia Commons."},
+      imagem: {src: "./conteudo/praticas/img/ap-gazeta-1808.jpg",alt: "Recorte da primeira página de um jornal antigo: o título Gazeta do Rio de Janeiro, a data, sábado 10 de setembro de 1808, o carimbo da Real Biblioteca e o primeiro parágrafo, com grafia antiga.",legenda: "Começo do primeiro jornal impresso no Brasil, de 1808. Compare a grafia com a de hoje: “hum” (um), “immediatamente” (imediatamente), “arribárão” (arribaram). É a variação histórica, ou diacrônica, da língua.",credito: "Imprensa Régia, Gazeta do Rio de Janeiro n. 1, 1808. Domínio público. Wikimedia Commons."},
       paragrafos: [
         'Variação linguística é o fato de uma mesma língua ser falada de formas diferentes. Isso acontece em todas as línguas e não é sinal de erro.',
         'A variação pode ser regional, ligada ao lugar, como o uso de “tu” no Sul e em partes do Norte e do Nordeste, ou “mandioca”, “aipim” e “macaxeira” para o mesmo alimento. Pode ser social, ligada à idade, à escolaridade ou ao grupo, como as gírias dos jovens.',
         'Há ainda a variação situacional, que depende do contexto, e a histórica, que mostra como a língua muda com o tempo. “Vossa mercê” virou “vosmecê”, depois “você” e, na fala, “cê”.',
       ],
       tabela: {
-        cabecalho: ['Variação', 'Nome técnico', 'Depende de', 'Exemplo'],
+        cabecalho: ['Variação (nome técnico)', 'Depende de', 'Exemplo'],
         linhas: [
-          ['regional', 'diatópica', 'lugar onde se fala', '“mandioca”, “aipim” e “macaxeira”; “concreto” no Brasil e “betão” em Portugal'],
-          ['social', 'diastrática', 'grupo, idade, profissão, escolaridade', 'gíria de skatistas (“mandar um flip”); jargão médico (“o paciente está estável”)'],
-          ['situacional ou de registro', 'diafásica', 'situação e grau de formalidade', '“E aí, beleza?” com amigos; “Bom dia, como vai o senhor?” com o diretor'],
-          ['histórica', 'diacrônica', 'época', '“vossa mercê” > “vosmecê” > “você” > “cê”; “pharmacia” virou “farmácia”'],
+          ['regional (diatópica)', 'lugar onde se fala', '“mandioca”, “aipim” e “macaxeira”; “concreto” no Brasil e “betão” em Portugal'],
+          ['social (diastrática)', 'grupo, idade, profissão, escolaridade', 'gíria de skatistas (“mandar um flip”); jargão médico (“o paciente está estável”)'],
+          ['situacional ou de registro (diafásica)', 'situação e grau de formalidade', '“E aí, beleza?” com amigos; “Bom dia, como vai o senhor?” com o diretor'],
+          ['histórica (diacrônica)', 'época', '“vossa mercê” > “vosmecê” > “você” > “cê”; “pharmacia” virou “farmácia”'],
         ],
         legenda: 'Tabela 1. Os quatro tipos de variação linguística, com os nomes técnicos que às vezes aparecem nas questões.',
       },
@@ -86,17 +86,18 @@ export const teoria = {
         'Função emotiva (ou expressiva): foco no emissor, com sentimentos e opiniões em primeira pessoa. Função conativa (ou apelativa): foco no receptor, com verbos no imperativo e o uso de “você”, comum em propagandas. Função referencial: foco no assunto, com linguagem objetiva, como em notícias.',
         'Função fática: foco no canal, para iniciar, manter ou testar o contato, como “alô, está me ouvindo?”. Função metalinguística: o código fala de si mesmo, como um verbete de dicionário ou um poema sobre escrever poemas. Função poética: foco na forma da mensagem, com ritmo, rima e jogos de palavras.',
       ],
+      imagem: {src: "./conteudo/praticas/img/ap-kolynos-1942.jpg",alt: "Anúncio colorido em fundo azul: um bebê sentado numa toalha dá pasta de dente a uma boneca. No alto: É bom para você, tambem! Embaixo: Nunca é cedo... nem tarde demais para começar a escovar seus dentes com Kolynos.",legenda: "Anúncio de 1942. “É bom para você” e “seus dentes” falam direto com o leitor: é a função conativa. Repare também na grafia “tambem”, sem o acento que a palavra tem hoje.",credito: "Kolynos, anúncio na contracapa da revista Careta n. 1749, 1942. Domínio público. Wikimedia Commons."},
       tabela: {
-        cabecalho: ['Função', 'Foco', 'Marcas', 'Exemplo (criado pela equipe)'],
+        cabecalho: ['Função (foco)', 'Marcas', 'Exemplo'],
         linhas: [
-          ['emotiva', 'emissor', 'primeira pessoa, exclamações, adjetivos de sentimento', '“Eu fiquei tão aliviada com o resultado.”'],
-          ['conativa', 'receptor', 'imperativo, “você”, vocativo', '“Doe sangue. Você pode salvar vidas.”'],
-          ['referencial', 'referente (assunto)', 'terceira pessoa, dados, linguagem objetiva', '“A ponte será reaberta na quinta-feira.”'],
-          ['fática', 'canal', 'cumprimentos, perguntas de checagem', '“Oi, tá me ouvindo? Caiu a ligação?”'],
-          ['metalinguística', 'código', 'a língua explicando a língua', '“Saudade: s.f. lembrança triste de algo ausente.”'],
-          ['poética', 'mensagem', 'rima, ritmo, repetição, jogo de palavras', '“Quem lê viaja, quem viaja não se deixa.”'],
+          ['emotiva (emissor)', 'primeira pessoa, exclamações, adjetivos de sentimento', '“Eu fiquei tão aliviada com o resultado.”'],
+          ['conativa (receptor)', 'imperativo, “você”, vocativo', '“Doe sangue. Você pode salvar vidas.”'],
+          ['referencial (assunto)', 'terceira pessoa, dados, linguagem objetiva', '“A ponte será reaberta na quinta-feira.”'],
+          ['fática (canal)', 'cumprimentos, perguntas de checagem', '“Oi, tá me ouvindo? Caiu a ligação?”'],
+          ['metalinguística (código)', 'a língua explicando a língua', '“Saudade: s.f. sentimento causado pela falta de alguém ou de algo.”'],
+          ['poética (mensagem)', 'rima, ritmo, repetição, jogo de palavras', '“Quem lê, vê; quem vê, prevê.”'],
         ],
-        legenda: 'Tabela 2. As seis funções da linguagem, o elemento que cada uma destaca e as marcas que ajudam a reconhecê-las.',
+        legenda: 'Tabela 2. As seis funções da linguagem, o elemento que cada uma destaca e as marcas que ajudam a reconhecê-las. Exemplos criados pela equipe.',
       },
       exemplo: {
         enunciado: 'Um cartaz da prefeitura diz: “Vacine seu filho. A proteção dele depende de você.” Qual função da linguagem predomina?',
@@ -135,8 +136,8 @@ export const teoria = {
           resolucao: [
             'O poema usa a língua para falar da própria língua portuguesa. Há metalinguagem.',
             'O trabalho com a forma também é forte: versos medidos, metáfora (“flor do Lácio”) e antítese (“esplendor e sepultura”).',
-            'Num poema, a função poética está sempre presente. Quando o assunto é a própria língua ou o próprio fazer poético, a questão costuma destacar a função metalinguística.',
-            'Leia o comando: se ele pergunta como o texto trata o próprio código, a resposta é a metalinguística.',
+            'Num poema, a função poética está sempre presente.',
+            'Resposta: poética e metalinguística. Quando o poema fala da própria língua, como aqui, a questão costuma pedir a metalinguística.',
           ],
         },
       ],

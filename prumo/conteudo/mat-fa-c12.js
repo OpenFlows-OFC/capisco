@@ -69,7 +69,7 @@ const P_AB = [{ rotulo: '8 h', x: 4, y: 1, pos: 'd' }, { rotulo: '9 h', x: 3, y:
   { rotulo: '10 h', x: 1.5, y: 4, pos: 'c' }, { rotulo: '11 h', x: 4.5, y: 3.5, pos: 'b' }];
 const ALT_AB = altPontos(P_AB, G_AB, { diagonal: true });
 
-const TABELA_TAXI = '<table class="tabela-equipe"><caption>Táxi com bandeirada de R$ 6 e R$ 3 por km</caption>'
+const TABELA_TAXI = '<table class="tabela-equipe"><caption>Tabela 1. Cada km a mais soma R$&nbsp;3. Em 0&nbsp;km, o preço é só a bandeirada de R$&nbsp;6.</caption>'
   + '<thead><tr><th scope="col">Distância (km)</th><th scope="col">Conta</th><th scope="col">Preço (R$)</th></tr></thead><tbody>'
   + [0, 1, 2, 3, 4].map(x => `<tr><td>${x}</td><td>3 × ${x} + 6</td><td>${3 * x + 6}</td></tr>`).join('')
   + '</tbody></table>';
@@ -88,7 +88,7 @@ const P1 = {
     ] },
     { id: 'mat-fa.p1.b2', paragrafos: [
       p('mat-fa.p1.b2.s3', 3, 'Veja a mesma corrida em números: 0 km custa R$ 6 (você entrou e desistiu); 1 km, R$ 9; 2 km, R$ 12; 3 km, R$ 15; 4 km, R$ 18. Cada quilômetro soma sempre os mesmos R$ 3. Isso dá um jeito rápido de conferir uma fórmula: em x = 0, ela tem de dar só a parte fixa; em x = 1, a parte fixa mais uma unidade.',
-        { tipo: 'tabela', html: TABELA_TAXI, legenda: 'Táxi com bandeirada de R$ 6 e R$ 3 por km, de 0 a 4 km.' }),
+        { tipo: 'tabela', html: TABELA_TAXI, legenda: 'Tabela 1. Cada km a mais soma R$ 3. Em 0 km, o preço é só a bandeirada de R$ 6.' }),
     ] },
   ],
 };
@@ -149,7 +149,7 @@ const P4 = {
   blocos: [
     { id: 'mat-fa.p4.b1', paragrafos: [
       p('mat-fa.p4.b1.s1', 1, 'Muitos gráficos trazem uma <strong>linha de referência</strong>: um limite, uma meta, um valor que importa. Pense numa linha tracejada em 25 °C num gráfico de temperatura. Onde a curva está acima da linha, fez mais de 25 °C; abaixo, menos. Os instantes em que a curva cruza a linha são as fronteiras. Anote cada um.'),
-      p('mat-fa.p4.b1.s2', 2, 'Para saber por quanto tempo a curva ficou acima da linha, separe os trechos. Cada trecho começa quando a curva cruza a linha subindo e termina quando cruza descendo. Faça fim − começo em cada um e <strong>some todos</strong>. Se um dia ficou acima de 25 °C das 10 h às 15 h e das 19 h às 21 h, foram 5 + 2 = 7 horas. A pergunta pede horas: não pare no maior trecho, nem conte quantos trechos são.',
+      p('mat-fa.p4.b1.s2', 2, 'Para saber por quanto tempo a curva ficou acima da linha, separe os trechos. Cada trecho começa quando a curva cruza a linha subindo e termina quando cruza descendo. Se a curva já começa acima da linha, o trecho começa no início do gráfico; se termina acima, vai até o fim. Faça fim − começo em cada um e <strong>some todos</strong>. Se um dia ficou acima de 25 °C das 10 h às 15 h e das 19 h às 21 h, foram 5 + 2 = 7 horas. A pergunta pede horas: não pare no maior trecho, nem conte quantos trechos são.',
         { tipo: 'svg', html: `<figure class="grafico-equipe">${svgLinha(S_TEMP, G_TEMP, { ref: 25, alt: ALT_TEMP, sombrear: [[10, 15], [19, 21]] })}</figure>`,
           src: 'conteudo/img/mat-fa-p4-s2.svg', alt: ALT_TEMP, altFonte: 'equipe',
           legenda: 'Acima de 25 °C das 10 h às 15 h e das 19 h às 21 h (faixas destacadas): 5 + 2 = 7 horas.' }),

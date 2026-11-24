@@ -2,7 +2,7 @@
 // imagens com crédito e fontes. Confere o conteúdo real e o filtro do núcleo contra dados malformados.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
 import * as R from '../../js/nucleo/relogio.js';
@@ -51,18 +51,24 @@ test('toda apostila tem termos, um "Confira" válido em cada seção e fontes', 
   }
 });
 
-test('imagens das apostilas: arquivo existe, tem descrição e crédito com licença', () => {
+test('imagens das apostilas: arquivo existe e é leve, tem descrição, legenda e crédito com licença', () => {
   const n = novo(LISTA);
   let total = 0;
   for (const { id } of COM_TEORIA) {
-    for (const sc of n.teoria(id).secoes.filter(s => s.imagem)) {
+    const comImagem = n.teoria(id).secoes.filter(s => s.imagem);
+    // Linguagens: pelo menos 2 imagens por apostila; Matemática: pelo menos 1 além das figuras desenhadas
+    assert.ok(comImagem.length >= (id.startsWith('lc-') ? 2 : 1), `${id}: imagens suficientes`);
+    for (const sc of comImagem) {
       total++;
-      assert.ok(existsSync(path.resolve(raiz, sc.imagem.src)), `${id}: ${sc.imagem.src} existe`);
+      const arq = path.resolve(raiz, sc.imagem.src);
+      assert.ok(existsSync(arq), `${id}: ${sc.imagem.src} existe`);
+      assert.ok(statSync(arq).size < 300_000, `${id}: ${sc.imagem.src} tem menos de 300 KB`);
       assert.ok(sc.imagem.alt.length > 20, `${id}: descrição da imagem`);
+      assert.ok(sc.imagem.legenda && sc.imagem.legenda.length > 20, `${id}: legenda diz o que observar`);
       assert.match(sc.imagem.credito, /(Domínio público|CC0|CC BY)/, `${id}: licença no crédito`);
     }
   }
-  assert.ok(total >= 5, 'pelo menos 5 imagens reais nas apostilas');
+  assert.ok(total >= 12, 'pelo menos 12 imagens reais nas apostilas');
 });
 
 test('o núcleo descarta "Confira", termos e imagem malformados (sem derrubar a apostila)', async () => {

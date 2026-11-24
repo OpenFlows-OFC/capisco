@@ -279,6 +279,7 @@ details > summary::-webkit-details-marker { display: none; }
 .nota-acao { margin: -4px 0 0; color: var(--grafite-2); font-size: 14px; line-height: 20px; }
 .estado-texto { margin-top: var(--space-2); }
 .previa .proxima { margin: 0 0 4px; }
+.proxima-rotulo { display: block; }
 .previa p { margin: 0 0 4px; }
 .bloco-prova { margin-top: var(--space-8); padding-top: var(--space-4); border-top: 1px solid var(--pauta); }
 .bloco-prova p { margin: 0; }
@@ -467,14 +468,22 @@ figure { margin: 12px 0 16px; }
 .ja-sei { margin: -8px 0 8px; }
 .pagina-titulo { font: 700 24px/30px var(--font-display); letter-spacing: -.01em; margin: 0 0 var(--space-4); }
 .missao-leitura .pr-recado { margin-bottom: var(--space-4); }
-.pagina {
-  position: relative; padding-left: var(--margem); border-radius: var(--radius-papel);
-  background-image: linear-gradient(to bottom, transparent calc(var(--pauta-passo) - 1px), var(--pauta) calc(var(--pauta-passo) - 1px));
-  background-size: 100% var(--pauta-passo); background-position: 0 -7px;
+/* Pauta por parágrafo (caderno e apostila). Cada parágrafo de texto corrido desenha a própria pauta,
+   presa ao próprio topo e no passo do próprio line-height: toda linha escrita senta numa linha da pauta,
+   em qualquer largura, fonte ou zoom, e nada acima dela pode deslocar a grade. Figura, tabela, legenda,
+   título e quadro ficam em papel liso. A linha fica logo abaixo da base das letras (.39em abaixo do meio). */
+.pautado {
+  --linha: var(--pauta-passo);
+  line-height: var(--linha);
+  background-image: linear-gradient(to bottom, transparent calc(var(--linha) - 1px), var(--pauta) calc(var(--linha) - 1px));
+  background-size: 100% var(--linha); background-repeat: repeat;
+  background-position: 0 calc(.39em + 1px - var(--linha) / 2);
 }
-.pagina::before { content: ""; position: absolute; top: 0; bottom: 0; left: calc(var(--margem) - 10px); border-left: 1.5px solid var(--margem-caderno); }
+.pautado sub, .pautado sup { line-height: 0; }   /* índice não estica a linha */
+.pagina { position: relative; padding-left: var(--margem); border-radius: var(--radius-papel); }
+/* a margem rosa passa por cima da pauta, como no caderno de papel */
+.pagina::before { content: ""; position: absolute; z-index: 1; top: 0; bottom: 0; left: calc(var(--margem) - 10px); border-left: 1.5px solid var(--margem-caderno); pointer-events: none; }
 .par { position: relative; scroll-margin-top: 24px; }
-.par + .par { margin-top: var(--pauta-passo); }   /* entre parágrafos, uma linha inteira da pauta */
 .par-n {
   position: absolute; left: calc(var(--margem) * -1); top: 0; width: calc(var(--margem) - 16px); text-align: right;
   font: 500 13px/30px var(--font-numeros); color: var(--grafite-2);
@@ -482,8 +491,14 @@ figure { margin: 12px 0 16px; }
 .par.ancora .par-n { color: var(--tinta); }
 .par-texto { font-size: 18px; line-height: var(--pauta-passo); max-width: 35rem; }   /* cerca de 62 caracteres por linha */
 .par-texto p { margin: 0; }
-.par-texto figure { margin: var(--pauta-passo) 0; background: var(--papel); }
-.par-texto .tabela-equipe { background: var(--papel); }
+/* a pauta atravessa a coluna do §, como a folha inteira de um caderno; o padding de baixo é uma linha
+   pautada em branco até o próximo §, então a pauta continua de um parágrafo para o outro */
+.par-texto > p.pautado { margin-left: calc(var(--margem) * -1); padding-left: var(--margem); }
+.par-texto > p.pautado:last-child { padding-bottom: var(--pauta-passo); }
+.par-texto figure, .par-texto .tabela-equipe { margin: var(--pauta-passo) 0; }
+.par-texto figure:has(+ .legenda) { margin-bottom: 0; }
+.par-texto .legenda { margin: 8px 0 var(--pauta-passo); }
+.par:has(> .par-texto > .pautado:last-child) .fio-prumo { bottom: calc(var(--pauta-passo) - 6px); }
 /* fio de prumo: o "você está aqui" da marca, um por página */
 .fio-prumo { position: absolute; left: calc(var(--margem) * -1 + 6px); top: 4px; bottom: -6px; width: 8px; pointer-events: none; }
 .fio-prumo::before { content: ""; position: absolute; left: 3px; top: 26px; bottom: 10px; border-left: 1.5px solid var(--tinta); }
@@ -496,7 +511,6 @@ figure { margin: 12px 0 16px; }
 .marca-texto * { color: inherit; }
 .par-notas { margin-top: 0; }
 .nota-margem { font-size: 15px; line-height: var(--pauta-passo); color: var(--grafite-2); margin: 0; font-style: italic; }
-.nota-dia { font-style: normal; }
 @media (min-width: 1100px) {
   /* a margem das notas só existe quando há nota; sem nota, o texto usa a coluna inteira (cerca de 60 caracteres) */
   main.missao-leitura:has(.par-notas) { max-width: calc(var(--coluna) + 240px); }
@@ -505,6 +519,7 @@ figure { margin: 12px 0 16px; }
   .folha .par:has(.par-notas) { display: block; }
 }
 .pe { text-align: center; color: var(--grafite-2); font: 500 13px/16px var(--font-numeros); margin: 28px 0 0; padding-top: 12px; border-top: 1px solid var(--pauta); }
+.pe + .pequeno { text-align: center; margin-top: 4px; }   /* crédito da página, centrado sob o número */
 .nota-pagina { margin-top: 28px; }
 .nota-pagina label { display: block; font-weight: 600; margin-bottom: 8px; }
 .campo {
@@ -558,6 +573,7 @@ figure { margin: 12px 0 16px; }
 .porque summary { min-height: var(--alvo); display: inline-flex; }
 .fecho { color: var(--grafite); }
 .fechar { margin-top: var(--space-2); }
+.colofao > .continuar-livre + .links { margin-top: -16px; }   /* o link fica colado à frase dele, numa linha própria */
 
 /* Visto: carimbo roxo com falhas de tinta, a única recompensa, sempre a mesma */
 .pr-visto-lugar { padding: 8px 0 4px 6px; }
@@ -583,11 +599,11 @@ figure { margin: 12px 0 16px; }
 .sem-faixa .pu { padding-top: calc(var(--space-4) + var(--seguro-topo)); }
 .pu .linha-topo { justify-content: flex-start; }
 .descritor { font: 600 15px/20px var(--font-texto); color: var(--grafite-2); }
-.pu-links { margin: 4px 0 12px; display: flex; flex-direction: column; align-items: flex-start; }
-.pu-passo { margin-top: 20px; }
-.pergunta-pu { font: 700 24px/30px var(--font-display); margin: 4px 0 12px; }
-.secao-pu { margin-top: 28px; }
-.secao-pu + .secao-pu { padding-top: 24px; border-top: 1px solid var(--pauta); }
+.pu-passo { margin-top: var(--space-4); }
+.pu-titulo { margin: 0; font-size: 28px; line-height: 34px; }
+.pergunta-pu { display: block; font: 700 20px/26px var(--font-display); letter-spacing: -.01em; margin: 0 0 12px; }
+.secao-pu { margin-top: var(--space-6); }
+.secao-pu + .secao-pu { padding-top: 20px; border-top: 1px solid var(--pauta); }
 .escolhas { list-style: none; margin: 0; padding: 0; }
 .escolhas > li { border-top: 1px solid var(--pauta); }
 .escolhas > li:last-child { border-bottom: 1px solid var(--pauta); }
@@ -602,7 +618,9 @@ figure { margin: 12px 0 16px; }
 .escolha input[type="checkbox"]:checked + .marcador::after { content: ""; width: 6px; height: 11px; margin-top: -2px; border: solid var(--on-tinta); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
 .escolha input:disabled + .marcador { border-style: dashed; border-color: var(--pauta-forte); }
 .escolha:has(input:disabled) { cursor: default; color: var(--grafite-2); }
-.aviso-escolha { margin: 0 0 8px 42px; color: var(--grafite-2); font-size: 14px; line-height: 20px; }
+.aviso-escolha { margin: 0 0 12px 42px; color: var(--grafite-2); font-size: 14px; line-height: 20px; }
+.aviso-escolha p { margin: 0; }
+.aviso-escolha p + p { margin-top: 4px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .chip { position: relative; }
 .chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -618,9 +636,17 @@ figure { margin: 12px 0 16px; }
 .chips-dias .chip span { display: flex; width: 100%; min-width: 0; padding: 0 2px; }
 .campo-data { max-width: 220px; }
 .ajuda-campo { color: var(--grafite-2); font-size: 14px; line-height: 20px; margin: 6px 0 0; }
-.alarme-texto { font: 600 20px/28px var(--font-texto); padding: 16px 0; border-top: 1px solid var(--pauta); border-bottom: 1px solid var(--pauta); margin: 16px 0; }
-.acoes-pu { margin-top: 28px; display: flex; flex-direction: column; gap: 8px; }
+.pu-data { margin-top: 16px; }
+.pu-campo-rotulo { display: block; font-weight: 600; margin-bottom: 8px; }
+.pu-padrao { margin: 0; }
+.pu-mudar { margin-top: 4px; }
+.pu-grupo { border: 0; margin: 12px 0 0; padding: 0; min-width: 0; }
+.pu-grupo legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
+.acoes-pu { margin-top: var(--space-6); display: flex; flex-direction: column; gap: 8px; }
 .acoes-pu .botao, .acoes-pu .botao-sec { width: 100%; }
+.pu-rodape { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 1px solid var(--pauta); }
+.pu-rodape p { margin: 0; }
+.pu-dados { padding-top: 12px; color: var(--grafite-2); }
 .erro-campo { color: var(--grafite); font-weight: 600; font-size: 14px; margin: 8px 0 0; }
 
 /* ---------------- zoom de imagem (tela cheia) ----------------
@@ -670,10 +696,11 @@ figure { margin: 12px 0 16px; }
   body { background: #fff; color: #000; }
 }
 
-/* ---------------- Apostila do tópico: material impresso, não o caderno ----------------
-   Três superfícies, três papéis: o caderno pautado é do aluno; a prova é o caderno do Enem;
-   a apostila é folha branca impressa, com capa, sumário, exemplos e quadros. Sem sombra:
-   o contorno é o fio de 1 px; rótulos em caixa normal e negrito, como .rotulo. */
+/* ---------------- Apostila do tópico: a mesma folha pautada do caderno, com capa e quadros ----------------
+   O corpo segue o caderno: margem rosa à esquerda, número da seção na margem (no lugar do §) e pauta
+   por parágrafo (.pautado). Capa, sumário, exemplos, quadros, figuras e tabelas ficam em papel liso.
+   Sem sombra: o contorno é o fio de 1 px; rótulos em caixa normal e negrito, como .rotulo. */
+.pr-recado + .apostila { margin-top: var(--space-4); }   /* leitura livre: a mesma folga da missão entre o recado e a capa */
 .apostila { margin: 0 0 var(--space-4); background: var(--ficha); border: 1px solid var(--pauta-forte); border-radius: var(--radius-ficha); overflow: clip; }
 .apostila .cabeco { display: none; }
 .apostila-capa { background: var(--apostila-capa-fundo); color: var(--apostila-capa-texto); border-bottom: 3px solid var(--apostila-capa-fio); padding: 14px 16px 12px; }
@@ -711,23 +738,46 @@ figure { margin: 12px 0 16px; }
 }
 @media (min-width: 720px) { .sumario-abrir { display: none; } .apostila-sumario { padding-top: 14px; } }
 
-.apostila-corpo { padding: 16px 16px 20px; font-size: 18px; line-height: 1.6; }
+/* --mg: largura da margem (número da seção, fio rosa a 10 px do texto); maior que a do caderno porque o número é uma caixa */
+.apostila-corpo { --mg: 48px; position: relative; padding: 16px 16px 20px var(--mg); font-size: 18px; line-height: 1.6; }
+.apostila-corpo::before { content: ""; position: absolute; z-index: 1; top: 0; bottom: 0; left: calc(var(--mg) - 10px); border-left: 1.5px solid var(--margem-caderno); pointer-events: none; }
 .apostila-corpo p { margin: 0 0 12px; max-width: 64ch; }
-.apostila-abre { padding-bottom: 14px; border-bottom: 1px solid var(--pauta); }
+/* texto corrido: pauta da borda da folha até o fim da coluna, atravessando a margem; entre dois
+   parágrafos seguidos, uma linha pautada em branco (o padding de cima do segundo) */
+.apostila-corpo p.pautado { margin: 0 0 0 calc(var(--mg) * -1); padding-left: var(--mg); max-width: calc(64ch + var(--mg)); }
+.apostila-corpo p.pautado + p.pautado { padding-top: var(--linha); }
 .teoria-secao + .teoria-secao { margin-top: 8px; }
 .teoria-sub { display: flex; align-items: flex-start; gap: 10px; margin: 24px 0 10px; font: 700 21px/28px var(--font-display); color: var(--grafite); }
+/* número da seção na margem, alinhado ao título como o § ao parágrafo */
+.apostila-corpo .teoria-sub { display: grid; grid-template-columns: calc(var(--mg) - 16px) minmax(0, 1fr); column-gap: 16px; margin-left: calc(var(--mg) * -1); }
+.apostila-corpo .teoria-n { justify-self: end; }
 .teoria-n { flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-caixa); background: var(--tinta); color: var(--on-tinta); font: 500 15px/1 var(--font-numeros); }
 .teoria-figura { margin: 16px 0; color: var(--grafite); }
 .teoria-figura svg { display: block; width: 100%; height: auto; max-height: 340px; }
 .teoria-figura figcaption { font-size: 14px; line-height: 20px; color: var(--grafite-2); margin-top: 8px; }
 .teoria-tabela-rolagem { margin: 16px 0; overflow-x: auto; border: 1px solid var(--pauta); border-radius: var(--radius-caixa); }
-.teoria-tabela { border-collapse: collapse; font-size: 16px; line-height: 23px; min-width: 100%; }
+.teoria-tabela { border-collapse: collapse; font-size: 16px; line-height: 23px; width: 100%; }
 .teoria-tabela caption { text-align: left; font-size: 14px; line-height: 20px; color: var(--grafite-2); caption-side: bottom; padding: 8px 10px; }
 .teoria-tabela th, .teoria-tabela td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--pauta); vertical-align: top; }
 .teoria-tabela th { font-weight: 600; background: color-mix(in srgb, var(--tinta) 9%, var(--ficha)); border-bottom: 1.5px solid var(--pauta-forte); }
+/* no celular: tabela de números mais justa; tabela de texto (.fichas) vira uma ficha por linha,
+   com o nome da coluna (data-rotulo) antes de cada valor e a legenda no fim, como nas outras */
+@media (max-width: 559.98px) {
+  .teoria-tabela { font-size: 15px; line-height: 22px; }
+  .teoria-tabela th, .teoria-tabela td { padding: 7px 8px; -webkit-hyphens: auto; hyphens: auto; }
+  .teoria-tabela.fichas { display: flex; flex-direction: column; }
+  .teoria-tabela.fichas thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .teoria-tabela.fichas caption { order: 2; }
+  .teoria-tabela.fichas tbody, .teoria-tabela.fichas tr, .teoria-tabela.fichas td { display: block; }
+  .teoria-tabela.fichas tr { padding: 10px 12px; border-bottom: 1px solid var(--pauta); }
+  .teoria-tabela.fichas td { padding: 0; border: 0; -webkit-hyphens: manual; hyphens: manual; }
+  .teoria-tabela.fichas td:first-child { font-weight: 600; color: var(--grafite); }
+  .teoria-tabela.fichas td + td { margin-top: 6px; }
+  .teoria-tabela.fichas td + td::before { content: attr(data-rotulo); display: block; font-size: 13px; line-height: 18px; font-weight: 600; color: var(--grafite-2); }
+}
 .grifo { background: linear-gradient(to bottom, transparent 14%, var(--marca-texto) 14%, var(--marca-texto) 90%, transparent 90%); color: var(--on-marca-texto); padding: 0 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-/* exemplo resolvido: no celular, uma faixa de papel de trás de borda a borda (sem caixa dentro de caixa) */
-.exemplo { margin: 16px -16px; padding: 12px 16px; background: var(--papel-2); border-top: 1px solid var(--pauta); border-bottom: 1px solid var(--pauta); font-size: 17px; line-height: 1.55; }
+/* exemplo resolvido: no celular, uma faixa de papel na largura da coluna do texto, alinhada às tabelas e aos quadros (sem caixa dentro de caixa; a margem rosa fica livre) */
+.exemplo { margin: 16px 0; padding: 12px 16px; background: var(--papel-2); border-top: 1px solid var(--pauta); border-bottom: 1px solid var(--pauta); font-size: 17px; line-height: 1.55; }
 .apostila-corpo .exemplo p { margin: 0; }
 .exemplo-rotulo { margin: 0 0 6px !important; font: 700 15px/20px var(--font-texto); color: var(--tinta); }
 .exemplo-res { margin: 10px 0 2px !important; font: 700 15px/20px var(--font-texto); color: var(--grafite-2); }
@@ -741,7 +791,8 @@ figure { margin: 12px 0 16px; }
 .quadro-enem .grifo { background: linear-gradient(to bottom, transparent 14%, var(--quadro-enem-grifo) 14%, var(--quadro-enem-grifo) 90%, transparent 90%); }
 .quadro-cuidado { margin-top: 24px; background: var(--papel); border: 1px solid var(--pauta-forte); }
 .quadro-resumo { border: 1.5px solid var(--tinta); background: var(--papel); }
-.teoria .rodape-licenca { margin: 0; padding: 0 16px 16px; }
+.teoria .rodape-licenca { margin: 12px 0 0; padding: 0 16px 16px; }
+.teoria .rodape-licenca + .rodape-licenca { margin-top: 0; }
 .apostila .teoria-rodape { margin: 0; padding: 12px 16px 0; border-top: 1px solid var(--pauta); }
 
 /* Trilha do tópico: Aquecer → Apostila → Questões → Visto (ou Registro, no estudo por conta própria).
@@ -812,13 +863,15 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
 
 /* ---------------- Onboarding (3 telas antes do primeiro uso) ---------------- */
 .onb { display: grid; gap: var(--space-4); padding-top: var(--space-6); }
-.onb-titulo { font: 800 30px/36px var(--font-display); margin: 0; letter-spacing: -.01em; }
+.onb-cabeca { display: grid; gap: 8px; margin-bottom: var(--space-4); }
+.onb-trilha { margin: 0; }
+.onb-titulo { font: 800 30px/36px var(--font-display); margin: 0; letter-spacing: -.01em; text-wrap: balance; }
 .onb-texto { font-size: 18px; line-height: 28px; margin: 0; }
-.onb-pontos { display: flex; gap: 8px; }
-.onb-pontos span { width: 24px; height: 4px; border-radius: 2px; background: var(--pauta); }
-.onb-pontos span.atual { background: var(--tinta); }
+/* a frase da última tela: fonte de título, em tinta, separada por um fio */
+.onb-frase { font: 800 24px/30px var(--font-display); letter-spacing: -.01em; color: var(--tinta); margin: var(--space-2) 0 0; padding-top: var(--space-4); border-top: 1px solid var(--pauta); }
 .onb-acoes { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: var(--space-6); }
-.pu-frase { font-size: 18px; line-height: 28px; margin: var(--space-2) 0 var(--space-4); }
+.onb-exemplo { margin: 0; }
+.pu-frase { font-size: 18px; line-height: 28px; margin: var(--space-2) 0 var(--space-6); text-wrap: pretty; }
 .teoria-rodape { margin-top: var(--space-6); } .teoria-rodape a { color: var(--tinta); }
 
 /* ---------------- Hoje: "Hoje vence" e meta da semana ---------------- */
@@ -859,7 +912,7 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
   .apostila-capa { padding: 24px 32px 22px; }
   .apostila .apostila-titulo { font-size: 34px; line-height: 40px; }
   .apostila-sumario { padding: 18px 32px 14px; }
-  .apostila-corpo { padding: 24px 32px 28px; }
+  .apostila-corpo { padding: 24px 32px 28px var(--mg); }
   .apostila .teoria-rodape { padding: 14px 32px 0; }
   .teoria .rodape-licenca { padding: 0 32px 20px; }
   .exemplo { margin: 16px 0; padding: 12px 14px; background: var(--papel); border: 1px solid var(--pauta-forte); border-radius: var(--radius-caixa); }
@@ -882,8 +935,9 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
   .apostila-larga .apostila-titulo { font-size: 44px; line-height: 50px; }
   .apostila-larga > .apostila-sumario { grid-column: 1; grid-row: 2 / span 4; align-self: start; position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow: auto; border-bottom: 0; padding: 24px 20px 24px 28px; }
   .apostila-larga .sumario-item { font-size: 15px; line-height: 21px; }
-  .apostila-larga .apostila-corpo { padding: 32px 56px 40px; border-left: 1px solid var(--pauta); font-size: 19px; line-height: 1.65; }
+  .apostila-larga .apostila-corpo { --mg: 56px; padding: 32px 56px 40px var(--mg); border-left: 1px solid var(--pauta); font-size: 19px; line-height: 1.65; }
   .apostila-larga .apostila-corpo p { max-width: 68ch; }
+  .apostila-larga .apostila-corpo p.pautado { --linha: 32px; max-width: calc(68ch + var(--mg)); }
   .apostila-larga .teoria-secao { display: flow-root; }
   .apostila-larga .teoria-sub { font-size: 25px; line-height: 32px; margin-top: 36px; }
   .apostila-larga .teoria-n { width: 34px; height: 34px; font-size: 17px; }
@@ -895,7 +949,8 @@ a.topico-linha:hover .topico-titulo { text-decoration: underline; text-decoratio
   .apostila-larga .exemplo .exemplo-res { grid-column: 2; grid-row: 2; margin-top: 0 !important; }
   .apostila-larga .exemplo .exemplo-passos { grid-column: 2; grid-row: 3; }
   .apostila-larga .teoria-rodape { padding: 16px 56px 0; border-left: 1px solid var(--pauta); }
-  .apostila-larga .rodape-licenca { padding: 8px 56px 24px; border-left: 1px solid var(--pauta); }
+  .apostila-larga .rodape-licenca { margin: 0; padding: 20px 56px 24px; border-left: 1px solid var(--pauta); }
+  .apostila-larga .rodape-licenca + .rodape-licenca { padding-top: 0; }
 }
 
 /* ---------------- Bilhete: aviso passageiro ("Cópia salva", "Plano guardado") ----------------
@@ -968,7 +1023,7 @@ body.modo-missao .bilhete { bottom: calc(16px + var(--seguro-baixo)); }
 .termos dt { font-weight: 700; }
 .termos dd { margin: 2px 0 0; color: var(--grafite-2); }
 .teoria-imagem { margin: var(--space-4) 0; }
-.teoria-imagem img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: contain; background: var(--papel-2); border: 1px solid var(--pauta); border-radius: var(--radius-caixa); }
+.teoria-imagem img { display: block; width: auto; max-width: 100%; margin-inline: auto; height: auto; max-height: 420px; object-fit: contain; background: var(--papel-2); border: 1px solid var(--pauta); border-radius: var(--radius-caixa); }
 .teoria-imagem figcaption { display: grid; gap: 2px; margin-top: var(--space-2); font: 400 14px/20px var(--font-texto); color: var(--grafite-2); }
 .credito-imagem { font-size: 12px; line-height: 16px; }
 .confira { margin: var(--space-6) 0 var(--space-2); padding: var(--space-4); border: 1px dashed var(--pauta-forte); border-radius: var(--radius-ficha); }
@@ -983,3 +1038,6 @@ body.modo-missao .bilhete { bottom: calc(16px + var(--seguro-baixo)); }
 .confira-op.errada { text-decoration: line-through; color: var(--grafite-2); }
 .confira-resposta:empty { display: none; }
 .confira-resposta { margin: var(--space-3) 0 0; }
+
+/* Perfil: no Enem (data ainda não saiu) e em "Ainda não sei", sem campo de data, como no cadastro */
+form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data { display: none; }

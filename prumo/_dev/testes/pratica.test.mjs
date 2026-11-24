@@ -63,7 +63,7 @@ for (const pk of await packs()) {
     assert.equal(mt.materias[0].topicos[0].estadoTexto, 'Ainda não começou.');
     const cn = v.areas.find(a => a.id === 'CN');
     assert.equal(cn.disponivel, false);
-    assert.match(cn.frase, /chega nas próximas versões\.$/);
+    assert.equal(cn.frase, 'Biologia, Física e Química chegam nas próximas versões.');
     for (const a of v.areas) for (const mt2 of a.materias) for (const t of mt2.topicos) assert.ok(!/·/.test(t.estadoTexto));
   });
 

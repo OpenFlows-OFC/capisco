@@ -282,7 +282,7 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
       abrirFolha('encerrar');
       return;
     }
-    if (nome === 'primeiroUso') { if (ui.pu) ui.pu.passo = (e.state && e.state.pu) || 0; render(); return; }
+    if (nome === 'primeiroUso') { if (ui.pu) ui.pu.onb = (e.state && e.state.pu) || 0; render(); return; }
     ui.aviso = null;   // navegou: o aviso passageiro fica para trás
     render();
   });

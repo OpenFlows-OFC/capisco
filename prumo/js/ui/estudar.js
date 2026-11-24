@@ -1,7 +1,8 @@
 /* =========================================================
    PRUMO · Estudar: o mapa do que estudar (área → matéria → tópico),
    a página do tópico e a teoria em leitura livre.
-   Rotas: #/estudar · #/estudar/<id do tópico> · #/estudar/<id>/teoria
+   Rotas: #/estudar · #/estudar/<id do tópico> · #/estudar/<id>/teoria[/<seção>][/de-erros]
+   ("/de-erros": aberta do Caderno de erros, a apostila volta para lá)
    Tudo vem pronto do núcleo (estudar(), topicoPagina(id), teoriaLivre(id)).
    "Estudar este tópico hoje" manda ESTUDAR_TOPICO (ou CONTINUAR) à máquina.
    ========================================================= */
@@ -48,7 +49,12 @@ function botaoAcao(a) {
 function curto(itens) {
   return itens ? itens.map(x => ({ ...x, texto: x.texto.replace(/\s*Se não der mais[^.]*\./u, '') })) : undefined;
 }
-function paginaTopico(p) {
+/** Capítulo do caderno na página do tópico: abre a 1ª página dele no Caderno (leitura livre). */
+function linhaCapitulo(c, pag) {
+  const corpo = h`<span class="topico-titulo">Cap. ${c.n}: ${c.titulo}</span>${nivel({ cheios: c.nivel.cheios, nome: c.nivel.rotulo })}`;
+  return pag ? h`<li><a class="topico-linha" href="#/caderno/pagina/${pag}">${corpo}</a></li>` : h`<li class="topico-linha">${corpo}</li>`;
+}
+function paginaTopico(p, n) {
   if (!p) return h`<p>Tópico não encontrado.</p><p><a class="link" href="#/estudar">Voltar ao mapa</a></p>`;
   return h`<p class="voltar-mapa"><a class="link" href="#/estudar">Voltar ao mapa</a></p>
     <p class="rotulo rotulo-area">${iconeArea(p.area)}${p.area}${p.materia && p.materia !== p.area ? h`, ${p.materia}` : ''}</p>
@@ -61,17 +67,22 @@ function paginaTopico(p) {
       ${p.comoFunciona === null ? '' : comoFunciona({ aberto: !jaViuComo(), itens: curto(p.comoFunciona) })}
       <section class="secao" aria-labelledby="pq-t"><h2 class="titulo-pequeno" id="pq-t">Por que cai no Enem</h2><p>${p.porQueCai}</p></section>
       ${p.ideias && p.ideias.length ? h`<section class="secao" aria-labelledby="id-t"><h2 class="titulo-pequeno" id="id-t">O essencial</h2><ul class="teoria-lista">${cada(p.ideias, x => h`<li>${x}</li>`)}</ul></section>` : ''}
-      ${p.capitulos ? h`<ul class="lista-topicos">${cada(p.capitulos, c => h`<li class="topico-linha"><span class="topico-titulo">Cap. ${c.n}: ${c.titulo}</span>${nivel({ cheios: c.nivel.cheios, nome: c.nivel.rotulo })}</li>`)}</ul>` : ''}
+      ${p.capitulos ? h`<ul class="lista-topicos">${cada(p.capitulos, (c, k) => linhaCapitulo(c, primeiraPagina(n, c, k)))}</ul>` : ''}
       <p class="secao">${p.leitura.aba ? h`<a class="link" href="#/${p.leitura.aba}">${p.leitura.rotulo}</a>` : h`<a class="link" href="#/estudar/${p.id}/teoria">${p.leitura.rotulo}</a>`}</p>`
     : h`<p>${p.estadoTexto}</p>`}`;
 }
 
-function teoriaLivre(v, id, ancora) {
+function primeiraPagina(n, c, k) {
+  try { const caps = n.sumario().capitulos; const s = caps.find(x => x.n === c.n) || caps[k]; return s && s.paginaIds && s.paginaIds[0]; } catch (e) { return null; }
+}
+
+function teoriaLivre(v, id, ancora, deErros) {
   if (!v) return h`<p>Apostila não encontrada.</p><p><a class="link" href="#/estudar">Voltar ao mapa</a></p>`;
-  return h`<p class="voltar-mapa"><a class="link" href="#/estudar/${id}">Voltar ao tópico</a></p>
+  const voltar = deErros ? h`<a class="link" href="#/caderno/erros">Voltar ao Caderno de erros</a>` : h`<a class="link" href="#/estudar/${id}">Voltar ao tópico</a>`;
+  return h`<p class="voltar-mapa">${voltar}</p>
     <p class="pr-recado" role="note">${v.aviso}</p>
     ${teoria(v, { ancora, grifar: !!ancora })}
-    <p style="margin-top:24px"><a class="link" href="#/estudar/${id}">Voltar ao tópico</a></p>`;
+    <p style="margin-top:24px">${voltar}</p>`;
 }
 
 /** Aba Estudar. rota.sub = id do tópico; rota.resto[0] = 'teoria'. */
@@ -79,8 +90,10 @@ export function telaEstudar(ctx, t, rota) {
   const n = ctx.nucleo, id = rota.sub;
   let corpo, titulo = 'Estudar', ancora = null;
   if (!id) corpo = mapa(n.estudar());
-  else if (rota.resto[0] === 'teoria') { const v = n.teoriaLivre(id); ancora = idDaAncora(rota.resto[1]); corpo = teoriaLivre(v, id, ancora); titulo = v ? `Apostila: ${v.titulo}` : titulo; }
-  else { const p = n.topicoPagina(id); corpo = paginaTopico(p); titulo = p ? p.titulo : titulo; }
+  else if (rota.resto[0] === 'teoria') {
+    const resto = rota.resto.filter(x => x !== 'de-erros'), v = n.teoriaLivre(id);
+    ancora = idDaAncora(resto[1]); corpo = teoriaLivre(v, id, ancora, resto.length < rota.resto.length); titulo = v ? `Apostila: ${v.titulo}` : titulo;
+  } else { const p = n.topicoPagina(id); corpo = paginaTopico(p, n); titulo = p ? p.titulo : titulo; }
   return {
     chave: `estudar:${id || ''}:${rota.resto.join('/')}`,
     titulo,

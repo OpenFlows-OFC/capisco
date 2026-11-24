@@ -28,6 +28,7 @@ export const teoria = {
         'Finalidade é o que o texto pretende fazer com o leitor: informar, convencer, orientar, divertir ou emocionar. Muitas questões do Enem perguntam exatamente isso, com palavras como “objetivo”, “intenção” ou “função social”.',
         'Uma boa estratégia é ler primeiro o comando da questão e depois o texto. Assim você sabe o que procurar durante a leitura.',
       ],
+      imagem: {src: "./conteudo/praticas/img/ap-eucalol-1935.jpg",alt: "Anúncio antigo em sépia. Um bebê sorridente ocupa quase toda a página; à esquerda há um texto em coluna, o preço e uma caixa de sabonete Eucalol. No alto: Ah! Já sei!... Diz o Bebê.",legenda: "Anúncio de 1935. O texto conta uma cena, a do bebê que reconhece a hora do banho, mas a finalidade é vender o sabonete: repare no preço da caixa e na marca em letras grandes.",credito: "Eucalol, anúncio em A Noite Ilustrada n. 282, 1935. Domínio público. Wikimedia Commons."},
       tabela: {
         cabecalho: ['Finalidade', 'Gêneros em que costuma aparecer', 'Pista no texto'],
         linhas: [
@@ -68,8 +69,8 @@ export const teoria = {
           enunciado: 'Leia: “Depois de três dias de chuva, Dona Lúcia finalmente estendeu a roupa no varal do quintal.” Qual das conclusões é uma inferência válida: (1) o tempo melhorou; (2) Dona Lúcia não tem máquina de secar; (3) o varal fica no quintal?',
           resolucao: [
             'A conclusão 3 é informação explícita: o texto diz “no varal do quintal”.',
-            'A conclusão 1 é inferência válida: a palavra “finalmente” e o fim da chuva indicam que ela esperava um tempo melhor para secar a roupa.',
-            'A conclusão 2 é extrapolação: o texto não diz nada sobre outros eletrodomésticos.',
+            'A conclusão 1 é inferência válida: “depois de três dias de chuva” e “finalmente” indicam que ela esperava o tempo firmar para pôr a roupa no varal.',
+            'A conclusão 2 é extrapolação: o texto não fala de máquina de secar.',
             'Resposta: a inferência válida é a 1.',
           ],
         },
@@ -95,25 +96,25 @@ export const teoria = {
       titulo: 'Gênero textual e tipo textual',
       paragrafos: [
         'Gênero textual é a forma concreta que o texto assume na vida social: notícia, crônica, receita, anúncio, carta, bula, charge, artigo de opinião, entre muitos outros. Cada gênero tem uma finalidade, um público, um suporte e uma estrutura típicos.',
-        'Tipo textual é o modo de organização da linguagem dentro do texto. Os principais são narração (conta fatos em sequência), descrição (caracteriza), dissertação (expõe ou argumenta) e injunção (orienta o leitor a fazer algo, com verbos no imperativo).',
+        'Tipo textual é o modo de organização da linguagem dentro do texto. Os principais são narração (conta fatos em sequência), descrição (caracteriza), dissertação (expõe ou argumenta) e injunção (orienta o leitor a fazer algo, com verbos no imperativo). Muitos livros dividem a dissertação em dois tipos: exposição e argumentação.',
         'Um mesmo gênero pode misturar tipos. Uma crônica pode narrar um fato do cotidiano e, no final, refletir sobre ele.',
       ],
       tabela: {
-        cabecalho: ['Tipo textual', 'O que faz', 'Marcas linguísticas', 'Gêneros em que predomina'],
+        cabecalho: ['Tipo textual', 'Marcas linguísticas', 'Gêneros em que predomina'],
         linhas: [
-          ['narrativo', 'conta fatos em sequência', 'verbos no pretérito, marcadores de tempo (“depois”, “naquela noite”), personagens', 'conto, crônica, notícia'],
-          ['descritivo', 'caracteriza seres, lugares e objetos', 'adjetivos, verbos de estado (ser, estar, parecer), enumerações', 'anúncio de imóvel, retrato, guia de viagem'],
-          ['dissertativo', 'expõe ou defende ideias', 'verbos no presente, conectivos (“portanto”, “porém”), dados e argumentos', 'artigo de opinião, editorial, verbete'],
-          ['injuntivo', 'orienta o leitor a agir', 'verbos no imperativo ou no infinitivo, passos numerados', 'receita, manual, aviso'],
+          ['narrativo', 'verbos no pretérito, marcadores de tempo (“depois”, “naquela noite”), personagens', 'conto, crônica, notícia'],
+          ['descritivo', 'adjetivos, verbos de estado (ser, estar, parecer), enumerações', 'anúncio de imóvel, retrato, guia de viagem'],
+          ['dissertativo', 'verbos no presente, conectivos (“portanto”, “porém”), dados e argumentos', 'artigo de opinião, editorial, verbete'],
+          ['injuntivo', 'verbos no imperativo ou no infinitivo, passos numerados', 'receita, manual, aviso'],
         ],
         legenda: 'Tabela 2. Os tipos textuais e as marcas que ajudam a reconhecê-los.',
       },
       exemplo: {
-        enunciado: 'No elevador de um prédio, está afixado: “Senhores moradores, a partir de segunda-feira a coleta de recicláveis será feita às terças e sextas. Separem o material limpo e seco.” Identifique o gênero, a finalidade e o tipo textual predominante.',
+        enunciado: 'No elevador de um prédio, está afixado: “Senhores moradores, a partir de segunda-feira a coleta de recicláveis será feita às terças e sextas. Separem o material limpo e seco. Não deixem sacos no corredor.” Identifique o gênero, a finalidade e o tipo textual predominante.',
         resolucao: [
           'Gênero: aviso, um texto curto, afixado em local de circulação, dirigido a um grupo definido.',
           'Finalidade: informar uma mudança e orientar o comportamento dos moradores.',
-          'Tipo predominante: injuntivo, marcado pelo verbo no imperativo “separem”, combinado com um trecho informativo.',
+          'Tipo predominante: injuntivo. Duas das três frases orientam o leitor, com verbos no imperativo (“separem”, “não deixem”); só a primeira informa.',
         ],
       },
       atencao: 'A prova mostra um texto de gênero pouco comum, como um relato, um anúncio de utilidade pública ou uma crônica, e pergunta qual traço o identifica: finalidade, estrutura ou marca linguística.',
@@ -143,7 +144,7 @@ export const teoria = {
       },
       atencao: 'As questões trazem dois textos lado a lado, ou uma charge que retoma um texto famoso, e perguntam o que eles têm em comum ou qual é o efeito do diálogo entre eles.',
       confira: {
-        pergunta: 'Um texto que imita outro muito conhecido para criticá-lo ou provocar humor é uma:',
+        pergunta: 'Um texto que retoma outro muito conhecido e muda o sentido dele, para criticar algo ou provocar humor, é uma:',
         opcoes: ['citação', 'paródia', 'descrição'],
         certa: 1,
         porque: 'A paródia retoma a forma de um texto conhecido e muda o sentido, em geral com crítica ou humor. A citação apenas reproduz o trecho.',

@@ -1,4 +1,5 @@
-// Roteiro de Estudar, no navegador: onboarding → primeiro uso (nome, matérias) → Hoje (saudação e
+// Roteiro de Estudar, no navegador: apresentação (3 telas, régua Pergunta · Leitura · Questões) → configuração
+// (uma tela: prova e nome; dias, minutos e matérias como padrão em texto) → Hoje (saudação e
 // "Seu próximo conteúdo") → aba Estudar (4 áreas, "em breve") → página do tópico → "Estudar este tópico
 // hoje" → pré-pergunta (sem acerto) → teoria (apostila) → a resposta da pré-pergunta → questões do Enem
 // (erro com "o que faltou" e "Rever a apostila") → fim → Pronto por hoje com o visto → o botão do tópico
@@ -15,26 +16,53 @@ async function roteiro(motor, tema) {
   const foto = async nome => { if (motor === 'chromium') { await pg.waitForTimeout(250); await pg.screenshot({ path: path.join(CAPS, `est-${nome}-${tema}.png`) }); } };
   try {
     await pg.goto(U.BASE); await U.pronto(pg);
-    // onboarding: 3 telas
-    confere(await tem('Uma missão de estudo por dia, com fim marcado'), 'onboarding 1');
+    // apresentação: 3 telas, um conceito por tela, régua .trilha (Pergunta · Leitura · Questões)
+    const atual = () => pg.$eval('.onb .trilha li[aria-current="step"]', li => li.innerText.trim());
+    confere(await tem('Como o Prumo ensina'), 'apresentação: rótulo "Como o Prumo ensina"');
+    confere(await tem('Primeiro, uma pergunta.') && await tem('você vai ler já procurando a resposta'), 'apresentação 1');
+    confere((await pg.$$('.onb .trilha li')).length === 3, 'apresentação: régua com 3 casas');
+    confere((await atual()).includes('Aquecer'), 'apresentação 1: casa atual "Aquecer"');
+    confere((await pg.textContent('.onb .so-leitor')).trim() === 'Tela 1 de 3', 'leitor de tela: "Tela 1 de 3"');
+    confere((await pg.$('[data-acao="puPular"]')) !== null && await tem('Ver com dados de exemplo'), 'apresentação 1: Pular e dados de exemplo');
+    confere(!(await tem('Como instalar no celular')), 'apresentação: "Como instalar no celular" fica na configuração');
+    confere(await pg.evaluate(() => document.activeElement && document.activeElement.id === 'onb-t'), 'apresentação: foco no título');
+    await foto('onboarding-1');
     await pg.click('[data-acao="puProximo"]');
-    confere(await tem('Errou? O app mostra o que faltou'), 'onboarding 2');
+    confere(await tem('Depois, a explicação.') && (await atual()).includes('Leitura'), 'apresentação 2');
+    confere((await pg.textContent('.onb .trilha li.feita')).includes('✓'), 'apresentação 2: etapa anterior com ✓');
+    confere((await pg.textContent('.onb .so-leitor')).trim() === 'Tela 2 de 3', 'leitor de tela: "Tela 2 de 3"');
+    await foto('onboarding-2');
     await pg.click('[data-acao="puProximo"]');
-    confere(await tem('Seus dias estudados só crescem'), 'onboarding 3');
+    confere(await tem('Por fim, questões do Enem.') && (await atual()).includes('Questões'), 'apresentação 3');
+    confere((await pg.textContent('.onb-frase')).replace(/ /g, ' ') === 'Você treina com o que já caiu no Enem.', 'apresentação 3: frase em destaque');
+    confere((await pg.$('[data-acao="puPular"]')) === null, 'apresentação 3: sem Pular');
+    confere(/Montar meu plano/.test(await pg.textContent('[data-acao="puProximo"]')), 'apresentação 3: "Montar meu plano"');
     await foto('onboarding');
     await pg.click('[data-acao="puProximo"]');
-    // primeiro uso: frase, nome, prova, matérias, dias
-    confere(await tem('Uma missão de estudo por dia, com fim marcado, a partir do seu caderno e de questões reais do Enem.'), 'frase do Prumo');
-    confere(await tem('Ciências da Natureza') && await tem('em breve'), 'matérias com "em breve"');
-    confere(await pg.$eval('input[name="areas"][value="CN"]', i => i.disabled), 'área sem conteúdo desabilitada');
+    // configuração: uma tela, duas perguntas, o resto como padrão em texto
+    confere(await tem('Vamos montar o seu plano') && await tem('Duas perguntas e a primeira missão fica pronta.'), 'configuração: título e frase');
+    confere(!(await tem('Passo 1 de 3')), 'configuração: sem "Passo 1 de 3"');
+    confere(await pg.$eval('input[name="provaTipo"][value="enem"]', i => i.checked), 'configuração: Enem já marcado');
+    confere((await pg.$('#pu-data')) === null, 'Enem: sem campo de data');
+    confere(!(await tem('Marque também')), 'dica do Enem não pede duas escolhas');
+    confere(/Para começar: seg, ter, qua,? (e )?qui.*, 25 min por dia, Matemática e Linguagens\./.test(await U.texto(pg)), 'padrões em texto');
+    confere(await pg.$eval('#pu-mudar', d => !d.open), '"Mudar dias e minutos agora" começa fechado');
+    confere((await pg.$('input[name="areas"]')) === null, 'configuração: matérias fora do formulário');
+    confere(await tem('Seus dados ficam só neste aparelho.') && await tem('Como instalar no celular'), 'dados e "Como instalar no celular"');
+    confere(await pg.evaluate(() => { const b = document.querySelector('.acoes-pu button[type="submit"]'); return ['puRestaurar', 'puExemplo'].every(a => !!(b.compareDocumentPosition(document.querySelector(`[data-acao="${a}"]`)) & Node.DOCUMENT_POSITION_FOLLOWING)); }), 'restaurar e exemplo abaixo do botão');
+    confere((await pg.getAttribute('button[type="submit"]', 'aria-disabled')) === null, 'botão nunca desativado');
+    const alto = await pg.evaluate(() => document.documentElement.scrollHeight);
+    confere(alto <= 844 * 1.5, `configuração cabe em tela e meia (${alto} px)`);
     await foto('primeiro-uso');
     await pg.fill('#pu-nome', 'Daniel');
     await pg.click('label.escolha:has(input[value="escola"])');
+    confere((await pg.inputValue('#pu-nome')) === 'Daniel', 'o nome fica ao trocar a prova');
+    confere(await tem('Com a data, o Prumo marca as revisões até o dia da prova.'), 'ajuda da data');
     await pg.fill('#pu-data', '2026-12-15');
     await pg.click('button[type="submit"]');
-    await pg.click('[data-acao="puAlarme"][data-arg="agora-nao"]');
-    await pg.click('[data-acao="puConcluir"]');
     await pg.waitForSelector('.manchete');
+    confere((await pg.evaluate(() => window.__prumo.nucleo.st.perfil.areas)).join() === 'MT,LC', 'perfil: Matemática e Linguagens');
+    confere((await pg.evaluate(() => window.__prumo.nucleo.st.missao.tipo)) !== 'folga', 'primeiro dia não é folga');
     confere(await tem('Oi, Daniel'), 'Hoje: saudação com o nome');
     confere(await tem('Seu próximo conteúdo'), 'Hoje: bloco "Seu próximo conteúdo"');
     confere((await pg.$('.proximo [data-ev="COMECAR"]')) !== null, 'Hoje: Começar dentro do bloco do próximo conteúdo');
@@ -45,7 +73,7 @@ async function roteiro(motor, tema) {
     await pg.click('.trilho .aba[href="#/estudar"]');
     await pg.waitForSelector('.mapa-area');
     for (const a of ['Matemática', 'Linguagens', 'Ciências da Natureza', 'Ciências Humanas']) confere(await tem(a), `mapa: ${a}`);
-    confere(await tem('chega nas próximas versões'), 'mapa: frase honesta das áreas sem conteúdo');
+    confere(await tem('chegam nas próximas versões'), 'mapa: frase honesta das áreas sem conteúdo');
     confere(await tem('Funções afins'), 'mapa: Funções afins');
     confere(/Ainda não começou/.test(await U.texto(pg)), 'mapa: "Ainda não começou"');
     await foto('estudar');

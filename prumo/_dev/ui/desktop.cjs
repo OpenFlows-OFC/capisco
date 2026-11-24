@@ -1,14 +1,16 @@
 // Computador (1280×800): trilho à esquerda, coluna de leitura (nem estreita nem larga demais) e margem
 // das notas só onde há nota; uma marca só; faixa do modo demonstração fora do trilho; movimento reduzido:
 // a virada do card e o preenchimento de "Continuar" não animam.
-// Uso (na pasta prumo/): NODE_PATH="$(npm root -g)" node _dev/ui/desktop.cjs
+// Uso (na pasta prumo/): NODE_PATH="$(npm root -g)" node _dev/ui/desktop.cjs [chromium|webkit] [light|dark]
 const U = require('./comum.cjs');
 
 (async () => {
   let total = 0;
-  for (const tema of ['light', 'dark']) {
-    const { nav, pg, erros } = await U.abrir('chromium', tema, { viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false, deviceScaleFactor: 1 });
-    const { falhas, confere, cap } = U.criarConferencia(`desktop-${tema}`);
+  const motor = process.argv[2] || 'chromium';
+  const temas = process.argv[3] ? [process.argv[3]] : ['light', 'dark'];
+  for (const tema of temas) {
+    const { nav, pg, erros } = await U.abrir(motor, tema, { viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false, deviceScaleFactor: 1 });
+    const { falhas, confere, cap } = U.criarConferencia(`desktop-${motor}-${tema}`);
     try {
       await pg.goto(U.BASE); await U.pronto(pg);
       await cap(pg, 'primeiro-uso');
@@ -21,22 +23,23 @@ const U = require('./comum.cjs');
       await pg.click('[data-ev="COMECAR"]');
       await U.escolher(pg, 'A');
       await pg.waitForSelector('.pagina-livro');
-      const larg = await pg.evaluate(() => { const p = document.querySelector('.par-texto p'); const cs = getComputedStyle(p); const c = document.createElement('canvas').getContext('2d'); c.font = `${cs.fontSize} Inter`; const ch = c.measureText('abcdefghijklmnopqrstuvwxyz').width / 26; return Math.round(p.getBoundingClientRect().width / ch); });
+      const larg = await pg.evaluate(() => { const p = document.querySelector('.par-texto p'); const cs = getComputedStyle(p); const c = document.createElement('canvas').getContext('2d'); c.font = `${cs.fontSize} Inter`; const ch = c.measureText('abcdefghijklmnopqrstuvwxyz').width / 26; return Math.round((p.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) / ch); });   // só a coluna do texto: a pauta do parágrafo entra na margem do §
       confere(larg <= 72 && larg >= 55, `coluna de leitura entre 55 e 72 caracteres (${larg})`);
       const notas = await pg.evaluate(() => ({ comNota: document.querySelectorAll('.par-notas').length, grade: [...document.querySelectorAll('.par')].filter(p => getComputedStyle(p).display === 'grid').length }));
       confere(notas.grade === notas.comNota, `só o parágrafo com nota reserva a margem das notas (${notas.grade} em grade, ${notas.comNota} com nota)`);
       await cap(pg, 'leitura', true);
     } catch (e) { falhas.push('exceção: ' + e.message.split('\n')[0]); console.log(e); }
     falhas.push(...erros);
-    console.log(`desktop ${tema}: ${falhas.length ? falhas.length + ' falha(s)' : 'ok'}`);
+    console.log(`desktop ${motor} ${tema}: ${falhas.length ? falhas.length + ' falha(s)' : 'ok'}`);
     falhas.forEach(x => console.log('   -', x));
     total += falhas.length;
     await nav.close();
   }
   // movimento reduzido (celular)
   {
-    const { nav, pg, erros } = await U.abrir('chromium', 'light', { reducedMotion: 'reduce' });
-    const { falhas, confere, cap } = U.criarConferencia('movimento-reduzido');
+    const temaRM = temas[0];
+    const { nav, pg, erros } = await U.abrir(motor, temaRM, { reducedMotion: 'reduce' });
+    const { falhas, confere, cap } = U.criarConferencia(`movimento-reduzido-${motor}-${temaRM}`);
     try {
       await pg.goto(U.BASE); await U.pronto(pg);
       await pg.evaluate(() => { const n = window.__prumo.nucleo; n.carregarExemplo(); n.despachar('COMECAR'); const m = n.st.missao; n.despachar({ tipo: 'RESPONDER', alt: n.missao.itemDe(m.passos[m.i].id).gabarito }); window.__prumo.app.render(); });
@@ -62,7 +65,7 @@ const U = require('./comum.cjs');
       await cap(pg, 'card-virado');
     } catch (e) { falhas.push('exceção: ' + e.message.split('\n')[0]); console.log(e); }
     falhas.push(...erros);
-    console.log(`movimento reduzido: ${falhas.length ? falhas.length + ' falha(s)' : 'ok'}`);
+    console.log(`movimento reduzido ${motor} ${temaRM}: ${falhas.length ? falhas.length + ' falha(s)' : 'ok'}`);
     falhas.forEach(x => console.log('   -', x));
     total += falhas.length;
     await nav.close();

@@ -8,7 +8,7 @@
    ========================================================= */
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { marca, visto, constancia, trilha, rodape } from './componentes.js';
+import { marca, visto, constancia, trilha, rodape, semQuebra } from './componentes.js';
 import { trilhaDe } from './missao.js';
 
 /** "Quando e onde": dia (o próximo dia de estudo), hora e uma âncora da rotina. Vira o horário do lembrete. */
@@ -53,13 +53,13 @@ export function telaPronto(ctx, vm) {
       ${frases.length ? h`<ul class="pr-frases" aria-label="O que mudou hoje">${cada(frases, f => h`<li>${f}</li>`)}</ul>` : ''}
       ${visto(vm.visto, { novo: nova })}
       ${p ? h`<section class="proxima-bloco" aria-label="Próxima missão">
-        <p class="proxima-texto"><strong>Próxima missão:</strong> ${p.texto}</p>
-        ${p.gancho ? h`<p>${p.gancho}</p>` : ''}
+        <p class="proxima-texto"><strong class="proxima-rotulo">Próxima missão</strong> ${semQuebra(p.texto)}</p>
+        ${p.gancho ? h`<p>${semQuebra(p.gancho)}</p>` : ''}
         ${p.porque ? h`<details class="porque"><summary class="link">${p.rotuloPorque || 'Por quê?'}</summary><p class="texto-2">${p.porque}</p></details>` : ''}
       </section>` : ''}
       ${quando(vm.quando)}
       ${constancia(vm.constancia)}
-      ${vm.continuar ? h`<p class="continuar-livre">${vm.continuar.texto} <button type="button" class="link" data-acao="continuarEstudando">${vm.continuar.rotulo}</button></p>` : ''}
+      ${vm.continuar ? h`<p class="continuar-livre">${vm.continuar.texto}</p><p class="links"><button type="button" class="link" data-acao="continuarEstudando">${vm.continuar.rotulo}</button></p>` : ''}
       ${vm.copia ? h`<p><button type="button" class="link" data-acao="salvarCopia">${vm.copia.rotulo}</button></p>` : ''}
       <div class="fechar"><button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>
     </main>`,

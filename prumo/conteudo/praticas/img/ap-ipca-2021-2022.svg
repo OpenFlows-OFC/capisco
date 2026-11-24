@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 278" width="680" height="556" font-family="Atkinson Hyperlegible Next, Arial, Helvetica, sans-serif" font-size="13.5" fill="#24262a">
+<rect width="340" height="278" fill="#fbfbf9"/>
+<text x="12" y="22" font-size="15.5" font-weight="700">Inflação (IPCA) em dois anos seguidos</text>
+<path d="M44 204V127.5Q44 123.5 48 123.5H100Q104 123.5 104 127.5V204Z" fill="#8f9cb0"/>
+<path d="M134 204V161.7Q134 157.7 138 157.7H190Q194 157.7 194 161.7V204Z" fill="#8f9cb0"/>
+<path d="M240 204V76.6Q240 72.6 244 72.6H308Q312 72.6 312 76.6V204Z" fill="#1f3a9e"/>
+<path d="M30 204H330" stroke="#24262a" stroke-width="1.5"/>
+<path d="M30 77.2H330" stroke="#b4441c" stroke-width="2" stroke-dasharray="7 4"/>
+<text x="30" y="70" font-weight="700">somar as taxas daria 15,85%</text>
+<g text-anchor="middle" font-weight="700" font-size="14.5">
+<text x="74" y="117">10,06%</text>
+<text x="164" y="151">5,79%</text>
+<text x="276" y="65">16,43%</text>
+</g>
+<g text-anchor="middle">
+<text x="74" y="221">2021</text>
+<text x="164" y="221">2022</text>
+<text x="276" y="221">2021 e 2022</text>
+<text x="276" y="235">juntos</text>
+</g>
+<text x="12" y="257">1,1006 · 1,0579 ≈ 1,1643 → +16,43%</text>
+<text x="12" y="272" font-size="11.5" fill="#5b5e66">Fonte: IBGE, Sidra, tabela 1737 (IPCA acumulado no ano)</text>
+</svg>

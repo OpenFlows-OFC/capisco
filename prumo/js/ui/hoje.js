@@ -11,7 +11,7 @@
    ========================================================= */
 import { h, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { marca, constancia, cabecalhoProva, recado } from './componentes.js';
+import { marca, constancia, cabecalhoProva, recado, semQuebra } from './componentes.js';
 
 /** Topo das abas: a marca; em Hoje, a saudação, a data e os risquinhos em destaque. */
 export function topoAba({ data, constancia: c, saudacao } = {}) {
@@ -89,8 +89,8 @@ function semMissao(vm) {
   return h`<section class="rosto" aria-labelledby="manchete">
     <h1 class="manchete estado-texto" id="manchete" tabindex="-1" data-foco-inicial>${vm.texto || 'Hoje'}</h1>
     ${f ? h`<div class="previa">
-      <p class="proxima"><strong>Próxima missão:</strong> ${f.previa}</p>
-      ${f.proxima && f.proxima.texto && f.proxima.texto !== f.previa ? h`<p class="texto-2">${f.proxima.texto}</p>` : ''}
+      <p class="proxima"><strong class="proxima-rotulo">Próxima missão</strong> ${semQuebra(f.previa)}</p>
+      ${f.proxima && f.proxima.texto && f.proxima.texto !== f.previa ? h`<p class="texto-2">${semQuebra(f.proxima.texto)}</p>` : ''}
     </div>` : ''}
     <div class="acoes-rosto">
       ${recado(vm.recado, { papel: 'status' })}

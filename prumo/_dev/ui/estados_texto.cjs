@@ -1,11 +1,12 @@
 // Estados de texto de Hoje e do Pronto por hoje: "Hoje não", encerrar antes da primeira pergunta,
 // Hoje "encerrado antes", "Ver a resolução da equipe" e o "Por quê?" do colofão.
-// Uso (na pasta prumo/): NODE_PATH="$(npm root -g)" node _dev/ui/estados_texto.cjs [chromium|webkit]
+// Uso (na pasta prumo/): NODE_PATH="$(npm root -g)" node _dev/ui/estados_texto.cjs [chromium|webkit] [light|dark]
 const U = require('./comum.cjs');
 (async () => {
   const motor = process.argv[2] || 'chromium';
-  const { nav, pg, erros } = await U.abrir(motor, 'light');
-  const { falhas, confere, cap } = U.criarConferencia(`texto-${motor}`);
+  const tema = process.argv[3] || 'light';
+  const { nav, pg, erros } = await U.abrir(motor, tema);
+  const { falhas, confere, cap } = U.criarConferencia(`texto-${motor}-${tema}`);
   const tem = async s => (await U.texto(pg)).includes(s);
   try {
     await pg.goto(U.BASE); await U.pronto(pg);
@@ -38,7 +39,7 @@ const U = require('./comum.cjs');
     await cap(pg, 'resolucao-aberta');
   } catch (e) { falhas.push('exceção: ' + e.message.split('\n')[0]); console.log(e); await cap(pg, 'excecao', true).catch(() => {}); }
   falhas.push(...erros);
-  console.log(`estados de texto ${motor}: ${falhas.length ? falhas.length + ' falha(s)' : 'ok'}`);
+  console.log(`estados de texto ${motor} ${tema}: ${falhas.length ? falhas.length + ' falha(s)' : 'ok'}`);
   falhas.forEach(x => console.log('   -', x));
   await nav.close();
   process.exit(falhas.length ? 1 : 0);

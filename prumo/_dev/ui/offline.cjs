@@ -9,20 +9,20 @@ const U = require('./comum.cjs');
   try {
     // caches de "outro app" na mesma origem, antes do Prumo: o do Capisco tem de ficar; um prumo-pwa antigo, sair
     await pg.goto(U.BASE + 'manifest.webmanifest');
-    await pg.evaluate(async () => { await caches.open('prumo-v1'); await caches.open('prumo-pwa-v0'); await caches.open('prumo-pwa-v1'); await caches.open('prumo-pwa-v2'); await caches.open('prumo-pwa-v3'); await caches.open('prumo-pwa-v4'); await caches.open('prumo-pwa-v5'); await caches.open('prumo-pwa-v6'); await caches.open('prumo-pwa-v7'); await caches.open('prumo-pwa-fontes'); });
+    await pg.evaluate(async () => { await caches.open('prumo-v1'); await caches.open('prumo-pwa-v0'); await caches.open('prumo-pwa-v1'); await caches.open('prumo-pwa-v2'); await caches.open('prumo-pwa-v3'); await caches.open('prumo-pwa-v4'); await caches.open('prumo-pwa-v5'); await caches.open('prumo-pwa-v6'); await caches.open('prumo-pwa-v7'); await caches.open('prumo-pwa-v8'); await caches.open('prumo-pwa-fontes'); });
     await pg.goto(U.BASE); await U.pronto(pg);
     await pg.evaluate(() => navigator.serviceWorker.ready);
     await pg.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 15000 });
     await pg.waitForTimeout(800);
     const r = await pg.evaluate(async () => {
       const ks = await caches.keys();
-      const app = await (await caches.open('prumo-pwa-v8')).keys();
+      const app = await (await caches.open('prumo-pwa-v9')).keys();
       const fontes = app.filter(r => /\/fontes\/.+\.woff2$/.test(r.url)).length;
       return { ks, app: app.length, fontes };
     });
     console.log('  caches:', JSON.stringify(r));
     confere(r.ks.includes('prumo-v1'), 'cache do app antigo (prumo-v1) preservado');
-    confere(!r.ks.includes('prumo-pwa-v0') && !r.ks.includes('prumo-pwa-v1') && !r.ks.includes('prumo-pwa-v2') && !r.ks.includes('prumo-pwa-v3') && !r.ks.includes('prumo-pwa-v4') && !r.ks.includes('prumo-pwa-v5') && !r.ks.includes('prumo-pwa-v6') && !r.ks.includes('prumo-pwa-v7') && !r.ks.includes('prumo-pwa-fontes'), 'caches prumo-pwa antigos (v1, v2 e fontes antigas) apagados');
+    confere(!r.ks.includes('prumo-pwa-v0') && !r.ks.includes('prumo-pwa-v1') && !r.ks.includes('prumo-pwa-v2') && !r.ks.includes('prumo-pwa-v3') && !r.ks.includes('prumo-pwa-v4') && !r.ks.includes('prumo-pwa-v5') && !r.ks.includes('prumo-pwa-v6') && !r.ks.includes('prumo-pwa-v7') && !r.ks.includes('prumo-pwa-v8') && !r.ks.includes('prumo-pwa-fontes'), 'caches prumo-pwa antigos (v1, v2 e fontes antigas) apagados');
     confere(r.app >= 80, `precache completo (${r.app} arquivos)`);
     confere(r.fontes >= 10, `fontes do próprio app no precache (${r.fontes} woff2)`);
     // modo avião: o app abre, com as fontes e as imagens

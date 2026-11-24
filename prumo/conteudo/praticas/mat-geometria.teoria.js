@@ -67,6 +67,7 @@ export const teoria = {
         'As duas fórmulas usam o raio, que é metade do diâmetro. O Enem costuma dar π ≈ 3 ou π ≈ 3,14.',
         'O triângulo equilátero de lado L tem área L² · √3 / 4. O hexágono regular é formado por seis desses triângulos, então tem área 6 · L² · √3 / 4.',
       ],
+      imagem: {src: "./conteudo/praticas/img/ap-favo.jpg",alt: "Close de favos de mel, com centenas de células de seis lados, cor de mel, lado a lado; ao fundo, algumas abelhas.",legenda: "As células do favo de mel são quase hexágonos regulares. Elas se encaixam sem deixar buracos, e cada uma pode ser dividida em seis triângulos equiláteros.",credito: "Merdal, Honey comb. CC BY-SA 3.0. Wikimedia Commons."},
       figura: {
         svg: '<svg viewBox="0 0 320 176" role="img" xmlns="http://www.w3.org/2000/svg" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="13" fill="currentColor"><path d="M20 145H130L75 49.7Z" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M75 49.7V145" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/><path d="M75 137H83V145" stroke="currentColor" fill="none"/><path d="M235 97L205 149H265Z" fill="currentColor" fill-opacity="0.3"/><path d="M295 97L265 45H205L175 97L205 149H265Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M235 97L295 97M235 97L265 45M235 97L205 45M235 97L175 97M235 97L205 149M235 97L265 149" stroke="currentColor" stroke-width="1"/><g text-anchor="middle"><text x="75" y="22">triângulo equilátero</text><text x="235" y="22">hexágono regular</text><text x="75" y="164">L</text><text x="235" y="166">L</text></g><text x="40" y="96" text-anchor="end">L</text><text x="81" y="112">h</text></svg>',
         alt: 'À esquerda, um triângulo equilátero de lado L, com a altura h tracejada do vértice de cima até o meio da base, formando ângulo reto. À direita, um hexágono regular de lado L dividido em 6 triângulos equiláteros iguais por segmentos que saem do centro; um desses triângulos está pintado.',
@@ -169,6 +170,7 @@ export const teoria = {
         'Se um cone é cortado por um plano paralelo à base, a parte de cima é um cone menor semelhante ao original. Raio e altura diminuem na mesma razão, e o que sobra embaixo é um tronco de cone.',
         'Para sólidos furados ou recortados, calcule o sólido inteiro e subtraia o que saiu. Massa é densidade vezes volume. Quando um material é derretido e moldado de novo, o volume se conserva.',
       ],
+      imagem: {src: "./conteudo/praticas/img/ap-congresso.jpg",alt: "Duas torres altas e estreitas, lado a lado, e à frente uma cúpula branca e baixa, apoiada sobre um edifício horizontal, contra o céu azul.",legenda: "Congresso Nacional, em Brasília. A cúpula do Senado é uma parte de esfera, mais baixa que meia esfera. As duas torres são prismas de base retangular.",credito: "Pedro França/Agência Senado, Fachada do Palácio do Congresso Nacional, 2024. CC BY 2.0. Wikimedia Commons."},
       tabela: {
         cabecalho: ['Sólido', 'Volume'],
         linhas: [

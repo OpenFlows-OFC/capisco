@@ -1,14 +1,13 @@
 /* =========================================================
-   PRUMO · Plano (c.9)                                   [A COMPLETAR]
-   Versão simples, funcional, deixada pela equipe das telas do núcleo para o
-   agente do Plano completar (mudar prova, dias, minutos, meta, pausa;
-   "Por que esta ordem?"; régua completa rolável). Ver js/ui/LEIA.md.
-   Rota: #/plano. Leitura livre; as mudanças usam nucleo.mudarPlano(),
-   nucleo.marcarPausa(), nucleo.encerrarPausa().
+   PRUMO · Plano (c.9)
+   Rota: #/plano. Leitura do plano; a pausa se marca e se encerra aqui
+   (nucleo.marcarPausa(), nucleo.encerrarPausa()); prova, dias e minutos
+   mudam em Perfil, "Seu nome e seu plano" (link #/perfil/plano).
    Topo: "Seu plano" com o Cabeçalho de prova (Data da prova | Faltam) e a
    frase com o nome da prova. Nada de metadados encadeados com pontos.
    ========================================================= */
 import { h, cada } from './dom.js';
+import { registrar } from './registro.js';
 import { constancia, cabecalhoProva } from './componentes.js';
 import { topoAba } from './hoje.js';
 
@@ -28,9 +27,15 @@ export function telaPlano(ctx, t) {
       <ul class="lista-fios" style="margin-top:16px">
         <li><p class="rotulo">Dias e minutos</p><p style="margin:4px 0 0">${p.dias.texto}</p></li>
         <li><p class="rotulo">Meta da semana</p><p style="margin:4px 0 0">${p.meta.texto}</p></li>
-        <li><p class="rotulo">Pausa</p><p style="margin:4px 0 0">${p.pausa.texto}</p></li>
+        <li><p class="rotulo">Pausa</p><p style="margin:4px 0 0">${p.pausa.texto}</p>
+          ${p.pausa.ativa ? h`<p class="links"><button type="button" class="link" data-acao="plEncerrarPausa">${p.pausa.acao || 'Encerrar pausa'}</button></p>`
+            : h`<details style="margin-top:4px"><summary class="link">Marcar uma pausa</summary>
+              <form data-enviar="plPausa" novalidate style="margin-top:8px"><label for="pl-pausa-dias" style="display:block;font-weight:600;margin-bottom:8px">Quantos dias, contando hoje</label>
+                <select id="pl-pausa-dias" name="dias" class="campo">${cada([1, 2, 3, 4, 5, 6, 7, 10, 14], k => h`<option value="${k}" ${k === 7 ? 'selected' : ''}>${k === 1 ? '1 dia' : `${k} dias`}</option>`)}</select>
+                <div style="margin-top:12px"><button type="submit" class="botao-sec botao-largo">Marcar a pausa</button></div></form></details>`}</li>
         <li><p class="rotulo">Lembrete</p><p style="margin:4px 0 0">Alarme ${p.lembrete.texto}.</p><p class="pequeno texto-2" style="margin:4px 0 0">${p.lembrete.como}</p></li>
       </ul>
+      <p class="links" style="margin-top:8px"><a class="link" href="#/perfil/plano">Mudar a prova, os dias e os minutos</a></p>
       <section class="secao" aria-labelledby="agenda-t">
         <h2 class="titulo-pequeno" id="agenda-t">Próximos 14 dias</h2>
         ${p.agenda.tudoFirme ? h`<p>${p.agenda.tudoFirme}</p>` : ''}
@@ -50,3 +55,19 @@ export function telaPlano(ctx, t) {
       </details>`,
   };
 }
+
+registrar({
+  acoes: {
+    plPausa(ctx, form) {
+      const dias = Number(new FormData(form).get('dias')) || 7;
+      const ok = ctx.nucleo.marcarPausa(dias);
+      ctx.avisar(ok === false ? 'Não deu para marcar a pausa. Nada foi alterado.' : 'Pausa marcada. As revisões esperam.');
+      ctx.render();
+    },
+    plEncerrarPausa(ctx) {
+      const ok = ctx.nucleo.encerrarPausa();
+      ctx.avisar(ok === false ? 'Não deu para encerrar a pausa agora.' : 'Pausa encerrada.');
+      ctx.render();
+    },
+  },
+});

@@ -232,18 +232,20 @@ function figura(f) {
   if (!f) return '';
   return h`${cru(f.html || '')}${f.legenda && f.tipo !== 'tabela' ? h`<p class="legenda">${f.legenda}</p>` : ''}`;
 }
+/** Espaço inseparável em "p. 2", "R$ 6", "20 km", "25 min": o número não fica sozinho no começo da linha. */
+export const semQuebra = s => String(s == null ? '' : s).replace(/(^|[\s(])(p\.|R\$) (?=\d)/g, '$1$2 ').replace(/(\d) (km|min)(?![\wÀ-ú])/g, '$1 $2');
 /** Um parágrafo com o § na margem; o atual ganha o fio de prumo; grifar: marca-texto no trecho que o erro cobrou. */
 export function paragrafo(par, ancora, { grifar = false } = {}) {
   const aqui = par.id === ancora;
-  const corpo = cru(par.html || '');
+  const corpo = cru(semQuebra(par.html || ''));
   return h`<div class="par ${aqui ? 'ancora' : ''}" id="${par.id}" data-par="${par.id}">
     <span class="par-n" aria-hidden="true">§ ${par.n}</span>
     ${aqui ? cru('<span class="fio-prumo" aria-hidden="true"></span>') : ''}
-    <div class="par-texto"><span class="so-leitor">Parágrafo ${par.n}. </span><p>${aqui && grifar ? h`<span class="marca-texto">${corpo}</span>` : corpo}</p>${figura(par.figura)}</div>
-    ${par.notas && par.notas.length ? h`<div class="par-notas">${cada(par.notas, n => h`<p class="nota-margem">${n.texto} <span class="nota-dia">(${n.dia})</span></p>`)}</div>` : ''}
+    <div class="par-texto"><span class="so-leitor">Parágrafo ${par.n}. </span><p class="pautado">${aqui && grifar ? h`<span class="marca-texto">${corpo}</span>` : corpo}</p>${figura(par.figura)}</div>
+    ${par.notas && par.notas.length ? h`<div class="par-notas">${cada(par.notas, n => h`<p class="nota-margem">${n.texto}</p>`)}</div>` : ''}
   </div>`;
 }
-/** A folha pautada: pauta azul no passo de 30 px, margem rosa, § na margem. */
+/** A folha pautada: margem rosa e § na margem; a pauta azul vem de cada parágrafo (.pautado), não da folha. */
 export function blocos(bs, ancora, op = {}) {
   return h`<div class="pagina">${cada(bs, b => cada(b.paragrafos, p => paragrafo(p, ancora, op)))}</div>`;
 }
@@ -324,7 +326,8 @@ export function prepararFiguras(raiz, { aoAmpliar, textoFalha = 'A imagem não c
     dica.className = 'ampliavel-dica';
     dica.textContent = comMouse ? 'Clique para ampliar' : 'Toque para ampliar';
     dica.setAttribute('aria-hidden', 'true');
-    (el.tagName === 'IMG' && el.parentElement && el.parentElement.tagName === 'FIGURE' ? el.parentElement : el).insertAdjacentElement('afterend', dica);
+    // sempre logo abaixo da figura e antes da legenda (foto, anúncio ou gráfico em SVG)
+    el.insertAdjacentElement('afterend', dica);
     const abrir = e => { e.preventDefault(); aoAmpliar && aoAmpliar(el); };
     el.addEventListener('click', abrir);
     el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') abrir(e); });
@@ -397,6 +400,10 @@ export function conferir(el) {
   r.textContent = `${i === certa ? 'Isso.' : `A certa é: ${op ? op.textContent.replace(/\.$/, '') : ''}.`} ${r.dataset.porque || ''}`.trim();
 }
 
+/** Tabela de texto (3 colunas ou mais, com célula longa): no celular, cada linha vira uma ficha empilhada,
+ *  com o nome da coluna antes de cada valor (data-rotulo). Tabelas de números ficam em grade. */
+const emFichas = tb => (tb.cabecalho || []).length >= 3 && (tb.linhas || []).some(l => l.some(c => String(c).replace(/<[^>]*>/g, '').length > 24));
+
 /**
  * t = teoria do núcleo: seções (parágrafos, figura, tabela, quadro "No Enem", exemplos), armadilhas e resumo.
  * naFolha: dentro da folha "Rever a apostila" (sem capa: o título já está na folha; uma coluna em qualquer tela).
@@ -435,16 +442,16 @@ export function teoria(t, { tituloComoH1 = true, naFolha = false, ancora = null,
     </header>`}
     ${sumario}
     <div class="apostila-corpo">
-      ${t.porQueCai ? h`<p class="apostila-abre"><strong>Por que cai no Enem.</strong> ${t.porQueCai}</p>` : ''}
+      ${t.porQueCai ? h`<p class="apostila-abre pautado"><strong>Por que cai no Enem.</strong> ${t.porQueCai}</p>` : ''}
       ${t.termos && t.termos.length ? h`<aside class="apostila-quadro quadro-termos" aria-labelledby="termos-t"><h2 class="quadro-rotulo" id="termos-t">Termos que você vai ver</h2><dl class="termos">${cada(t.termos, x => h`<div><dt>${x.termo}</dt><dd>${x.def}</dd></div>`)}</dl></aside>` : ''}
       ${cada(secoes, sc => h`<section class="teoria-secao ${alvo === idSecao(sc.n) ? 'ancora' : ''}" id="${idSecao(sc.n)}" aria-labelledby="${idSecao(sc.n)}-t">
         <h2 class="teoria-sub" id="${idSecao(sc.n)}-t" tabindex="-1"><span class="teoria-n" aria-hidden="true">${sc.n}</span><span>${tituloSecao(idSecao(sc.n), sc.titulo)}</span></h2>
-        ${cada(sc.paragrafos, p => h`<p>${p}</p>`)}
+        ${cada(sc.paragrafos, p => h`<p class="pautado">${p}</p>`)}
         ${sc.imagem ? h`<figure class="teoria-imagem"><img src="${sc.imagem.src}" alt="${sc.imagem.alt}" loading="lazy" decoding="async"><figcaption>${sc.imagem.legenda ? h`<span>${sc.imagem.legenda}</span>` : ''}<span class="credito-imagem">${sc.imagem.credito}</span></figcaption></figure>` : ''}
         ${sc.figura ? h`<figure class="teoria-figura" role="group" aria-label="${sc.figura.alt}">${cru(sc.figura.svg)}${sc.figura.legenda ? h`<figcaption>${sc.figura.legenda}</figcaption>` : ''}</figure>` : ''}
-        ${sc.tabela ? h`<div class="teoria-tabela-rolagem"><table class="teoria-tabela">${sc.tabela.legenda ? h`<caption>${sc.tabela.legenda}</caption>` : ''}
+        ${sc.tabela ? h`<div class="teoria-tabela-rolagem"><table class="teoria-tabela ${emFichas(sc.tabela) ? 'fichas' : ''}">${sc.tabela.legenda ? h`<caption>${sc.tabela.legenda}</caption>` : ''}
           ${sc.tabela.cabecalho.length ? h`<thead><tr>${cada(sc.tabela.cabecalho, c => h`<th scope="col">${c}</th>`)}</tr></thead>` : ''}
-          <tbody>${cada(sc.tabela.linhas, l => h`<tr>${cada(l, c => h`<td>${c}</td>`)}</tr>`)}</tbody></table></div>` : ''}
+          <tbody>${cada(sc.tabela.linhas, l => h`<tr>${cada(l, (c, i) => h`<td data-rotulo="${sc.tabela.cabecalho[i] || ''}">${c}</td>`)}</tr>`)}</tbody></table></div>` : ''}
         ${cada(sc.exemplos, ex => h`<div class="exemplo">
           <p class="exemplo-rotulo">Exemplo resolvido ${ex.n}</p>
           <p class="exemplo-enunciado">${ex.enunciado}</p>
@@ -461,8 +468,9 @@ export function teoria(t, { tituloComoH1 = true, naFolha = false, ancora = null,
     ${t.fontes && t.fontes.length ? h`<section class="teoria-rodape"><p class="rotulo">Fontes</p>
       <ul class="teoria-lista pequeno">${cada(t.fontes, f => h`<li>${f.adaptado ? 'Adaptado de ' : ''}${f.url ? h`<a href="${f.url}" target="_blank" rel="noopener">${f.titulo}</a>` : f.titulo}${f.licenca ? h` (${f.licencaUrl ? h`<a href="${f.licencaUrl}" target="_blank" rel="noopener">${f.licenca}</a>` : f.licenca})` : ''}</li>`)}</ul>
       ${secoes.some(x => x.imagem) ? h`<p class="rotulo" style="margin-top:12px">Imagens</p><ul class="teoria-lista pequeno">${cada(secoes.filter(x => x.imagem), x => h`<li>${x.imagem.credito}</li>`)}</ul>` : ''}
-      ${t.adaptacao ? h`<p class="pequeno texto-2">${t.adaptacao}</p>` : ''}</section>` : ''}
-    ${t.credito ? h`<p class="rodape-licenca">${t.credito}</p>` : ''}
+      </section>` : ''}
+    ${t.adaptacao ? h`<p class="rodape-licenca">${t.adaptacao}</p>` : ''}
+    ${t.credito && (!t.adaptacao || /revisado/.test(t.credito)) ? h`<p class="rodape-licenca">${t.credito}</p>` : ''}
   </article>`;
 }
 
@@ -503,7 +511,7 @@ export function irParaSecao(id, { suave = true } = {}) {
 /* ---------------- Trilha do tópico: onde o aluno está (Aquecer → Apostila → Questões → Visto) ----------------
    Não é botão nem aba: número e rótulo, a etapa atual sublinhada em tinta, as feitas com ✓.
    No estudo por conta própria não há visto: a última etapa é "Registro". fase 'fim' = tudo feito (Pronto). */
-const ETAPAS = [['aquecer', 'Aquecer'], ['apostila', 'Apostila'], ['questoes', 'Questões'], ['visto', 'Visto']];
+const ETAPAS = [['aquecer', 'Aquecer'], ['apostila', 'Leitura'], ['questoes', 'Questões'], ['visto', 'Visto']];
 export function trilha(fase, { livre = false } = {}) {
   if (!fase) return '';
   const etapas = livre ? [...ETAPAS.slice(0, 3), ['visto', 'Registro']] : ETAPAS;
@@ -520,7 +528,7 @@ export function trilha(fase, { livre = false } = {}) {
  */
 const COMO_FUNCIONA = [
   { titulo: 'Aquecer', texto: 'Uma questão antes de ler. Chute se não souber: a ideia é ler a apostila já com a dúvida na cabeça. A resposta aparece depois da leitura.' },
-  { titulo: 'Apostila', texto: 'A teoria do tópico, com exemplos resolvidos, figuras e tabelas. Se você já domina, pode pular.' },
+  { titulo: 'Leitura', texto: 'A apostila do tópico, com exemplos resolvidos, figuras e tabelas. Se você já domina, pode pular.' },
   { titulo: 'Questões do Enem', texto: 'Questões de provas reais. Acerte 2 seguidas e o tópico entra no nível 1 de 5. Errou? A contagem recomeça e a explicação mostra o que faltou.' },
   { titulo: 'Visto do dia', texto: 'Terminou, ganhou o visto e o dia conta. Depois, o Prumo marca as revisões até a prova: cada revisão certa sobe um nível, e errar uma revisão desce um.' },
 ];

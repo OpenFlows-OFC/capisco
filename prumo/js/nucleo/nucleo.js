@@ -37,10 +37,10 @@ export const NAO_TEM = [
 ];
 const TIPOS_PROVA = [
   { valor: 'escola', rotulo: 'Prova da escola (bimestral)' },
-  { valor: 'enem', rotulo: 'Enem', aviso: 'A data do Enem 2027 ainda não saiu. Até você marcar, o Prumo planeja as revisões para os próximos 90 dias.', dica: 'Marque também a prova da escola: ela vem antes e deixa o plano mais útil.' },
-  { valor: 'provao', rotulo: 'Provão Paulista' },
-  { valor: 'vestibular', rotulo: 'Outro vestibular' },
-  { valor: 'naosei', rotulo: 'Ainda não sei', aviso: 'Sem data, o Prumo usa um horizonte de 90 dias.' },
+  { valor: 'enem', rotulo: 'Enem', aviso: 'A data do Enem 2027 ainda não saiu. Até lá, o Prumo planeja as revisões para 90 dias.', dica: 'Se a prova da escola vem antes, marque "Prova da escola": o plano fica mais útil.' },
+  { valor: 'provao', rotulo: 'Provão Paulista', aviso: 'As questões do Prumo são do Enem. O plano usa a data da sua prova.' },
+  { valor: 'vestibular', rotulo: 'Outro vestibular', aviso: 'As questões do Prumo são do Enem. O plano usa a data da sua prova.' },
+  { valor: 'naosei', rotulo: 'Ainda não sei', aviso: 'Sem data, o Prumo planeja as revisões para 90 dias.' },
 ];
 const cap1 = s => s.charAt(0).toUpperCase() + s.slice(1);
 /** "amanhã, qui 19/11" · "segunda, 23/11" */
@@ -64,7 +64,7 @@ export function regraNivel(oQue = 'o tópico', teto = 5) {
 /** "Como funciona um tópico" (página do tópico): as 4 etapas da trilha, com a regra do nível certa. */
 export const COMO_FUNCIONA = [
   { titulo: 'Aquecer', texto: 'Uma questão antes de ler. Chute se não souber: a ideia é ler a apostila já com a dúvida na cabeça. A resposta aparece depois da leitura.' },
-  { titulo: 'Apostila', texto: 'A teoria do tópico, com exemplos resolvidos, figuras e tabelas. Se você já domina, pode pular.' },
+  { titulo: 'Leitura', texto: 'A apostila do tópico, com exemplos resolvidos, figuras e tabelas. Se você já domina, pode pular.' },
   { titulo: 'Questões do Enem', texto: 'Questões de provas reais. Acerte 2 seguidas e o tópico entra no nível 1 de 5. Errou? A contagem recomeça e a explicação mostra o que faltou. Se não der mais para acertar 2 seguidas com as que restam, o tópico continua na próxima vez.' },
   { titulo: 'Visto do dia', texto: 'Terminou, ganhou o visto e o dia conta. Depois, o Prumo marca as revisões até a prova: cada revisão certa sobe um nível, e errar uma revisão desce um.' },
 ];
@@ -139,24 +139,45 @@ export class Nucleo {
      Primeiro uso
      ========================================================= */
   primeiroUso() {
+    // dias padrão: seg a qui e, se faltar, o dia de hoje (no máximo 5), para o primeiro dia nunca cair em folga (R2)
+    const hojeDS = R.diaDaSemana(R.hoje()), diasPadrao = [1, 2, 3, 4];
+    if (!diasPadrao.includes(hojeDS)) diasPadrao.push(hojeDS);
+    const areas = AREAS.map(a => { const ok = a.id === 'MT' || this.prat.ids().some(id => this.prat.get(id).area === a.id); return { valor: a.id, rotulo: a.nome, disponivel: ok, nota: ok ? null : 'Em breve' }; });
+    const nomeArea = id => (AREAS.find(a => a.id === id) || {}).nome;
     return {
       restaurar: { rotulo: 'Já usei o Prumo: restaurar uma cópia' },
       exemplo: { rotulo: 'Ver com dados de exemplo' },
       provas: TIPOS_PROVA,
-      dias: { padrao: [1, 2, 3, 4], min: 3, max: 5, opcoes: [1, 2, 3, 4, 5, 6, 0].map(v => ({ valor: v, rotulo: Plano.NOMES_DIAS[v] })) },
+      provaPadrao: 'enem',
+      dias: {
+        padrao: diasPadrao, hoje: hojeDS, min: 3, max: 5, opcoes: [1, 2, 3, 4, 5, 6, 0].map(v => ({ valor: v, rotulo: Plano.NOMES_DIAS[v] })),
+        dica: diasPadrao.length > 4 ? `${{ 5: 'A sexta', 6: 'O sábado', 0: 'O domingo' }[hojeDS]} entrou para você começar hoje.` : null,
+      },
       minutos: { padrao: 25, opcoes: [15, 25, 40] },
+      horario: { padrao: '19:00' },
       som: { padrao: false, pergunta: 'Quer som?' },
       metaSugerida: dias => Math.max(1, (dias || []).length - 1),
       alarme: (dias, horario) => ({ texto: `Quer um lembrete? Crie um alarme no app Relógio: ${textoAlarme(dias, horario)}. O Prumo não manda notificação.`, rotulo: textoAlarme(dias, horario) }),
-      frase: 'Uma missão de estudo por dia, com fim marcado, a partir do seu caderno e de questões reais do Enem.',
-      areas: AREAS.map(a => { const ok = a.id === 'MT' || this.prat.ids().some(id => this.prat.get(id).area === a.id); return { valor: a.id, rotulo: a.nome, disponivel: ok, nota: ok ? null : 'Em breve' }; }),
-      areasPadrao: ['MT'],
+      titulo: 'Vamos montar o seu plano',
+      frase: 'Duas perguntas e a primeira missão fica pronta.',
+      perguntas: { prova: 'Qual prova vem primeiro?', nome: 'Como você quer ser chamado?' },
+      ajudaData: 'Com a data, o Prumo marca as revisões até o dia da prova. Sem ela, planeja para 90 dias.',
+      ajudaNome: 'Opcional. É como o Prumo vai chamar você.',
+      /** "Para começar: seg, ter, qua e qui, 25 min por dia, Matemática e Linguagens." */
+      padroes: (dias, minutos, ids) => `Para começar: ${juntarE([1, 2, 3, 4, 5, 6, 0].filter(d => (dias || []).includes(d)).map(d => Plano.NOMES_DIAS[d]))}, ${minutos} min por dia, ${juntarE((ids || []).map(nomeArea).filter(Boolean))}.`,
+      padroesOnde: 'Dá para mudar depois no Perfil, em "Seu nome e seu plano".',
+      mudarAgora: 'Mudar dias e minutos agora',
+      concluir: 'Ver minha missão de hoje',
+      areas,
+      areasPadrao: areas.filter(a => a.disponivel).map(a => a.valor),
+      onboardingRotulo: 'Como o Prumo ensina',
       onboarding: [
-        { titulo: 'Uma missão de estudo por dia, com fim marcado', texto: 'Você abre o Prumo, faz a missão do dia e termina no "Pronto por hoje". Sem rolar sem fim.' },
-        { titulo: 'Errou? O app mostra o que faltou', texto: 'Cada erro vem com o que faltou e o trecho do caderno ou da apostila para rever.' },
-        { titulo: 'Seus dias estudados só crescem', texto: 'Cada dia estudado vira um risquinho. Faltar um dia não apaga nada: nada zera.' },
+        { etapa: 'Aquecer', titulo: 'Primeiro, uma pergunta.', texto: 'Antes de ler, você tenta responder. Se não souber, chute: você vai ler já procurando a resposta.' },
+        { etapa: 'Leitura', titulo: 'Depois, a explicação.', texto: 'A leitura vem com exemplos resolvidos e figuras. Depois dela, você confere o que entendeu.' },
+        { etapa: 'Questões', titulo: 'Por fim, questões do Enem.', texto: 'Questões de provas reais. Errou? O Prumo mostra o que faltou e o trecho para rever.' },
       ],
-      fecho: 'Seus dados ficam só neste aparelho. Instale o Prumo na tela inicial (iPhone e Android) e salve uma cópia de vez em quando.',
+      impacto: 'Você treina com o que já caiu no Enem.',   // espaço fixo: "Enem." nunca fica sozinho na linha
+      fecho: 'Seus dados ficam só neste aparelho.',
       instalar: { iphone: 'iPhone: Compartilhar → "Adicionar à Tela de Início".', android: 'Android: menu ⋮ → "Instalar app" ou "Adicionar à tela inicial".' },
       evento: 'CONCLUIR',
     };
@@ -647,15 +668,15 @@ export class Nucleo {
     const regra = regraDaFila(m.passos.filter(x => x.r === p.r), p.cap);
     const corrida = rod ? rod.corrida : [];
     const ia = corrida.findIndex(x => x.papel === 'aplicar');
-    const rotuloDe = x => (x.t === 'checagem' ? 'checagem' : x.origem === 'enem' ? 'Enem' : 'equipe');
-    const casa2 = ia >= 0 ? { cheia: true, rotulo: rotuloDe(corrida[ia]) } : { cheia: false, rotulo: regra.todosEnem ? 'Enem' : 'aplicar' };
-    const outros = corrida.filter((x, i) => i !== ia);
-    const casa1 = outros.length ? { cheia: true, rotulo: rotuloDe(outros[outros.length - 1]) } : { cheia: false, rotulo: 'acerto seguido' };
+    // o rótulo da casa é fixo (só a casa enche): trocar o nome no meio da rodada confundia quem está começando
+    const r2 = regra.todosEnem ? 'Enem' : 'aplicar';
+    const casa2 = { cheia: ia >= 0, rotulo: r2 };
+    const casa1 = { cheia: corrida.some((x, i) => i !== ia), rotulo: 'acerto' };
     let texto = null;
     if (rod && rod.ultimoErro) texto = m.passos[m.i] && m.passos[m.i].inserido ? 'A próxima é sobre o trecho que faltou' : 'Para fechar: 2 certas seguidas, faltam 2';
     else if (casa1.cheia && !casa2.cheia) texto = regra.falta;
     else if (!casa1.cheia && casa2.cheia) texto = 'Para fechar: 2 certas seguidas, falta 1';
-    return { casas: [casa1, casa2], texto, regra: `${regra.frase}. ${regra.insercao}` };
+    return { casas: [casa1, casa2], texto, regra: `${regra.frase}. ${regra.insercao}`, descricoes: ['um acerto seguido', regra.todosEnem ? 'um acerto numa questão do Enem' : 'um acerto numa questão de aplicar'] };
   }
   /** "faltam 2 questões" (ou "faltam até 3 questões", quando a rodada pode fechar antes); null sem questões pela frente. */
   _faltam(m) {
@@ -667,7 +688,8 @@ export class Nucleo {
   }
   _topo(p, etapa) {
     const m = this.st.missao, total = m.passos.length;
-    const primeiroDaRodada = p && p.r ? m.passos.findIndex(x => x.r === p.r) === m.i : false;
+    // a regra aparece aberta na primeira pergunta que conta (não na pergunta de antes de ler nem na leitura)
+    const primeiroDaRodada = p && p.r ? m.passos.findIndex(x => x.r === p.r && ['checagem', 'questao', 'revisao', 'dia'].includes(x.t)) === m.i : false;
     let regra = p && p.r && p.fonte !== 'pratica' ? regraDaFila(m.passos.filter(x => x.r === p.r), p.cap) : null;
     if (p && p.fonte === 'pratica' && p.t === 'questao') regra = p.antecipada
       ? { frase: 'Revisão antecipada: acerte 2 seguidas para firmar', insercao: 'O nível só sobe na revisão do dia marcado.' }
@@ -709,7 +731,9 @@ export class Nucleo {
       let faixa = null;
       if (ant && ant.t === 'pre') {
         const segunda = ant.alvo === 'nucleo' && cap.paginas.findIndex(x => x.id === ant.pagina) === 1 && String(ant.id).endsWith('#0');
-        faixa = segunda ? 'Resposta guardada. Na primeira revisão do capítulo você vê se acertou.' : 'Resposta guardada.';
+        // a apresentação promete "depois dela, você confere": a faixa diz quando (checagem da página ou 1ª revisão)
+        faixa = segunda ? 'Resposta guardada. Na primeira revisão do capítulo você vê se acertou.'
+          : ant.alvo === 'nucleo' ? 'Resposta guardada. Depois da leitura, uma pergunta parecida mostra se você entendeu.' : 'Resposta guardada.';
       }
       const temPergunta = m.passos.slice(m.i + 1).some(x => x.t !== 'leitura' && x.t !== 'cards');
       return {
@@ -726,7 +750,7 @@ export class Nucleo {
     // pergunta
     const item = this.missao.itemDe(p.id), r = this._rotulos(p, item);
     const primeiraChecagem = p.t === 'checagem' && !Object.values(st.topicos).some(t => (t.tentativas || []).some(x => x.tipo === 'checagem'));
-    const etapa = p.fonte === 'pratica' ? (p.t === 'pre' ? 'Aquecimento' : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : this.prat.curto(p.cap)) : p.t === 'pre' ? `Pergunta da p. ${pk.pagina(p.pagina).n}` : p.t === 'checagem' ? `Confira a p. ${pk.pagina(p.pagina).n}` : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : p.t === 'dia' ? 'Questão do dia' : r.tipo === 'enem' ? 'Questão do Enem' : r.tipo === 'antecipada' ? 'Revisão antecipada' : 'Questão da equipe';
+    const etapa = p.fonte === 'pratica' ? (p.t === 'pre' ? 'Aquecimento' : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : this.prat.curto(p.cap)) : p.t === 'pre' ? `Aquecimento: p. ${pk.pagina(p.pagina).n}` : p.t === 'checagem' ? `Confira a p. ${pk.pagina(p.pagina).n}` : p.t === 'revisao' ? `Revisão do ${this._nomeCap(p.cap)}` : p.t === 'dia' ? 'Questão do dia' : r.tipo === 'enem' ? 'Questão do Enem' : r.tipo === 'antecipada' ? 'Revisão antecipada' : 'Questão da equipe';
     return {
       estado: 'pergunta', tipo: r.tipo, rotulo: r.rotulo, subrotulo: r.sub, aviso: r.aviso || null,
       avisoPrimeiraChecagem: primeiraChecagem ? 'Isso fica só neste aparelho. Ninguém da escola vê.' : null,
@@ -1380,7 +1404,7 @@ export class Nucleo {
       id: pk.id, titulo: pk.titulo, caderno: true, disponivel: true, emPreparacao: false,
       descricao: `O caderno completo: ${caps.length} capítulos com páginas para ler, uma pergunta antes de cada página e questões reais do Enem.`,
       nivel: { cheios: min, nome: min ? rotuloNivel(min) : null, rotulo: rotuloNivel(min) }, estado: abertos === caps.length ? 'consolidado' : comecou ? 'pratica' : 'novo',
-      estadoTexto: abertos === caps.length ? `Os ${caps.length} capítulos estão abertos. O mais fraco está ${noNivel(min)}.` : comecou ? `Começado: ${abertos} de ${caps.length} capítulos com nível.` : 'Ainda não começou.',
+      estadoTexto: abertos === caps.length ? `Os ${caps.length} capítulos estão abertos. O mais fraco está ${noNivel(min)}.` : comecou ? 'Começado. A régua mostra o capítulo mais fraco.' : 'Ainda não começou.',
       progresso: { feitas: abertos, total: caps.length, texto: `${abertos} de ${caps.length} capítulos abertos` },
     };
   }
@@ -1398,7 +1422,8 @@ export class Nucleo {
       const disponivel = materias.some(mt => mt.topicos.some(t => t.disponivel));
       return {
         id: a.id, nome: a.nome, disponivel, escolhida: escolhidas.includes(a.id), materias: disponivel ? materias : [],
-        frase: disponivel ? null : `${juntar(a.materias)}: chega nas próximas versões.`,
+        // "Filosofia e Sociologia" entra separada: uma lista com um "e" só, e o verbo no plural
+        frase: disponivel ? null : (l => `${juntar(l)} ${l.length > 1 ? 'chegam' : 'chega'} nas próximas versões.`)(a.materias.flatMap(x => x.split(' e '))),
       };
     });
     return {

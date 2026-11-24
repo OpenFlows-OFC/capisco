@@ -7,7 +7,7 @@
    falha de forma visível (nada de engolir 404).
    A lista ARQUIVOS é gerada por _dev/ui/gera_precache.mjs (não edite à mão).
    ========================================================= */
-const VERSAO = 'prumo-pwa-v8';
+const VERSAO = 'prumo-pwa-v9';
 const FONTES = 'prumo-pwa-fontes-v2';   // fontes do design system (Gabarito, Atkinson Hyperlegible Next e Mono); o activate apaga o cache antigo
 const PREFIXO = 'prumo-pwa-';
 // <precache>
@@ -98,11 +98,16 @@ const ARQUIVOS = [
   'conteudo/praticas/mat-porcentagem.teoria.js',
   'conteudo/praticas/mat-proporcao.js',
   'conteudo/praticas/mat-proporcao.teoria.js',
-  'conteudo/praticas/img/ap-cicero.jpg',
+  'conteudo/praticas/img/ap-congresso.jpg',
   'conteudo/praticas/img/ap-duas-imprensas.jpg',
+  'conteudo/praticas/img/ap-esmaltodont-1929.jpg',
+  'conteudo/praticas/img/ap-eucalol-1935.jpg',
+  'conteudo/praticas/img/ap-favo.jpg',
   'conteudo/praticas/img/ap-gazeta-1808.jpg',
-  'conteudo/praticas/img/ap-minard.jpg',
-  'conteudo/praticas/img/ap-nightingale.jpg',
+  'conteudo/praticas/img/ap-ipca-2015-2025.svg',
+  'conteudo/praticas/img/ap-ipca-2021-2022.svg',
+  'conteudo/praticas/img/ap-kolynos-1942.jpg',
+  'conteudo/praticas/img/ap-planta-quarto.svg',
   'conteudo/praticas/img/ap-vitruviano.jpg',
   'conteudo/praticas/img/enem-2020-145-1.png',
   'conteudo/praticas/img/enem-2021-153-1.jpg',

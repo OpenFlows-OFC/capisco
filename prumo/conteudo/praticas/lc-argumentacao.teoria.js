@@ -23,7 +23,7 @@ export const teoria = {
   secoes: [
     {
       titulo: 'Tese e argumentos',
-      imagem: {src: "./conteudo/praticas/img/ap-cicero.jpg",alt: "Pintura de um salão romano com senadores sentados em semicírculo; um orador de pé, à esquerda, aponta para um homem sentado sozinho à direita.",legenda: "Cícero discursa contra Catilina no Senado romano. Na argumentação há sempre uma tese (Catilina conspira), quem a defende, o oponente e o público que precisa ser convencido.",credito: "Cesare Maccari, Cícero denuncia Catilina, 1889. Domínio público. Wikimedia Commons."},
+      imagem: {src: "./conteudo/praticas/img/ap-esmaltodont-1929.jpg",alt: "Anúncio antigo em azul e branco: uma menina segura um tubo de pasta de dente maior que ela; da boca dela sai, em letras grandes, o nome Esmaltodont. No alto: O dentifrício ideal. Embaixo: Produz a mais rigorosa antisepsia buccal.",legenda: "Anúncio de 1929. A tese aparece no alto: Esmaltodont é “o dentifrício ideal”. O argumento vem embaixo: ele “produz a mais rigorosa antisepsia buccal”, na grafia da época.",credito: "Autor desconhecido, anúncio do dentifrício Esmaltodont, 1929. Domínio público. Wikimedia Commons."},
       paragrafos: [
         'Um texto argumentativo defende uma tese, isto é, uma opinião sobre um tema. Os argumentos são as razões que sustentam essa opinião.',
         'A estrutura mais comum tem introdução com a tese, desenvolvimento com os argumentos e conclusão que retoma a ideia central. É a mesma estrutura da redação do Enem.',
@@ -54,7 +54,7 @@ export const teoria = {
         'Saber o nome do argumento ajuda, mas o mais importante é perceber o que ele faz no texto: dar credibilidade, provar com números ou tornar a ideia concreta.',
       ],
       tabela: {
-        cabecalho: ['Tipo de argumento', 'O que faz', 'Exemplo (criado pela equipe)'],
+        cabecalho: ['Tipo de argumento', 'O que faz', 'Exemplo'],
         linhas: [
           ['autoridade', 'dá credibilidade com a voz de quem entende do assunto', '“Nutricionistas recomendam beber água ao longo de todo o dia.”'],
           ['dados', 'prova com números e pesquisas', '“Em uma pesquisa com 500 alunos, 7 em cada 10 disseram dormir menos de 7 horas.”'],
@@ -62,7 +62,7 @@ export const teoria = {
           ['causa e consequência', 'mostra que um fato provoca outro', '“Sem árvores, o asfalto esquenta mais, e a cidade fica mais quente.”'],
           ['comparação', 'aproxima duas situações', '“Assim como o corpo precisa de treino, a leitura melhora com a prática diária.”'],
         ],
-        legenda: 'Tabela 1. Os tipos de argumento mais cobrados, com um exemplo de cada.',
+        legenda: 'Tabela 1. Os tipos de argumento mais cobrados, com um exemplo de cada, criado pela equipe.',
       },
       exemplo: {
         enunciado: 'Leia: “A cidade precisa de mais ciclovias. Segundo um levantamento da secretaria de transportes, 40% das viagens no centro têm menos de 3 km, distância fácil de percorrer de bicicleta.” Que tipo de argumento sustenta a tese?',
@@ -122,6 +122,7 @@ export const teoria = {
         'Ironia diz o contrário do que se pensa para criticar (“que pontualidade”, para quem chegou atrasado). Eufemismo suaviza uma ideia (“ele partiu” no lugar de “ele morreu”). Antítese aproxima palavras opostas, e personificação atribui ações humanas a seres não humanos.',
         'Em anúncios e campanhas, essas figuras servem para persuadir. O Enem pergunta qual efeito o recurso produz: humor, crítica, emoção ou destaque de uma ideia.',
       ],
+      imagem: {src: "./conteudo/praticas/img/ap-kolynos-1942.jpg",alt: "Anúncio colorido em fundo azul: um bebê sentado numa toalha dá pasta de dente a uma boneca. No alto: É bom para você, tambem! Embaixo: Nunca é cedo... nem tarde demais para começar a escovar seus dentes com Kolynos.",legenda: "Anúncio de 1942. Repare na frase de baixo: “Nunca é cedo... nem tarde demais”. Cedo e tarde têm sentidos opostos e vêm lado a lado: é uma antítese. O contraste diz que qualquer idade serve para começar a escovar os dentes.",credito: "Kolynos, anúncio na contracapa da revista Careta n. 1749, 1942. Domínio público. Wikimedia Commons."},
       tabela: {
         cabecalho: ['Figura', 'Como reconhecer', 'Efeito mais comum'],
         linhas: [
@@ -139,7 +140,7 @@ export const teoria = {
           enunciado: 'Em um soneto de Luís de Camões (século XVI), lê-se: “Amor é fogo que arde sem se ver; / é ferida que dói, e não se sente; / é um contentamento descontente”. Que figuras aparecem e que efeito produzem?',
           resolucao: [
             '“Amor é fogo” e “amor é ferida” são metáforas: o amor é comparado a fogo e a ferida sem o uso de “como”.',
-            '“Dói, e não se sente” e “contentamento descontente” juntam ideias opostas. São antíteses, e a segunda chega ao paradoxo, uma afirmação que parece impossível.',
+            '“Dói, e não se sente” e “contentamento descontente” dizem, ao mesmo tempo, duas coisas opostas sobre o mesmo amor. Isso é paradoxo: uma afirmação que parece impossível. Na antítese, os opostos só ficam lado a lado, sem se contradizer.',
             'Efeito: mostrar que o amor é contraditório, difícil de explicar pela lógica.',
           ],
         },

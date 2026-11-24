@@ -126,6 +126,7 @@ export const teoria = {
         'Do desenho para o real, multiplique pelo denominador da escala. Do real para o desenho, divida. Para descobrir a escala, divida a medida real pela do desenho, com as duas na mesma unidade. O resultado n é o denominador, e a escala é 1 : n.',
         'Em plantas, o espaço desenhado nem sempre é o tamanho do objeto que cabe nele. Se o fabricante pede folga nas laterais e em cima, desconte as folgas da medida real.',
       ],
+      imagem: {src: "./conteudo/praticas/img/ap-planta-quarto.svg",alt: "Planta baixa de um quarto retangular, com cama, armário, janela na parede de cima e porta na parede de baixo. As cotas marcam 3,00 m de largura e 3,50 m de comprimento, e no centro está escrito Quarto, 10,50 m². Embaixo, uma escala gráfica: uma barra dividida em três trechos de 1 m, marcados 0, 1, 2 e 3 m.",legenda: "Planta de um quarto. As cotas dão as medidas reais, 3,00 m por 3,50 m, e o piso tem 3,00 · 3,50 = 10,5 m². A barra de baixo é a escala gráfica, e a largura do quarto ocupa a barra inteira: 3 m. Essa escala continua certa mesmo quando o desenho é ampliado ou reduzido.",credito: "Desenho da equipe Prumo. CC BY-SA 4.0."},
       figura: {
         svg: '<svg viewBox="0 0 320 222" role="img" xmlns="http://www.w3.org/2000/svg" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="13" fill="currentColor"><rect x="104" y="24" width="112" height="172" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 4"/><rect x="124" y="48" width="72" height="148" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="2"/><path d="M76 196H244" stroke="currentColor" stroke-width="3"/><g stroke="currentColor" stroke-width="1.5"><path d="M107 186H121M199 186H213M140 27V45"/></g><path d="M105 186L110 183V189zM123 186L118 183V189zM197 186L202 183V189zM215 186L210 183V189zM140 25L137 30H143zM140 47L137 42H143z" fill="currentColor"/><g text-anchor="middle"><text x="160" y="16">vão: 160 cm × 240 cm</text><text x="160" y="112">móvel</text><text x="160" y="130">150 × 232</text><text x="160" y="146">cm</text><text x="114" y="214">5 cm</text><text x="206" y="214">5 cm</text></g><text x="146" y="41">8 cm</text></svg>',
         alt: 'Desenho de um vão retangular tracejado de 160 cm de largura por 240 cm de altura, apoiado no chão. Dentro dele há um móvel de 150 por 232 cm, encostado no chão. Entre o móvel e cada parede lateral há uma folga de 5 cm, e entre o topo do móvel e o alto do vão há uma folga de 8 cm. As folgas estão desenhadas maiores que o real para ficarem visíveis.',
@@ -183,7 +184,7 @@ export const teoria = {
         legenda: 'Figura 3. Lado multiplicado por 2 ou por 3: área multiplicada por 4 ou por 9. Se fossem cubos, os volumes seriam 1, 8 e 27.',
       },
       tabela: {
-        cabecalho: ['Medida', 'Fica multiplicada por', 'Na escala 1 : 100'],
+        cabecalho: ['Medida', 'Multiplica por', 'Na escala 1 : 100'],
         linhas: [
           ['comprimento', 'k', '100'],
           ['área', 'k²', '10 000'],
