@@ -39,7 +39,8 @@ export function guardarEstrelas(st, id, n) {
   st.estrelas = st.estrelas || {};
   const antes = st.estrelas[id] || 0;
   if (n > antes) st.estrelas[id] = n;
-  return n > antes;
+  // 'primeiro' na primeira vez; 'melhor' quando supera o que já havia
+  return n > antes ? (antes ? 'melhor' : 'primeiro') : false;
 }
 
 export const DENTRO_PROVA = new Set(['provaPergunta', 'provaFeedback', 'provaTrecho']);
@@ -203,7 +204,7 @@ export class Missao {
     if (!parcial && m.placar && m.placar.total) {
       const n = estrelasDe(m.placar), alvos = m.topico ? [m.topico] : (m.resumo.rodadas || []).filter(fr => fr.venceu && !fr.extra).map(fr => fr.cap);
       m.placar.estrelas = n;
-      m.placar.recorde = alvos.map(id => guardarEstrelas(st, id, n)).some(Boolean);
+      m.placar.recorde = alvos.map(id => guardarEstrelas(st, id, n)).find(Boolean) || false;
     }
     // o visto do dia (carimbo) é da missão: só quando o dia contou como estudado e não é estudo livre; só cresce
     if (!m.livre && st.dias && st.dias[m.dia]) { st.carimbos = st.carimbos || {}; st.carimbos[m.dia] = true; }

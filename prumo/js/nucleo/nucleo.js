@@ -1076,7 +1076,7 @@ export class Nucleo {
       semanaPassada: st.dias[d] ? Plano.linhaSemanaPassada(st, d) : null,
       mudancas: mud,
       placar: m.placar && m.placar.total && !m.parcial ? { pontos: m.placar.pontos, acertos: m.placar.acertos, total: m.placar.total, maxSeq: m.placar.maxSeq,
-        estrelas: m.placar.estrelas || estrelasDe(m.placar), recorde: !!m.placar.recorde,
+        estrelas: m.placar.estrelas || estrelasDe(m.placar), recorde: m.placar.recorde || false,
         regra: '3 carimbos acertando 9 de cada 10 questões, 2 acertando 6 de cada 10, 1 por terminar a partida.' } : null,
       nivelAnimado: ultimaRodada && ultimaRodada.venceu && !ultimaRodada.extra ? { cap: ultimaRodada.cap, de: ultimaRodada.caixaAntes, para: ultimaRodada.caixaDepois, nome: rotuloNivel(ultimaRodada.caixaDepois), rotulo: rotuloNivel(ultimaRodada.caixaDepois) } : null,
       parcial: m.parcial ? `Você encerrou no passo ${m.encerradoNoPasso} de ${m.passos.length}. O que já tinha fechado hoje continua; o resto não mudou nenhum nível.` : null,
@@ -1656,7 +1656,22 @@ export class Nucleo {
       aviso: 'É treino: não mexe nos níveis da trilha nem no visto do dia.',
       recordes: rl.recordes.map((r, i) => ({ pos: i + 1, pontos: r.pontos, texto: `${r.acertos} de ${r.total} certas` })),
       partidas: rl.partidas, questoes: R2.questoes, segundos: R2.minutos * 60,
+      melhor: rl.recordes.length ? rl.recordes[0].pontos : null,
+      chamada: rl.recordes.length ? 'Questões sorteadas de tudo, 5 minutos. Dá para bater o seu recorde?' : 'Questões sorteadas de tudo, 5 minutos. Faça o primeiro placar.',
     };
+  }
+  /** Álbum de carimbos: o que já foi ganho em cada fase da trilha (3 por fase, o melhor resultado fica). */
+  album() {
+    const t = this.trilha();
+    const areas = t.areas.map(a => ({ id: a.id, nome: a.nome,
+      fases: a.fases.map(f => ({ id: f.id, n: f.n, titulo: f.titulo, chefe: f.tipo === 'chefe', estrelas: f.estrelas || 0, feita: f.estado === 'concluida' })) }))
+      .filter(a => a.fases.length);
+    const ganhos = areas.reduce((s, a) => s + a.fases.reduce((x, f) => x + f.estrelas, 0), 0);
+    const max = areas.reduce((s, a) => s + a.fases.length * 3, 0);
+    const cheias = areas.reduce((s, a) => s + a.fases.filter(f => f.estrelas === 3).length, 0);
+    return { titulo: 'Álbum de carimbos', ganhos, max, cheias, areas,
+      texto: ganhos ? (cheias ? `${cheias} ${cheias === 1 ? 'fase' : 'fases'} com os 3 carimbos. Cada fase vale até 3.` : 'Cada fase vale até 3 carimbos.') : 'Nenhum carimbo ainda. Cada fase vale até 3.',
+      regra: 'Cada fase guarda o melhor carimbo que você já tirou nela. Um resultado pior não apaga o melhor.' };
   }
   /** Fila sorteada: questões do Enem e da equipe de todos os tópicos e capítulos (rand injetável nos testes). */
   sortearRelampago(rand = Math.random) {

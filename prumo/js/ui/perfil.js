@@ -6,7 +6,7 @@
    ========================================================= */
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { marca, trofeu, iconeArea } from './componentes.js';
+import { marca, trofeu, iconeArea, carimbos } from './componentes.js';
 import { secoesAjustes } from './ajustes.js';
 
 const SEM_DATA = new Set(['enem', 'naosei']);
@@ -28,8 +28,9 @@ export function telaPerfil(ctx, t, rota) {
       <p><button type="button" class="link" data-acao="pfFoto">${v.fotoTexto}</button>${v.foto ? h` <button type="button" class="link" data-acao="pfTirarFoto" style="margin-left:16px">Tirar a foto</button>` : ''}</p>
       <p class="pequeno texto-2" style="margin-top:0">${v.fotoNota}</p>
 
-      ${colecao(n.colecao(ctx.ui.memoria.mesColecao))}
+      ${album(n.album())}
       ${trofeus(n)}
+      ${colecao(n.colecao(ctx.ui.memoria.mesColecao))}
 
       <details class="detalhes-missao perfil-grupo" id="pf-plano" ${abrirPlano ? cru('open') : ''}><summary>Seu nome e seu plano</summary>
       <form class="secao" data-enviar="pfNome" novalidate aria-labelledby="pf-nome-t">
@@ -82,6 +83,19 @@ function trofeus(n) {
     <h2 class="titulo-pequeno" id="pf-trofeus-t">Troféus</h2>
     ${trofeu(p.trofeu)}
     <p class="pequeno texto-2">Prova do caderno de ${p.trofeu.nome}. ${p.texto}${p.selos && p.selos.length ? ` Selo de ${p.selos.map(x => x.nome).join(' e ')}.` : ''}</p>
+  </section>`;
+}
+
+/** Álbum de carimbos: cada fase da trilha com os carimbos ganhos (até 3). */
+function album(a) {
+  return h`<section class="secao album" aria-labelledby="album-t">
+    <h2 class="titulo-pequeno" id="album-t">${a.titulo}</h2>
+    <p><span class="album-total">${a.ganhos}</span> de ${a.max} carimbos</p>
+    <p class="pequeno texto-2" style="margin-top:0">${a.texto}</p>
+    ${cada(a.areas, ar => h`<div class="album-area"><h3>${ar.nome}</h3>
+      <ul class="album-grade">${cada(ar.fases, f => h`<li class="${!f.estrelas ? 'vazia' : f.estrelas === 3 ? 'cheia' : ''}">
+        <span class="album-n">${f.chefe ? 'Chefão' : `Fase ${f.n}`}</span>${carimbos(f.estrelas)}<span class="album-t">${f.titulo}</span></li>`)}</ul></div>`)}
+    <p class="pequeno texto-2">${a.regra}</p>
   </section>`;
 }
 

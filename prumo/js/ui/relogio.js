@@ -6,11 +6,20 @@
    A partida vive só na tela (ctx.ui.rl); o núcleo guarda os 5 melhores
    placares deste aparelho. Não mexe em nível nem no visto do dia.
    ========================================================= */
-import { h, cada } from './dom.js';
+import { h, cada, cru } from './dom.js';
 import { registrar } from './registro.js';
 import { enunciado, alternativasPergunta, alternativasFeedback, rodape, questaoCab, prepararFiguras, ampliarFigura, carimbos } from './componentes.js';
 
 export const RELOGIO = '<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M10 3h4M12 3v3M18.5 6.5l1.5-1.5"/></svg>';
+
+/** Cartão de entrada (Estudar e Hoje): leva ao modo e chama para bater o recorde. */
+export function entradaRelogio(v) {
+  return h`<a class="relampago-entrada" href="#/estudar/relogio">
+      <span class="relampago-icone" aria-hidden="true">${cru(RELOGIO)}</span>
+      <span><span class="relampago-titulo">${v.titulo}</span><span class="pequeno texto-2">${v.chamada}</span></span>
+      ${v.melhor != null ? h`<span class="relampago-recorde" aria-hidden="true"><b>${v.melhor}</b>recorde</span>` : ''}
+    </a>`;
+}
 
 const agora = () => Date.now();
 const mmss = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
@@ -19,7 +28,8 @@ const estrelasDe = (a, n) => (!a ? 0 : a / n >= 0.8 ? 3 : a / n >= 0.5 ? 2 : 1);
 
 function novaPartida(n) {
   const v = n.relampago();
-  return { fila: n.sortearRelampago(), i: 0, pontos: 0, seq: 0, maxSeq: 0, acertos: 0, total: 0, fimEm: agora() + v.segundos * 1000, resp: null, acabou: null };
+  // 3, 2, 1: o relógio só começa a correr depois da contagem
+  return { fila: n.sortearRelampago(), i: 0, pontos: 0, seq: 0, maxSeq: 0, acertos: 0, total: 0, largada: agora() + 3000, fimEm: null, segundos: v.segundos, resp: null, acabou: null };
 }
 function terminar(ctx, { porTempo }) {
   const rl = ctx.ui.rl;
@@ -85,6 +95,27 @@ export function telaRelogio(ctx) {
       </main>`,
     };
   }
+  if (rl.largada) {
+    const falta = () => Math.max(1, Math.ceil((rl.largada - agora()) / 1000));
+    return {
+      chave: `relogio:largada:${rl.largada}`, titulo: v.titulo, semAbas: true,
+      html: h`<main class="missao relampago rl-largada">
+        <p class="rotulo">Contra o relógio · ${rl.fila.length} questões · ${v.segundos / 60} minutos</p>
+        <p class="rl-conta" id="rl-conta" aria-live="assertive">${falta()}</p>
+        <p class="texto-2">Prepare o lápis.</p>
+      </main>`,
+      depois() {
+        let ultimo = falta();
+        const id = setInterval(() => {
+          if (ctx.ui.rl !== rl || !rl.largada) return clearInterval(id);
+          if (agora() >= rl.largada) { clearInterval(id); rl.largada = null; rl.fimEm = agora() + rl.segundos * 1000; ctx.tocar('acerto'); ctx.render(); return; }
+          const f = falta(), el = document.getElementById('rl-conta');
+          if (el && f !== ultimo) { ultimo = f; el.textContent = f; el.classList.remove('bate'); void el.offsetWidth; el.classList.add('bate'); }
+        }, 100);
+        return () => clearInterval(id);
+      },
+    };
+  }
   const q = n.questaoRelampago(rl.fila[rl.i]);
   const k = `rl:${rl.fimEm}:${rl.i}`;
   const depois = raiz => {
@@ -122,7 +153,8 @@ export function telaRelogio(ctx) {
       <section class="feedback rl-feedback" aria-labelledby="rl-fb"><h1 class="feedback-titulo" id="rl-fb" tabindex="-1" data-foco-inicial>${ok ? 'Certa!' : `Você marcou ${r.alt}. A certa é ${q.gabarito}.`}</h1>
         ${ok ? h`<p class="combo-linha"><span class="combo-ganho">+${r.ganho} pontos</span>${rl.seq >= 2 ? h` <span class="combo">${rl.seq} seguidas · x${Math.min(3, rl.seq)}</span>` : ''}</p>` : h`<p class="texto-2">O combo voltou a zero. O relógio continua correndo.</p>`}
       </section>
-      <section class="pergunta"><div class="pergunta-cabeca">${questaoCab(q.item)}</div>${enunciado(q.item)}${alternativasFeedback(alts)}${rodape(q.item.rodape, q.item.licencaUrl)}</section></main>`,
+      <section class="pergunta rl-curta">${alternativasFeedback(alts)}
+        <details class="rl-enunciado"><summary>Rever o enunciado</summary><div class="pergunta-cabeca">${questaoCab(q.item)}</div>${enunciado(q.item)}${rodape(q.item.rodape, q.item.licencaUrl)}</details></section></main>`,
     barra: h`<button type="button" class="botao botao-largo" data-acao="rlProxima">${rl.i + 1 >= rl.fila.length ? 'Ver o placar' : 'Próxima'}</button>`,
     depois,
   };
@@ -134,10 +166,10 @@ registrar({
     rlSair(ctx, el, e) { if (e) e.preventDefault(); ctx.ui.rl = null; ctx.ui.selecao = null; ctx.irPara('#/estudar'); },
     rlResponder(ctx, el) {
       const rl = ctx.ui.rl, s = ctx.ui.selecao, k = el.dataset.chave;
-      if (!rl || rl.resp || rl.acabou) return;
+      if (!rl || rl.resp || rl.acabou || rl.largada) return;
       if (!s || s.chave !== k) { const r = document.querySelector('#tela input[name="alt"]'); if (r) r.focus(); ctx.anunciar('Escolha uma alternativa.'); return; }
       ctx.ui.selecao = null;
-      if (rl.fimEm - agora() <= 0) { terminar(ctx, { porTempo: true }); ctx.render(); return; }
+      if (!rl.fimEm || rl.fimEm - agora() <= 0) { terminar(ctx, { porTempo: true }); ctx.render(); return; }
       const q = ctx.nucleo.questaoRelampago(rl.fila[rl.i]), ok = s.alt === q.gabarito;
       rl.total++;
       if (ok) { rl.acertos++; rl.seq++; rl.maxSeq = Math.max(rl.maxSeq, rl.seq); } else rl.seq = 0;

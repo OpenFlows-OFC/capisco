@@ -215,3 +215,9 @@ Testes: `node --test "_dev/testes/*.test.mjs"` (na pasta `prumo/`). Rodam contra
 - **Carimbos** (`st.estrelas[faseId]`, 1 a 3): ao fechar a missão inteira, 3 acertando 9 de cada 10, 2 acertando 6 de cada 10, 1 por terminar. Fica o melhor; `trilha()` devolve `estrelas` em cada fase concluída.
 - **Vidas do Chefão** (`prova.vidas`, 3 lápis): cada erro quebra um; sem lápis, a Prova acaba não vencida (nada do que foi firmado muda). Vencida, os lápis que sobraram viram os carimbos do Chefão. `topo.vidas`: `{ total, restam }`.
 - **Contra o relógio**: `relampago()` (regra, recordes e partidas), `sortearRelampago(rand?)` (até 15 ids de todas as fases), `questaoRelampago(id)` (`{ item, gabarito, area, tema }`) e `registrarRelampago({ pontos, acertos, total })` (guarda os 5 melhores; devolve a posição, 0 se ficou fora). É treino: não mexe em nível nem no visto. A partida vive na tela (`js/ui/relogio.js`, rota `#/estudar/relogio`).
+
+## v12
+- `album()` → `{titulo, ganhos, max, cheias, areas:[{id, nome, fases:[{id, n, titulo, chefe, estrelas, feita}]}], texto, regra}`: carimbos de todas as fases (até 3 cada).
+- `relampago()` ganha `melhor` (maior placar ou `null`) e `chamada` (texto do cartão em Hoje e Estudar).
+- `encerramento().placar.recorde` agora é `'primeiro'`, `'melhor'` ou `false`.
+- Contra o relógio (UI): contagem 3-2-1 antes do relógio correr; feedback curto (alternativas + "Rever o enunciado").

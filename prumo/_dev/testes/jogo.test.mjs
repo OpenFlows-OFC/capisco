@@ -54,3 +54,20 @@ for (const pk of await packs()) {
     assert.equal(n.registrarRelampago({ pontos: 999, acertos: 15, total: 15 }), 1);
   });
 }
+
+for (const pk of await packs()) {
+  test(`[${pk.nome}] álbum: soma os carimbos das fases e o recorde chama no cartão`, () => {
+    const { n } = novo(pk.dados);
+    let a = n.album();
+    assert.equal(a.ganhos, 0);
+    assert.ok(a.max > 0 && a.max % 3 === 0);
+    assert.equal(n.relampago().melhor, null);
+    n.carregarExemplo();
+    a = n.album();
+    const soma = a.areas.flatMap(x => x.fases).reduce((s, f) => s + f.estrelas, 0);
+    assert.equal(a.ganhos, soma);
+    assert.ok(a.ganhos > 0 && a.ganhos <= a.max);
+    assert.equal(n.relampago().melhor, 412);
+    assert.match(n.relampago().chamada, /recorde/);
+  });
+}
