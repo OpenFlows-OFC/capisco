@@ -7,7 +7,7 @@
    falha de forma visível (nada de engolir 404).
    A lista ARQUIVOS é gerada por _dev/ui/gera_precache.mjs (não edite à mão).
    ========================================================= */
-const VERSAO = 'prumo-pwa-v9';
+const VERSAO = 'prumo-pwa-v10';
 const FONTES = 'prumo-pwa-fontes-v2';   // fontes do design system (Gabarito, Atkinson Hyperlegible Next e Mono); o activate apaga o cache antigo
 const PREFIXO = 'prumo-pwa-';
 // <precache>
@@ -43,6 +43,7 @@ const ARQUIVOS = [
   'js/ui/componentes.js',
   'js/ui/dom.js',
   'js/ui/estudar.js',
+  'js/ui/fases.js',
   'js/ui/hoje.js',
   'js/ui/missao.js',
   'js/ui/perfil.js',

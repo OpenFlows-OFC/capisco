@@ -12,6 +12,7 @@
 import { h, cada } from './dom.js';
 import { registrar } from './registro.js';
 import { marca, constancia, cabecalhoProva, recado, semQuebra } from './componentes.js';
+import { blocoHojeTrilha, guardarFoto } from './fases.js';
 
 /** Topo das abas: a marca; em Hoje, a saudação, a data e os risquinhos em destaque. */
 export function topoAba({ data, constancia: c, saudacao } = {}) {
@@ -140,8 +141,10 @@ export function telaHoje(ctx, t) {
       ${vm.intencao ? h`<p class="intencao">${vm.intencao.texto}</p>` : ''}
       ${vm.bloco ? '' : venceHoje(vm.venceHoje)}
       ${corpo}
+      ${blocoHojeTrilha(ctx.nucleo)}
       ${semana(vm.semana)}
       ${blocoProva(vm.prova)}`,
+    depois() { guardarFoto(ctx.nucleo); },
   };
 }
 

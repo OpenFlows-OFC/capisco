@@ -79,7 +79,7 @@ export function visto(v, { novo = false } = {}) {
 
 /* ---------------- Troféu da Prova do caderno ---------------- */
 // taça em traço (24 px, como os ícones das abas): copo, alças, haste e base
-const TACA = '<svg class="pr-trofeu-taca" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h10v5a5 5 0 0 1-10 0z"/><path d="M7 5.5H4.5v1.2a3.3 3.3 0 0 0 3 3.3M17 5.5h2.5v1.2a3.3 3.3 0 0 1-3 3.3"/><path d="M12 13.5v3.5M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg>';
+export const TACA = '<svg class="pr-trofeu-taca" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h10v5a5 5 0 0 1-10 0z"/><path d="M7 5.5H4.5v1.2a3.3 3.3 0 0 0 3 3.3M17 5.5h2.5v1.2a3.3 3.3 0 0 1-3 3.3"/><path d="M12 13.5v3.5M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg>';
 /** Troféu: o mesmo carimbo do visto (roxo, com falhas de tinta; a única cor de conquista), com a taça,
  *  o nome do caderno e o dia em que a Prova foi vencida. t = { nome, dia: 'aaaa-mm-dd' } do núcleo. */
 export function trofeu(t, { novo = false } = {}) {

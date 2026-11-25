@@ -6,9 +6,9 @@
    Tudo vem pronto do núcleo (estudar(), topicoPagina(id), teoriaLivre(id)).
    "Estudar este tópico hoje" manda ESTUDAR_TOPICO (ou CONTINUAR) à máquina.
    ========================================================= */
-import { h, cada } from './dom.js';
+import { h, cada, cru } from './dom.js';
 import { registrar } from './registro.js';
-import { nivel, teoria, prepararFiguras, ampliarFigura, comoFunciona, acompanharSumario, idDaAncora, irParaSecao, iconeArea } from './componentes.js';
+import { nivel, teoria, prepararFiguras, ampliarFigura, comoFunciona, acompanharSumario, idDaAncora, irParaSecao, iconeArea, TACA } from './componentes.js';
 
 /* "Como funciona um tópico": aberta até o aluno começar o primeiro tópico (logo abaixo do botão, que fica
    à vista); depois, recolhida. */
@@ -16,6 +16,7 @@ const CHAVE_COMO = 'prumo-ui-como-funciona';
 function jaViuComo() { try { return localStorage.getItem(CHAVE_COMO) === '1'; } catch (e) { return false; } }
 function marcarComo() { try { localStorage.setItem(CHAVE_COMO, '1'); } catch (e) { /* sem armazenamento: segue aberta */ } }
 import { topoAba } from './hoje.js';
+import { guardarFoto } from './fases.js';
 
 function linhaTopico(t) {
   const corpo = h`<span class="topico-titulo">${t.titulo}</span>
@@ -27,16 +28,67 @@ function linhaTopico(t) {
     : h`<li><div class="topico-linha inativo">${corpo}</div></li>`;
 }
 
-function mapa(v) {
+/* ---------------- Trilha de fases (o mapa do Estudar) ----------------
+   Cada área é um caminho de fases, de cima para baixo, em zigue-zague, como as casas de um jogo de tabuleiro
+   desenhado no caderno: o caminho é um traço de lápis (tracejado) e vira caneta (tinta) até a fase atual.
+   Fase: bolha do cartão-resposta com o número (Mono). Concluída = bolha cheia com ✓; atual = grifo de
+   marca-texto e "Você está aqui"; bloqueada = contorno tracejado (sem cadeado, como no Caderno).
+   O Chefão é a Prova do caderno: a taça do troféu, no roxo do carimbo. Tocar numa fase abre o balão
+   com o objetivo e o que se ganha (o briefing do Capisco). */
+const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
+const ZIGUE = [0, 1, 2, 1];
+function noFase(f, i) {
+  const miolo = f.tipo === 'chefe' ? cru(TACA) : f.estado === 'concluida' ? cru(CHECK) : h`<span class="fase-n">${f.n}</span>`;
+  const rotulo = f.tipo === 'chefe' ? `Chefão: ${f.titulo}. ${f.legenda}.` : `Fase ${f.n}: ${f.titulo}. ${f.legenda}.`;
+  return h`<li class="fase fase-${f.estado}${f.atual ? ' fase-atual' : ''}${f.tipo === 'chefe' ? ' fase-chefe' : ''}" style="--zz:${ZIGUE[i % ZIGUE.length]}">
+    <button type="button" class="fase-no" data-folha="fase" data-arg="${f.id}" aria-label="${rotulo}">${miolo}</button>
+    <span class="fase-rotulo">
+      ${f.atual ? h`<span class="fase-aqui">Você está aqui</span>` : ''}
+      <span class="fase-num">${f.tipo === 'chefe' ? 'Chefão' : `Fase ${f.n}`}</span>
+      <span class="fase-titulo">${f.tipo === 'capitulo' ? f.curto : f.titulo}</span>
+      ${f.nivel && f.estado === 'concluida' ? nivel({ cheios: f.nivel.cheios, nome: f.nivel.rotulo }) : h`<span class="fase-legenda">${f.atual ? 'Toque para ver o objetivo' : f.legenda}</span>`}
+    </span>
+  </li>`;
+}
+function mapa(v, emBreve) {
   return h`<h1 class="titulo" tabindex="-1" data-foco-inicial>${v.titulo}</h1>
     <p>${v.intro}</p>
-    ${cada(v.areas, a => h`<section class="mapa-area" aria-labelledby="area-${a.id}">
-      <h2 class="mapa-area-titulo" id="area-${a.id}">${iconeArea(a.id)}${a.nome}${a.disponivel ? '' : h`<span class="etiqueta">em breve</span>`}</h2>
-      ${a.disponivel ? cada(a.materias, mt => h`
-        ${a.materias.length > 1 || mt.nome !== a.nome ? h`<p class="rotulo mapa-materia">${mt.nome}</p>` : ''}
-        <ul class="lista-topicos">${cada(mt.topicos, linhaTopico)}</ul>`) : h`<p class="mapa-embreve">${a.frase}</p>`}
+    ${cada(v.areas, a => h`<section class="trilha-area" aria-labelledby="area-${a.id}">
+      <h2 class="mapa-area-titulo" id="area-${a.id}">${iconeArea(a.id)}${a.nome}</h2>
+      <div class="trilha-placar">
+        <span class="trilha-conta"><b>${a.feitas}</b> de <b>${a.total}</b> fases</span>
+        <span class="trilha-barra" aria-hidden="true"><i style="width:${Math.round(100 * a.feitas / Math.max(1, a.total))}%"></i></span>
+      </div>
+      <p class="pequeno texto-2 trilha-texto">${a.texto}</p>
+      <div class="trilha-mapa">
+        <svg class="trilha-caminho" aria-hidden="true" focusable="false"></svg>
+        <ol class="trilha-fases">${cada(a.fases, noFase)}</ol>
+      </div>
+      <p class="trilha-fim">${a.feitas === a.total ? 'Trilha completa. As revisões continuam chegando na data certa.' : a.id === 'MT' ? 'No fim do caderno, o Chefão: vença a Prova e ganhe o troféu.' : 'Mais fases chegam nas próximas versões.'}</p>
     </section>`)}
-    <p class="pequeno texto-2" style="margin-top:24px">${v.regraNivel}</p>`;
+    ${emBreve.length ? h`<section class="mapa-area"><h2 class="titulo-pequeno">Em breve</h2>${cada(emBreve, a => h`<p class="mapa-embreve">${iconeArea(a.id)} <b>${a.nome}:</b> ${a.frase}</p>`)}</section>` : ''}
+    <p class="pequeno texto-2" style="margin-top:24px">${v.regra}</p>`;
+}
+/** Desenha o caminho entre as fases: lápis tracejado; caneta até a fase atual (ou a última concluída). */
+function desenharCaminhos(raiz) {
+  const mapas = [...raiz.querySelectorAll('.trilha-mapa')];
+  const fazer = () => mapas.forEach(m => {
+    const svg = m.querySelector('.trilha-caminho'), nos = [...m.querySelectorAll('.fase-no')];
+    if (!svg || nos.length < 2) return;
+    const b = m.getBoundingClientRect();
+    const pts = nos.map(n => { const r = n.getBoundingClientRect(); return [r.left - b.left + r.width / 2, r.top - b.top + r.height / 2]; });
+    const seg = (a, c) => { const my = (a[1] + c[1]) / 2; return `C${a[0]} ${my} ${c[0]} ${my} ${c[0]} ${c[1]}`; };
+    const caminho = l => l.length < 2 ? '' : `M${l[0][0]} ${l[0][1]}` + l.slice(1).map((p, k) => seg(l[k], p)).join('');
+    const lis = nos.map(n => n.parentElement);
+    let ate = lis.findIndex(li => li.classList.contains('fase-atual'));
+    if (ate < 0) ate = lis.reduce((k, li, i) => (li.classList.contains('fase-concluida') ? i : k), 0);
+    svg.setAttribute('width', b.width); svg.setAttribute('height', b.height);
+    svg.innerHTML = `<path class="lapis" d="${caminho(pts)}"/><path class="caneta" d="${caminho(pts.slice(0, ate + 1))}"/>`;
+  });
+  fazer();
+  const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(fazer) : null;
+  if (ro) mapas.forEach(m => ro.observe(m));
+  return () => ro && ro.disconnect();
 }
 
 function botaoAcao(a) {
@@ -55,8 +107,8 @@ function linhaCapitulo(c, pag) {
   return pag ? h`<li><a class="topico-linha" href="#/caderno/pagina/${pag}">${corpo}</a></li>` : h`<li class="topico-linha">${corpo}</li>`;
 }
 function paginaTopico(p, n) {
-  if (!p) return h`<p>Tópico não encontrado.</p><p><a class="link" href="#/estudar">Voltar ao mapa</a></p>`;
-  return h`<p class="voltar-mapa"><a class="link" href="#/estudar">Voltar ao mapa</a></p>
+  if (!p) return h`<p>Tópico não encontrado.</p><p><a class="link" href="#/estudar">Voltar à trilha</a></p>`;
+  return h`<p class="voltar-mapa"><a class="link" href="#/estudar">Voltar à trilha</a></p>
     <p class="rotulo rotulo-area">${iconeArea(p.area)}${p.area}${p.materia && p.materia !== p.area ? h`, ${p.materia}` : ''}</p>
     <h1 class="titulo" tabindex="-1" data-foco-inicial>${p.titulo}</h1>
     ${p.disponivel ? h`
@@ -77,7 +129,7 @@ function primeiraPagina(n, c, k) {
 }
 
 function teoriaLivre(v, id, ancora, deErros) {
-  if (!v) return h`<p>Apostila não encontrada.</p><p><a class="link" href="#/estudar">Voltar ao mapa</a></p>`;
+  if (!v) return h`<p>Apostila não encontrada.</p><p><a class="link" href="#/estudar">Voltar à trilha</a></p>`;
   const voltar = deErros ? h`<a class="link" href="#/caderno/erros">Voltar ao Caderno de erros</a>` : h`<a class="link" href="#/estudar/${id}">Voltar ao tópico</a>`;
   return h`<p class="voltar-mapa">${voltar}</p>
     <p class="pr-recado" role="note">${v.aviso}</p>
@@ -89,7 +141,7 @@ function teoriaLivre(v, id, ancora, deErros) {
 export function telaEstudar(ctx, t, rota) {
   const n = ctx.nucleo, id = rota.sub;
   let corpo, titulo = 'Estudar', ancora = null;
-  if (!id) corpo = mapa(n.estudar());
+  if (!id) { const ar = n.estudar().areas; corpo = mapa(n.trilha(), ar.filter(a => !a.disponivel)); }
   else if (rota.resto[0] === 'teoria') {
     const resto = rota.resto.filter(x => x !== 'de-erros'), v = n.teoriaLivre(id);
     ancora = idDaAncora(resto[1]); corpo = teoriaLivre(v, id, ancora, resto.length < rota.resto.length); titulo = v ? `Apostila: ${v.titulo}` : titulo;
@@ -104,12 +156,33 @@ export function telaEstudar(ctx, t, rota) {
       prepararFiguras(raiz.querySelector('#principal') || raiz, {
         aoAmpliar: el => ampliarFigura(ctx, el),
       });
-      return acompanharSumario(raiz);
+      const parar = acompanharSumario(raiz), parar2 = id ? null : desenharCaminhos(raiz);
+      if (!id) guardarFoto(n);
+      return () => { if (parar) parar(); if (parar2) parar2(); };
     },
   };
 }
 
 registrar({
+  folhas: {
+    /** Balão da fase: o objetivo, o que se ganha e o botão para jogar (o briefing do Capisco). */
+    fase(ctx, id) {
+      let f = null;
+      for (const a of ctx.nucleo.trilha().areas) f = f || a.fases.find(x => x.id === id);
+      if (!f) return null;
+      const chefe = f.tipo === 'chefe';
+      return {
+        rotulo: chefe ? 'Chefão' : `Fase ${f.n}`,
+        corpo: h`<div class="balao-fase fase-${f.estado}">
+          <h2 class="titulo-pequeno">${f.titulo}</h2>
+          ${f.nivel && f.nivel.cheios ? nivel({ cheios: f.nivel.cheios, nome: f.nivel.rotulo }) : h`<p class="rotulo">${f.legenda}</p>`}
+          <p><strong>${f.estado === 'bloqueada' ? 'Para liberar:' : chefe ? 'Regra:' : f.estado === 'concluida' ? 'Situação:' : 'Objetivo:'}</strong> ${f.motivo}</p>
+          ${f.estado !== 'concluida' || chefe ? h`<p class="pr-recado"><strong>Você ganha:</strong> ${f.ganho}</p>` : ''}
+        </div>`,
+        pe: f.estado === 'bloqueada' ? '' : h`<a class="botao botao-largo" href="${f.href}">${chefe ? 'Ver a Prova no Caderno' : f.estado === 'concluida' ? 'Abrir a fase' : 'Jogar esta fase'}</a>`,
+      };
+    },
+  },
   acoes: {
     estudarTopico(ctx, el) {
       marcarComo();

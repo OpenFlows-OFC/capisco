@@ -342,3 +342,22 @@ for (const pk of await packs()) {
     assert.equal(h.recomeco.titulo, 'Semana nova: começa limpa');
   });
 }
+
+/* Trilha de fases: tópicos em corrente (o 1º de cada área livre), capítulos pelo pré-requisito do caderno, Prova como Chefão. */
+for (const pk of await packs()) {
+  test(`[${pk.nome}] trilha: o 1º tópico de cada área está liberado, o seguinte só depois do nível 1 de 5`, () => {
+    const { n } = novo(pk.dados, { perfil: { ...PERFIL, areas: ['MT', 'LC'] } });
+    const t = n.trilha();
+    for (const a of t.areas) {
+      const tops = a.fases.filter(f => f.tipo === 'topico');
+      if (!tops.length) continue;
+      assert.equal(tops[0].estado, 'liberada', `${a.id}: o 1º tópico abre`);
+      for (const f of tops.slice(1)) assert.equal(f.estado, 'bloqueada', `${a.id}: ${f.id} espera o anterior`);
+      for (const f of tops.slice(1)) assert.equal(n.topicoPagina(f.id).acao.disponivel, false);
+      assert.ok(a.atual, 'sempre há uma fase atual');
+      assert.equal(a.feitas, 0);
+    }
+    const mt = t.areas.find(a => a.id === 'MT');
+    if (mt) assert.equal(mt.fases.filter(f => f.tipo === 'chefe').length, 1, 'a Prova do caderno é o Chefão');
+  });
+}

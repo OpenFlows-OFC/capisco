@@ -10,6 +10,7 @@ import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
 import { marca, visto, constancia, trilha, rodape, semQuebra } from './componentes.js';
 import { trilhaDe } from './missao.js';
+import { passouDeFase, blocoPassou } from './fases.js';
 
 /** "Quando e onde": dia (o próximo dia de estudo), hora e uma âncora da rotina. Vira o horário do lembrete. */
 function quando(q) {
@@ -52,6 +53,7 @@ export function telaPronto(ctx, vm) {
       <h1 class="manchete colofao-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>
       ${frases.length ? h`<ul class="pr-frases" aria-label="O que mudou hoje">${cada(frases, f => h`<li>${f}</li>`)}</ul>` : ''}
       ${visto(vm.visto, { novo: nova })}
+      ${blocoPassou(passouDeFase(ctx.nucleo))}
       ${p ? h`<section class="proxima-bloco" aria-label="Próxima missão">
         <p class="proxima-texto"><strong class="proxima-rotulo">Próxima missão</strong> ${semQuebra(p.texto)}</p>
         ${p.gancho ? h`<p>${semQuebra(p.gancho)}</p>` : ''}

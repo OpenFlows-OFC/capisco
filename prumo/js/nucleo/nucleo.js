@@ -1433,10 +1433,80 @@ export class Nucleo {
       regraNivel: `${regraNivel('o tópico', this._teto())} As revisões são marcadas pela data da sua prova.`,
     };
   }
+  /** Trilha de fases (aba Estudar, Hoje e Pronto): cada área do Enem vira uma sequência de fases.
+   *  Matemática: os 4 capítulos do caderno, a Prova do caderno (o Chefão, fora da corrente) e os tópicos.
+   *  Regra: uma fase é concluída quando entra no nível 1 de 5; a seguinte libera nesse momento.
+   *  Capítulo segue o pré-requisito do pack; tópico já começado nunca volta a ficar bloqueado. */
+  trilha() {
+    const st = this.st, d = R.hoje(), escolhidas = (st.perfil && st.perfil.areas) || ['MT'];
+    const caixa = id => (st.topicos[id] || {}).caixa || 0;
+    const comecou = id => { const x = st.topicos[id] || {}; return !!(x.caixa || (x.tentativas || []).length || (x.rodadas || []).length); };
+    const nv = c => ({ cheios: c, rotulo: rotuloNivel(c) });
+    const areas = [];
+    for (const a of AREAS) {
+      const fases = [];
+      if (a.id === 'MT') {
+        const s = this.sumario();
+        for (const c of s.capitulos) fases.push({ id: c.id, tipo: 'capitulo', titulo: `Cap. ${c.n}: ${c.titulo}`, curto: c.titulo, href: `#/estudar/${this.pack.id}`, nivel: nv(c.nivel.cheios), bloqueioPack: c.bloqueado ? c.regra : null, conta: true });
+        const pv = s.prova;
+        fases.push({ id: `${this.pack.id}:prova`, tipo: 'chefe', titulo: `Prova de ${this.pack.titulo}`, curto: 'Prova do caderno', href: '#/caderno', nivel: null, conta: false,
+          estado: pv.estado === 'vencida' ? 'concluida' : pv.estado === 'liberada' ? 'liberada' : 'bloqueada',
+          legenda: pv.estado === 'vencida' ? 'Troféu ganho' : pv.estado === 'liberada' ? 'Chefão liberado' : 'Chefão',
+          motivo: pv.estado === 'vencida' ? pv.texto : pv.estado === 'liberada' ? `${pv.regra}. Ela aparece em Hoje antes da missão do dia.` : pv.texto,
+          ganho: 'O troféu do caderno e o selo de Matemática.' });
+      }
+      for (const c of CONHECIDOS.filter(x => x.area === a.id)) {
+        const r = this._resumoTopico(c.id);
+        if (!r.disponivel) continue;
+        fases.push({ id: c.id, tipo: 'topico', titulo: r.titulo, curto: r.titulo.split(':')[0], href: `#/estudar/${c.id}`, nivel: nv(r.nivel.cheios), conta: true, comecou: comecou(c.id) });
+      }
+      if (!fases.length) continue;
+      // a corrente dos tópicos: concluído (nível 1+) → o próximo libera; o 1º tópico da área está sempre liberado.
+      // Capítulos seguem o pré-requisito do próprio caderno.
+      let antTop = null, n = 0, atual = null;
+      for (const f of fases) {
+        if (!f.conta) continue;
+        f.n = ++n;
+        const feita = caixa(f.id) >= 1;
+        if (feita) f.estado = 'concluida';
+        else if (f.bloqueioPack) { f.estado = 'bloqueada'; f.motivo = f.bloqueioPack; }
+        else if (f.tipo === 'capitulo' || !antTop || antTop.estado === 'concluida' || f.comecou) f.estado = 'liberada';
+        else { f.estado = 'bloqueada'; f.motivo = `Libera quando “${antTop.curto}” entrar no nível 1 de 5.`; }
+        if (!atual && f.estado === 'liberada') { atual = f; f.atual = true; }
+        if (f.estado === 'concluida') f.legenda = f.nivel.rotulo;
+        else if (f.estado === 'liberada') f.legenda = f.atual ? 'Fase atual' : comecou(f.id) ? 'Começada' : 'Liberada';
+        else f.legenda = 'Bloqueada';
+        if (!f.motivo) f.motivo = f.estado === 'concluida' ? `Fase concluída. As revisões sobem o nível até 5 de 5.` : 'Acerte 2 questões seguidas e a fase entra no nível 1 de 5: a próxima libera.';
+        if (!f.ganho && f.tipo === 'capitulo') {
+          const deps = this.pack.capitulos.filter(c => (c.prereq || []).includes(f.id)).map(c => `Cap. ${c.n}`);
+          f.ganho = deps.length ? `Ajuda a liberar ${deps.length > 1 ? 'os' : 'o'} ${deps.join(' e ')}, e conta para o Chefão.` : 'Conta para liberar o Chefão, a Prova do caderno.';
+        }
+        if (!f.ganho) { const prox = fases.slice(fases.indexOf(f) + 1).find(x => x.tipo === 'topico'); f.ganho = prox ? `Libera o próximo tópico: ${prox.curto}.` : 'Fecha a trilha desta área.'; }
+        if (f.tipo === 'topico') antTop = f;
+      }
+      const total = n, feitas = fases.filter(f => f.conta && f.estado === 'concluida').length;
+      for (const f of fases) { delete f.bloqueioPack; delete f.comecou; delete f.conta; }
+      areas.push({ id: a.id, nome: a.nome, escolhida: escolhidas.includes(a.id), fases, feitas, total,
+        atual: atual ? { id: atual.id, n: atual.n, titulo: atual.titulo, href: atual.href } : null,
+        texto: feitas === total ? `Trilha completa: ${total} de ${total} fases.` : `${feitas} de ${total} fases concluídas${atual ? `. Agora: fase ${atual.n}, ${atual.curto}` : ''}.` });
+    }
+    return {
+      titulo: 'Trilha',
+      intro: 'Cada fase entra no nível 1 de 5 quando você acerta 2 questões seguidas, e aí a próxima libera. As revisões sobem o nível até 5 de 5.',
+      areas,
+      regra: `${regraNivel('a fase', this._teto())}`,
+    };
+  }
+  /** A fase do tópico na trilha (para bloquear "Estudar este tópico" fora de ordem). */
+  _faseDe(id) {
+    for (const a of this.trilha().areas) { const f = a.fases.find(x => x.id === id); if (f) return f; }
+    return null;
+  }
   /** O botão "Estudar este tópico hoje", com o motivo quando não dá. */
   _acaoTopico(id) {
     const m = this.st.missao, fa = id === this.pack.id, rotulo = 'Estudar este tópico hoje', d = R.hoje();
     if (!m) return null;
+    if (!fa) { const f = this._faseDe(id); if (f && f.estado === 'bloqueada') return { disponivel: false, rotulo, motivo: `Fase ${f.n} bloqueada. ${f.motivo}` }; }
     if (m.livre && m.iniciada && !m.fechada) {
       const deste = fa ? !this.prat.existe(m.cap) : m.cap === id, nomeL = this.prat.existe(m.cap) ? this.prat.titulo(m.cap) : this.pack.titulo;
       return deste

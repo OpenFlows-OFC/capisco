@@ -1041,3 +1041,68 @@ body.modo-missao .bilhete { bottom: calc(16px + var(--seguro-baixo)); }
 
 /* Perfil: no Enem (data ainda não saiu) e em "Ainda não sei", sem campo de data, como no cadastro */
 form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data { display: none; }
+
+/* ---------------- Trilha de fases (aba Estudar, Hoje e Pronto) ----------------
+   Caminho de tabuleiro desenhado no caderno: lápis tracejado (pauta-forte) e caneta (tinta) até a fase atual.
+   Fase = bolha do cartão-resposta (número em Mono); concluída = bolha cheia com ✓; atual = grifo de
+   marca-texto atrás da bolha; bloqueada = contorno tracejado, sem cadeado; Chefão = taça no roxo do carimbo. */
+.trilha-area { margin-top: var(--space-8); padding-top: var(--space-4); border-top: 1px solid var(--pauta); }
+.trilha-placar { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-3); }
+.trilha-conta { white-space: nowrap; color: var(--grafite-2); }
+.trilha-conta b { color: var(--grafite); font-weight: 600; font-family: var(--font-numeros); }
+.trilha-barra { flex: 1; height: 8px; background: var(--papel-2); border: 1px solid var(--pauta-forte); border-radius: 2px; overflow: hidden; }
+.trilha-barra i { display: block; height: 100%; background: var(--tinta); }
+.trilha-texto { margin: var(--space-2) 0 0; }
+.trilha-mapa { position: relative; margin-top: var(--space-4); }
+.trilha-caminho { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.trilha-caminho path { fill: none; stroke-width: 3; stroke-linecap: round; }
+.trilha-caminho .lapis { stroke: var(--pauta-forte); stroke-dasharray: 2 8; }
+.trilha-caminho .caneta { stroke: var(--tinta); }
+.trilha-fases { list-style: none; margin: 0; padding: 0; position: relative; display: grid; gap: var(--space-6); }
+.fase { display: flex; align-items: center; gap: var(--space-4); padding-left: calc(var(--zz, 0) * 11%); }
+.fase-no {
+  flex: none; width: 60px; height: 60px; border-radius: var(--radius-bolha); display: grid; place-items: center; cursor: pointer;
+  background: var(--ficha); color: var(--tinta); border: 2px solid var(--tinta); font: 600 22px/1 var(--font-numeros); position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.fase-no svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.fase-no:focus-visible { outline: 3px solid var(--foco); outline-offset: 3px; }
+.fase-concluida .fase-no { background: var(--tinta); color: var(--on-tinta); }
+.fase-atual .fase-no { width: 72px; height: 72px; border-width: 3px; font-size: 26px; }
+.fase-atual .fase-no { outline: 9px solid color-mix(in srgb, var(--marca-texto) 70%, transparent); outline-offset: 0; }
+.fase-atual .fase-no:focus-visible { outline: 3px solid var(--foco); outline-offset: 3px; }
+.fase-bloqueada .fase-no { color: var(--grafite-2); border-style: dashed; border-color: var(--pauta-forte); background: var(--papel); }
+.fase-chefe .fase-no { width: 76px; height: 76px; color: var(--carimbo); border: 3px double var(--carimbo); }
+.fase-chefe .fase-no svg { width: 36px; height: 36px; stroke-width: 1.8; }
+.fase-chefe.fase-concluida .fase-no { background: var(--carimbo); color: var(--on-tinta); }
+.fase-chefe.fase-bloqueada .fase-no { border-style: dashed; color: var(--grafite-2); border-color: var(--pauta-forte); }
+.fase-rotulo { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.fase .linha-nivel { flex-wrap: nowrap; }
+.fase-num { font: 600 13px/16px var(--font-texto); color: var(--grafite-2); }
+.fase-titulo { font: 700 17px/22px var(--font-display); color: var(--grafite); overflow-wrap: anywhere; }
+.fase-bloqueada .fase-titulo { color: var(--grafite-2); font-weight: 600; }
+.fase-legenda { font: 400 14px/18px var(--font-texto); color: var(--grafite-2); }
+.fase-chefe .fase-num { color: var(--carimbo); }
+.fase-aqui { justify-self: start; font: 700 13px/18px var(--font-texto); color: var(--on-marca-texto); background: var(--marca-texto); padding: 0 6px; border-radius: 2px; }
+.fase .linha-nivel { margin-top: 2px; }
+.trilha-fim { margin: var(--space-6) 0 0; color: var(--grafite-2); font-size: 15px; }
+.balao-fase { display: grid; gap: var(--space-3); }
+.balao-fase p { margin: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .fase-atual .fase-no:not(:focus-visible) { animation: fase-pulso 2.4s ease-in-out infinite; }
+  @keyframes fase-pulso { 0%, 100% { outline-width: 7px; } 50% { outline-width: 12px; } }
+}
+/* Hoje: a fase atual de cada área, em uma linha (leva à trilha) */
+.hoje-trilha { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--pauta); display: grid; gap: var(--space-3); }
+.hoje-trilha-linha { display: flex; align-items: center; gap: var(--space-3); color: inherit; text-decoration: none; min-height: var(--alvo); }
+.hoje-trilha-linha .fase-no { width: 44px; height: 44px; font-size: 18px; cursor: inherit; }
+.hoje-trilha-linha:hover .fase-titulo { text-decoration: underline; text-decoration-color: var(--tinta); text-underline-offset: 4px; }
+.hoje-trilha-pontos { display: flex; gap: 4px; margin-top: 4px; }
+.hoje-trilha-pontos i { width: 10px; height: 10px; border-radius: var(--radius-bolha); border: 1.5px solid var(--pauta-forte); }
+.hoje-trilha-pontos i.feita { background: var(--tinta); border-color: var(--tinta); }
+.hoje-trilha-pontos i.agora { background: var(--marca-texto); border-color: var(--tinta); }
+/* Pronto: "Passou de fase!" */
+.passou-fase { margin: var(--space-4) 0; padding: var(--space-4); background: var(--ficha); border: 2px solid var(--tinta); border-radius: var(--radius-ficha); display: grid; gap: var(--space-2); }
+.passou-fase h2 { margin: 0; font: 800 24px/28px var(--font-display); color: var(--tinta); }
+.passou-fase ul { margin: 0; padding-left: 20px; }
+.fase .nivel-nome { white-space: nowrap; }

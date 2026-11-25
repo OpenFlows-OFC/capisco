@@ -71,16 +71,21 @@ async function roteiro(motor, tema) {
     confere((await pg.$$('.trilho .aba')).length === 5 && (await pg.$$('.trilho .aba svg')).length === 5, '5 abas com ícone');
     // Estudar: mapa
     await pg.click('.trilho .aba[href="#/estudar"]');
-    await pg.waitForSelector('.mapa-area');
+    await pg.waitForSelector('.trilha-area');
     for (const a of ['Matemática', 'Linguagens', 'Ciências da Natureza', 'Ciências Humanas']) confere(await tem(a), `mapa: ${a}`);
     confere(await tem('chegam nas próximas versões'), 'mapa: frase honesta das áreas sem conteúdo');
     confere(await tem('Funções afins'), 'mapa: Funções afins');
-    confere(/Ainda não começou/.test(await U.texto(pg)), 'mapa: "Ainda não começou"');
+    confere(await tem('Você está aqui'), 'trilha: fase atual');
+    confere((await pg.$$('.fase-bloqueada')).length > 0, 'trilha: fases bloqueadas');
+    confere((await pg.$$('.fase-chefe')).length === 1, 'trilha: o Chefão');
     await foto('estudar');
     await cap(pg, 'mapa');
     // página do tópico (o primeiro tópico de prática disponível)
     const id = await pg.evaluate(() => window.__prumo.nucleo.prat.ids()[0]);
-    await pg.click(`a.topico-linha[href="#/estudar/${id}"]`);
+    await pg.click(`[data-folha="fase"][data-arg="${id}"]`);
+    await pg.waitForSelector('.balao-fase');
+    confere(await tem('Você ganha:'), 'balão: o que se ganha');
+    await pg.click('#folha-raiz a.botao');
     await pg.waitForSelector('[data-acao="estudarTopico"]');
     confere(await tem('Por que cai no Enem'), 'tópico: por que cai');
     confere(await tem('Estudar este tópico hoje'), 'tópico: botão');
@@ -126,6 +131,9 @@ async function roteiro(motor, tema) {
     confere((await U.estado(pg)) === 'encerramento', 'fim: Pronto por hoje');
     confere((await pg.$('.pr-visto')) !== null, 'Pronto: o visto do dia');
     confere(/nível 1 de 5/.test(await U.texto(pg)), 'Pronto: o tópico no nível 1 de 5');
+    confere(await tem('Passou de fase!'), 'Pronto: passou de fase');
+    confere(/Fase \d+ liberada/.test(await U.texto(pg)), 'Pronto: a próxima fase liberada');
+    await cap(pg, 'passou-fase', true);
     await foto('pronto');
     confere(await tem('Se quiser, pode continuar estudando por conta própria.'), 'Pronto: convite neutro ao estudo livre');
     // "Amanhã começa por aqui" (só o enunciado) e "quando e onde" (vira o lembrete e aparece em Hoje)
@@ -139,9 +147,9 @@ async function roteiro(motor, tema) {
     await foto('pronto-quando');
     // estudo livre, por iniciativa do aluno: "Continuar estudando" → Estudar → outro tópico
     await pg.click('[data-acao="continuarEstudando"]');
-    await pg.waitForSelector('.mapa-area');
+    await pg.waitForSelector('.trilha-area');
     const outro = await pg.evaluate(i => window.__prumo.nucleo.prat.ids().find(x => x !== i), id);
-    await pg.click(`a.topico-linha[href="#/estudar/${outro}"]`);
+    await pg.click(`[data-folha="fase"][data-arg="${outro}"]`); await pg.waitForSelector(".balao-fase"); await pg.click("#folha-raiz a.botao");
     await pg.waitForSelector('[data-acao="estudarTopico"]');
     confere(await tem('Estudar este tópico agora') && await tem('por conta própria'), 'tópico: estudo livre disponível');
     await pg.click('[data-acao="estudarTopico"]');
