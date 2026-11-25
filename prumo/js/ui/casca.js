@@ -144,7 +144,7 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
       console.error(err);
       s = { chave: 'erro', html: h`<main class="pu"><h1 class="titulo" tabindex="-1" data-foco-inicial>Esta tela não abriu.</h1><p>Seu progresso continua salvo neste aparelho. Feche e abra o app de novo.</p><button type="button" class="botao botao-largo" data-acao="recarregar">Abrir de novo</button></main>` };
     }
-    const comAbas = !cheia && nome !== 'primeiroUso';
+    const comAbas = !cheia && nome !== 'primeiroUso' && !s.semAbas;   // semAbas: tela de jogo da aba (Contra o relógio)
     const ativo = document.activeElement, chaveFoco = chaveDoFoco(ativo);
     const mudou = s.chave !== ui.chave;
     ui.chave = s.chave;
@@ -157,7 +157,7 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
       : h`<div class="casca">${s.html}</div>`);
     $barra.innerHTML = s.barra ? String(h`<div class="barra"><div class="barra-dentro">${s.barra}</div></div>`) : '';
     raiz.classList.toggle('com-barra', !!s.barra);
-    document.body.classList.toggle('modo-missao', cheia || nome === 'primeiroUso');
+    document.body.classList.toggle('modo-missao', cheia || nome === 'primeiroUso' || !!s.semAbas);
     document.title = s.titulo ? `${s.titulo} – Prumo` : 'Prumo · App de Estudos';
 
     if (mudou) {

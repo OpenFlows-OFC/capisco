@@ -208,3 +208,10 @@ Testes: `node --test "_dev/testes/*.test.mjs"` (na pasta `prumo/`). Rodam contra
 
 ### `trilha()` (aba Estudar, Hoje e Pronto)
 `{ titulo, intro, regra, areas: [{ id, nome, escolhida, feitas, total, texto, atual: { id, n, titulo, href } | null, fases: [{ id, tipo: 'capitulo'|'topico'|'chefe', n (só capítulo e tópico), titulo, curto, href, nivel: { cheios, rotulo } | null, estado: 'concluida'|'liberada'|'bloqueada', atual?, legenda, motivo, ganho }] }] }`. Fase concluída = nível 1 de 5 ou mais. Capítulos seguem o pré-requisito do caderno; tópicos de prática formam uma corrente (o 1º de cada área sempre liberado; o seguinte libera quando o anterior entra no nível 1 de 5; tópico já começado nunca volta a bloquear). O Chefão é a Prova do caderno (fora da corrente). `topicoPagina(id).acao` de um tópico bloqueado: `{ disponivel: false, motivo: 'Fase N bloqueada. Libera quando “X” entrar no nível 1 de 5.' }`.
+
+## Jogo: placar, carimbos, vidas e Contra o relógio (v11)
+
+- **Placar da partida** (`missao.placar`): cada acerto vale 10 pontos vezes o combo (acertos seguidos, até x3); errar zera o combo. Aparece no topo (`topo.placar`: `{ pontos, seq, mult, ganho, combo }`) e no Pronto por hoje (`prontoPorHoje().placar`: `{ pontos, acertos, total, maxSeq, estrelas, recorde, regra }`).
+- **Carimbos** (`st.estrelas[faseId]`, 1 a 3): ao fechar a missão inteira, 3 acertando 9 de cada 10, 2 acertando 6 de cada 10, 1 por terminar. Fica o melhor; `trilha()` devolve `estrelas` em cada fase concluída.
+- **Vidas do Chefão** (`prova.vidas`, 3 lápis): cada erro quebra um; sem lápis, a Prova acaba não vencida (nada do que foi firmado muda). Vencida, os lápis que sobraram viram os carimbos do Chefão. `topo.vidas`: `{ total, restam }`.
+- **Contra o relógio**: `relampago()` (regra, recordes e partidas), `sortearRelampago(rand?)` (até 15 ids de todas as fases), `questaoRelampago(id)` (`{ item, gabarito, area, tema }`) e `registrarRelampago({ pontos, acertos, total })` (guarda os 5 melhores; devolve a posição, 0 se ficou fora). É treino: não mexe em nível nem no visto. A partida vive na tela (`js/ui/relogio.js`, rota `#/estudar/relogio`).

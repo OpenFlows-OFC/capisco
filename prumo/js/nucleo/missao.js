@@ -19,6 +19,29 @@ import { lerCopia, normalizarPerfil } from './estado.js';
 export const IGNORAR = Symbol('ignorar');
 const LETRAS = ['A', 'B', 'C', 'D', 'E'];
 export const DENTRO = new Set(['pergunta', 'leitura', 'feedback', 'trecho', 'fimDaRodada', 'cards', 'trechoCard', 'fimDaMao']);
+/* ---------------- placar da partida (combo, pontos e carimbos) ----------------
+   Cada acerto vale 10 pontos vezes o combo (acertos seguidos, até x3); errar zera o combo.
+   Carimbos da partida: 3 acertando 9 de cada 10, 2 acertando 6 de cada 10, 1 por terminar. */
+export const VIDAS_PROVA = 3;
+export function marcarPlacar(m, res) {
+  const p = m.placar || (m.placar = { pontos: 0, seq: 0, maxSeq: 0, acertos: 0, total: 0, ganho: 0, mult: 1 });
+  p.total++;
+  if (res === 'ok') { p.acertos++; p.seq++; p.maxSeq = Math.max(p.maxSeq, p.seq); p.mult = Math.min(3, p.seq); p.ganho = 10 * p.mult; p.pontos += p.ganho; }
+  else { p.seq = 0; p.mult = 1; p.ganho = 0; }
+  return p;
+}
+export function estrelasDe(p) {
+  if (!p || !p.total) return 0;
+  const r = p.acertos / p.total;
+  return r >= 0.9 ? 3 : r >= 0.6 ? 2 : 1;
+}
+export function guardarEstrelas(st, id, n) {
+  st.estrelas = st.estrelas || {};
+  const antes = st.estrelas[id] || 0;
+  if (n > antes) st.estrelas[id] = n;
+  return n > antes;
+}
+
 export const DENTRO_PROVA = new Set(['provaPergunta', 'provaFeedback', 'provaTrecho']);
 // marcos: os marcos ganhos NESTA missão (o Pronto lista só esses); apostila: 'lida' | 'pulada' | null (tópico de prática)
 const novoResumo = () => ({ rodadas: [], revisoes: [], dia: { n: 0, certas: 0 }, antecipada: { n: 0, certas: 0 }, cards: null, pres: 0, tentativas: 0, certas: 0, cardsRecebidos: [], marcos: [], apostila: null });
@@ -176,6 +199,12 @@ export class Missao {
     m.encerradoNoPasso = Math.min(m.i + 1, m.passos.length);
     if (m.mao && !m.resumo.cards && Object.keys(m.mao.respostas).length) m.resumo.cards = resumoMao(st, m.mao, m.dia);
     m.rodada = null;
+    // carimbos da partida: o melhor fica na fase (tópico da trilha ou capítulo que fechou a rodada)
+    if (!parcial && m.placar && m.placar.total) {
+      const n = estrelasDe(m.placar), alvos = m.topico ? [m.topico] : (m.resumo.rodadas || []).filter(fr => fr.venceu && !fr.extra).map(fr => fr.cap);
+      m.placar.estrelas = n;
+      m.placar.recorde = alvos.map(id => guardarEstrelas(st, id, n)).some(Boolean);
+    }
     // o visto do dia (carimbo) é da missão: só quando o dia contou como estudado e não é estudo livre; só cresce
     if (!m.livre && st.dias && st.dias[m.dia]) { st.carimbos = st.carimbos || {}; st.carimbos[m.dia] = true; }
     st.historico.push({ dia: m.dia, regra: m.regra, tipo: m.tipo, passos: m.passos.length, feitos: parcial ? m.i : m.passos.length, parcial: !!parcial, fechada: true });
@@ -231,6 +260,7 @@ export class Missao {
     const tipo = this.tipoDaTentativa(p, item);
     st.vistos[item.id] = d;
     m.resumo.tentativas++; if (aval.res === 'ok') m.resumo.certas++;
+    marcarPlacar(m, aval.res);
     const u = { passo: m.i, item: item.id, alt, res: aval.res, t: p.t, papel: p.papel || null, origem: item.origem, tipo, cap: p.cap, inserida: null, cartao: null, revisao: null, fimRodada: false };
     const a = item.alternativas.find(x => x.letra === alt) || {};
     u.paragrafo = aval.res === 'erro' ? (a.paragrafo || (item.blocos[0] && ((this.pack.bloco(item.blocos[0]) || {}).paragrafos || [])[0] || {}).id || null) : ((item.blocos[0] && ((this.pack.bloco(item.blocos[0]) || {}).paragrafos || [])[0] || {}).id || null);
@@ -343,6 +373,7 @@ export class Missao {
     st.praticas = st.praticas || {};
     if (!st.praticas[p.cap]) st.praticas[p.cap] = { desde: d, pre: null };
     m.resumo.tentativas++; if (aval.res === 'ok') m.resumo.certas++;
+    marcarPlacar(m, aval.res);
     const tipo = p.t === 'revisao' ? 'revisao' : p.antecipada ? 'antecipada' : 'enem';
     const u = { passo: m.i, item: item.id, alt, res: aval.res, t: p.t, papel: 'aplicar', origem: 'enem', tipo, cap: p.cap, fonte: 'pratica', revisao: null, fimRodada: false, paragrafo: null, pausaMs: this.M.pausa(item), cartao: null };
     // caderno de erros: a questão errada vai para lá (com o que faltou); acertar a mesma questão depois resolve o cartão
@@ -391,7 +422,15 @@ export class Missao {
     const a = item.alternativas.find(x => x.letra === alt) || {};
     const u = { item: item.id, alt, res: aval.res, cap: f.cap, paragrafo: a.paragrafo || null, cartao: null };
     if (aval.res === 'erro') u.cartao = this.criarCartao(item, alt, 'prova', f.cap);
-    if (out.fim || pr.i >= pr.fila.length - 1) pr.resultado = M.fecharChefe(st, pr.rodada, d);
+    marcarPlacar(pr, aval.res);
+    // vidas: cada erro quebra um lápis; sem lápis, a Prova acaba (não vencida: nada do que foi firmado muda)
+    pr.vidas = Math.max(0, (pr.vidas == null ? VIDAS_PROVA : pr.vidas) - (aval.res === 'erro' ? 1 : 0));
+    const semVidas = !out.venceu && pr.vidas === 0;
+    if (out.fim || semVidas || pr.i >= pr.fila.length - 1) {
+      pr.resultado = M.fecharChefe(st, pr.rodada, d);
+      if (semVidas) pr.resultado.semVidas = true;
+      if (pr.resultado.venceu) { pr.resultado.estrelas = Math.max(1, pr.vidas); pr.resultado.recorde = guardarEstrelas(st, `${this.pack.id}:prova`, pr.resultado.estrelas); }
+    }
     pr.ultima = u; pr.feedbackEm = R.agora(); pr.resolucaoAberta = false;
     return 'provaFeedback';
   }

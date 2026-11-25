@@ -8,7 +8,7 @@
    ========================================================= */
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { marca, visto, constancia, trilha, rodape, semQuebra } from './componentes.js';
+import { marca, visto, constancia, trilha, rodape, semQuebra, carimbos } from './componentes.js';
 import { trilhaDe } from './missao.js';
 import { passouDeFase, blocoPassou } from './fases.js';
 
@@ -52,6 +52,15 @@ export function telaPronto(ctx, vm) {
       ${tr ? trilha(['visto', 'registro'].includes(tr.fase) ? 'fim' : tr.fase, { livre: tr.livre }) : ''}
       <h1 class="manchete colofao-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>
       ${frases.length ? h`<ul class="pr-frases" aria-label="O que mudou hoje">${cada(frases, f => h`<li>${f}</li>`)}</ul>` : ''}
+      ${vm.placar ? h`<section class="placar-partida" aria-labelledby="placar-t">
+        <h2 id="placar-t" class="titulo-pequeno">Placar da partida</h2>
+        <div class="placar-numeros">
+          <p><b class="placar-pontos">${vm.placar.pontos}</b> pontos</p>
+          ${carimbos(vm.placar.estrelas, { grande: true, novo: nova })}
+        </div>
+        <p>${vm.placar.acertos} de ${vm.placar.total} certas · maior sequência: ${vm.placar.maxSeq}${vm.placar.recorde ? h` · <strong class="recorde">Novo recorde da fase!</strong>` : ''}</p>
+        <p class="pequeno texto-2" style="margin:0">${vm.placar.regra}</p>
+      </section>` : ''}
       ${visto(vm.visto, { novo: nova })}
       ${blocoPassou(passouDeFase(ctx.nucleo))}
       ${p ? h`<section class="proxima-bloco" aria-label="Próxima missão">

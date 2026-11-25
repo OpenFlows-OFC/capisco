@@ -9,7 +9,7 @@
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
 import {
-  topo, enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, nivel,
+  topo, linhaCombo, enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, nivel,
   botaoContinuar, animarContinuar, prepararFiguras, ampliarFigura, questaoCab, teoria, acompanharSumario, idDaAncora,
 } from './componentes.js';
 
@@ -145,6 +145,7 @@ function corpoFeedback(ctx, vm, { foco = true, animar = false } = {}) {
       ${rodape(vm.item.rodape, vm.item.licencaUrl)}
       <section class="feedback" id="feedback" aria-labelledby="fb-titulo">
         ${foco ? h`<h1 class="feedback-titulo" id="fb-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>` : h`<p class="feedback-titulo" id="fb-titulo">${vm.titulo}</p>`}
+        ${vm.certa && vm.topo ? linhaCombo(vm.topo.placar) : ''}
         ${vm.porque ? h`<p>${vm.porque}</p>` : ''}
         ${vm.falta ? h`<p class="falta"><strong>O que faltou.</strong> ${vm.falta}</p>` : ''}
         ${rev && !vm.certa ? h`<p>${rev.texto}</p>` : ''}

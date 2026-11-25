@@ -10,12 +10,12 @@
    ========================================================= */
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
-import { enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, botaoContinuar, animarContinuar, prepararFiguras, ampliarFigura, questaoCab, trofeu } from './componentes.js';
+import { enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, botaoContinuar, animarContinuar, prepararFiguras, ampliarFigura, questaoCab, trofeu, lapis, placarTopo, linhaCombo, carimbos } from './componentes.js';
 
 function topoProva(t) {
   return h`<header class="topo">
     <div class="topo-linha"><p class="topo-etapa">${t.etapa}</p>
-      <div class="topo-acoes"><button type="button" class="link" data-folha="encerrarProva">${t.encerrar}</button></div></div>
+      <div class="topo-acoes">${lapis(t.vidas)}${placarTopo(t.placar)}<button type="button" class="link" data-folha="encerrarProva">${t.encerrar}</button></div></div>
     <div class="topo-medidor"><div class="medidor">
       <span class="casas">${cada(t.casas, c => h`<span class="casa ${c.cheia ? 'cheia' : ''}" aria-label="${`${c.rotulo}: ${c.cheia ? 'acerto' : 'falta'}`}"><span aria-hidden="true">${c.rotulo}</span></span>`)}</span>
       <span class="medidor-texto">${t.tentativa}</span>
@@ -35,6 +35,7 @@ export function telaProva(ctx, t) {
         <p style="font-size:18px;line-height:28px">${vm.regra}</p>
         <p>${vm.tamanho}</p>
         <p class="texto-2">${vm.aviso}</p>
+        <p class="prova-vidas">${lapis({ total: 3, restam: 3 })} ${vm.vidas}</p>
         <hr class="fio">
         <p>${vm.trofeu}</p>
         ${vm.reaproveita ? h`<p class="texto-2 pequeno">${vm.reaproveita}</p>` : ''}
@@ -61,6 +62,7 @@ export function telaProva(ctx, t) {
     const corpo = h`<main class="missao">${topoProva(fb.topo)}
       <section class="pergunta"><div class="pergunta-cabeca">${questaoCab(fb.item)}</div>${enunciado(fb.item)}${alternativasFeedback(fb.alternativas)}${rodape(fb.item.rodape, fb.item.licencaUrl)}
       <section class="feedback" id="feedback"><h1 class="feedback-titulo" ${nome === 'provaFeedback' ? cru('tabindex="-1" data-foco-inicial') : ''}>${fb.titulo}</h1>
+        ${fb.certa ? linhaCombo(fb.topo.placar) : h`<p class="prova-vidas">${lapis(fb.topo.vidas)} ${fb.topo.vidas.restam ? `Um lápis quebrou. Restam ${fb.topo.vidas.restam}.` : 'O último lápis quebrou.'}</p>`}
         ${fb.porque ? h`<p>${fb.porque}</p>` : ''}${fb.falta ? h`<p class="falta"><strong>O que faltou.</strong> ${fb.falta}</p>` : ''}
         <div class="acoes-fb">${fb.trecho ? h`<button type="button" class="botao-sec botao-largo" data-ev="${fb.trecho.evento}">${fb.trecho.rotulo}</button>` : ''}</div>
       </section></section></main>`;
@@ -83,6 +85,7 @@ export function telaProva(ctx, t) {
       <h1 class="manchete colofao-titulo ${vm.venceu ? 'prova-vencida' : ''}" tabindex="-1" data-foco-inicial>${vm.titulo || 'Prova do caderno'}</h1>
       <p>${vm.texto}</p>
       ${vm.trofeu ? trofeu(vm.trofeu, { novo: nova && vm.trofeu.novo }) : ''}
+      ${vm.venceu && vm.estrelas ? h`<p class="placar-linha">${carimbos(vm.estrelas, { grande: true, novo: nova })} ${vm.linhaEstrelas}</p>` : ''}
       ${vm.trofeu ? h`<p>${vm.selo ? h`<strong>Selo de ${vm.selo.nome}:</strong> primeiro troféu da matéria. ` : ''}O troféu fica guardado no Caderno e no Perfil.</p>` : ''}
       ${vm.linhaRevisar ? h`<p>${vm.linhaRevisar}</p>` : ''}
       ${vm.volta ? h`<p class="texto-2">${vm.volta}</p>` : ''}

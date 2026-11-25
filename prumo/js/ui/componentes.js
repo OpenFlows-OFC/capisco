@@ -156,6 +156,27 @@ function contador(md) {
  * na etapa Questões. A regra da rodada aparece uma vez, no início.
  * trilha: { fase, livre } (ver trilha()); rotuloDaTela: o título da tela (a etapa some se ele já a diz).
  */
+/** Carimbos da partida (1 a 3), na cor de conquista (carimbo). */
+export function carimbos(n, { total = 3, grande = false, novo = false } = {}) {
+  return h`<span class="carimbos${grande ? ' carimbos-grande' : ''}${novo ? ' carimbos-novos' : ''}" role="img" aria-label="${`${n} de ${total} carimbos`}">${cada(Array.from({ length: total }, (_, i) => i < n), (c, i) => h`<i class="${c ? 'cheio' : ''}" style="--i:${i}"></i>`)}</span>`;
+}
+const LAPIS = '<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 20l1.2-4.2L15.8 5.2a2 2 0 0 1 2.9 0l.1.1a2 2 0 0 1 0 2.9L8.2 18.8z"/><path d="M13.8 7.2l3 3M4 20l4.2-1.2"/></svg>';
+/** Vidas do Chefão: lápis inteiros e quebrados. */
+export function lapis(v) {
+  if (!v) return '';
+  return h`<span class="lapis" role="img" aria-label="${`${v.restam} de ${v.total} lápis`}">${cada(Array.from({ length: v.total }, (_, i) => i < v.restam), ok => h`<i class="${ok ? '' : 'quebrado'}">${cru(LAPIS)}</i>`)}</span>`;
+}
+/** Placar no topo da partida: pontos e combo. */
+export function placarTopo(p) {
+  if (!p) return '';
+  return h`<span class="placar-topo" aria-label="${`${p.pontos} pontos${p.combo ? `, combo ${p.combo}` : ''}`}"><b>${p.pontos}</b> pts${p.combo ? h` <span class="combo">${p.combo}</span>` : ''}</span>`;
+}
+/** Linha do acerto no feedback: "+20 pontos · 2 seguidas, x2". */
+export function linhaCombo(p) {
+  if (!p || !p.ganho) return '';
+  return h`<p class="combo-linha"><span class="combo-ganho">+${p.ganho} pontos</span>${p.seq >= 2 ? h` <span class="combo">${p.seq} seguidas · x${p.mult}</span>` : ''}</p>`;
+}
+
 export function topo(t, { medidor: md, encerrar = 'encerrar', semRegra = false, rotuloDaTela = null, trilha: tr = null } = {}) {
   if (!t) return '';
   const m = md === undefined ? t.medidor : md;
@@ -168,6 +189,7 @@ export function topo(t, { medidor: md, encerrar = 'encerrar', semRegra = false, 
     <div class="topo-linha">
       <p class="topo-etapa">${etapa}</p>
       <div class="topo-acoes">
+        ${placarTopo(t.placar)}
         ${verRegra ? h`<button type="button" class="link link-discreto" data-folha="regra">${t.regra.rotulo}</button>` : ''}
         ${encerrar ? h`<button type="button" class="link" data-folha="${encerrar}">${t.encerrar || 'Encerrar'}</button>` : ''}
       </div>

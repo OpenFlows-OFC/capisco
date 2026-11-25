@@ -8,12 +8,15 @@ import * as R from './relogio.js';
 import * as E from './estado.js';
 import { criarMotor, P, NIVEL, MATERIAS, rotuloNivel, noNivel, dataEfetiva, revisaoAtrasada, voltaPorErro, passouPorHojeNao } from './motor.js';
 import { Pack } from './pack.js';
-import { Missao, DENTRO, DENTRO_PROVA } from './missao.js';
+import { Missao, DENTRO, DENTRO_PROVA, estrelasDe, VIDAS_PROVA } from './missao.js';
 import { montarMissao, regraDaFila, verARegra, paginasComErro, proximaVariante, quandoRevisao } from './recomendador.js';
 import * as Plano from './plano.js';
 import * as Cards from './cards.js';
 import * as Prova from './prova.js';
 import { gerarExemplo } from './exemplo.js';
+
+/** Contra o relógio: questões sorteadas de todas as fases, relógio corrido. É treino: não mexe em nível nem no visto. */
+export const RELAMPAGO = Object.freeze({ questoes: 15, minutos: 5 });
 import { Praticas, limparSvg, AREAS, CONHECIDOS, estadoTopico, montarMissaoGeral, ineditas, regraTopico, passosTopico, estimarMinutosTopico, minutosDaTeoriaNaMissao, QUESTOES_POR_MINUTOS } from './pratica.js';
 
 export { R as relogio };   // a tela pode ler relogio.agora() e os formatadores de data
@@ -700,9 +703,12 @@ export class Nucleo {
       // legenda da Régua: o passo e o que falta (nunca tempo)
       legenda: { passo: `passo ${Math.min(m.i + 1, total)} de ${total}`, falta: this._faltam(m) },
       medidor: this._medidor(p),
+      placar: this._placar(m.placar),
       regra: regra ? { texto: `${regra.frase}. ${regra.insercao}`, mostrarAgora: primeiroDaRodada, rotulo: 'ver a regra' } : null,
     };
   }
+  /** Placar da partida para o topo: pontos e combo (só depois da 1ª resposta). */
+  _placar(p) { return p && p.total ? { pontos: p.pontos, seq: p.seq, mult: p.mult, ganho: p.ganho, combo: p.seq >= 2 ? `x${p.mult}` : null } : null; }
   passoAtual() {
     const vm = this._passoAtual(), m = this.st.missao;
     // estudo por conta própria (depois do Pronto): a tela troca a última etapa da trilha e o texto de "Encerrar"
@@ -1069,6 +1075,9 @@ export class Nucleo {
       constancia: { simbolo: cons.simbolo, diasEstudados: cons.diasEstudados, rotulo: cons.rotulo, tracoDeHoje: !!st.dias[d] },
       semanaPassada: st.dias[d] ? Plano.linhaSemanaPassada(st, d) : null,
       mudancas: mud,
+      placar: m.placar && m.placar.total && !m.parcial ? { pontos: m.placar.pontos, acertos: m.placar.acertos, total: m.placar.total, maxSeq: m.placar.maxSeq,
+        estrelas: m.placar.estrelas || estrelasDe(m.placar), recorde: !!m.placar.recorde,
+        regra: '3 carimbos acertando 9 de cada 10 questões, 2 acertando 6 de cada 10, 1 por terminar a partida.' } : null,
       nivelAnimado: ultimaRodada && ultimaRodada.venceu && !ultimaRodada.extra ? { cap: ultimaRodada.cap, de: ultimaRodada.caixaAntes, para: ultimaRodada.caixaDepois, nome: rotuloNivel(ultimaRodada.caixaDepois), rotulo: rotuloNivel(ultimaRodada.caixaDepois) } : null,
       parcial: m.parcial ? `Você encerrou no passo ${m.encerradoNoPasso} de ${m.passos.length}. O que já tinha fechado hoje continua; o resto não mudou nenhum nível.` : null,
       vazio: soAntes ? this._vazioPronto(m) : null,
@@ -1115,7 +1124,7 @@ export class Nucleo {
     if (nome === 'prova') return Object.assign({ estado: 'prova' }, Prova.vmAberturaProva(pk, pr));
     if (nome === 'provaResultado') return Object.assign({ estado: 'provaResultado', acao: { evento: 'FECHAR', rotulo: 'Fechar' } }, Prova.vmResultadoProva(this.st, pk, pr, R.hoje()));
     const f = pr.fila[pr.i], item = pk.item(f.id);
-    const topo = { etapa: 'Prova do caderno', encerrar: 'Encerrar', casas: Prova.casasProva(pk, pr), tentativa: `tentativa ${pr.rodada.tentativas + (nome === 'provaPergunta' ? 1 : 0)} de ${P.chefe.teto}`, regra: Prova.regraProva(pk), eventoEncerrar: 'ENCERRAR_PROVA', avisoEncerrar: 'Encerrar a prova no meio não muda nada.' };
+    const topo = { etapa: 'Prova do caderno', encerrar: 'Encerrar', casas: Prova.casasProva(pk, pr), tentativa: `tentativa ${pr.rodada.tentativas + (nome === 'provaPergunta' ? 1 : 0)} de ${P.chefe.teto}`, regra: Prova.regraProva(pk), vidas: { total: VIDAS_PROVA, restam: pr.vidas == null ? VIDAS_PROVA : pr.vidas }, placar: this._placar(pr.placar), eventoEncerrar: 'ENCERRAR_PROVA', avisoEncerrar: 'Encerrar a prova no meio não muda nada.' };
     const r = item.origem === 'enem' ? { rotulo: 'Questão do Enem', sub: item.rotulo } : { rotulo: 'Questão da equipe', sub: 'Texto e números da equipe Prumo, licença CC BY-SA 4.0' };
     if (nome === 'provaPergunta') return { estado: 'provaPergunta', rotulo: r.rotulo, subrotulo: r.sub, item: this._itemVM(item), topo, acao: { evento: 'RESPONDER', rotulo: 'Responder', exige: 'alt' }, reaproveita: pr.reaproveita ? 'Nesta demo, a prova reaproveita questões.' : null };
     const u = pr.ultima, ok = u.res === 'ok', alt = item.alternativas.find(a => a.letra === u.alt) || {}, loc = u.paragrafo ? pk.local(u.paragrafo) : null;
@@ -1485,7 +1494,7 @@ export class Nucleo {
         if (f.tipo === 'topico') antTop = f;
       }
       const total = n, feitas = fases.filter(f => f.conta && f.estado === 'concluida').length;
-      for (const f of fases) { delete f.bloqueioPack; delete f.comecou; delete f.conta; }
+      for (const f of fases) { delete f.bloqueioPack; delete f.comecou; delete f.conta; f.estrelas = f.estado === 'concluida' ? (st.estrelas || {})[f.id] || 0 : 0; }
       areas.push({ id: a.id, nome: a.nome, escolhida: escolhidas.includes(a.id), fases, feitas, total,
         atual: atual ? { id: atual.id, n: atual.n, titulo: atual.titulo, href: atual.href } : null,
         texto: feitas === total ? `Trilha completa: ${total} de ${total} fases.` : `${feitas} de ${total} fases concluídas${atual ? `. Agora: fase ${atual.n}, ${atual.curto}` : ''}.` });
@@ -1635,6 +1644,49 @@ export class Nucleo {
   /* =========================================================
      Perfil (nome, foto, plano, som, dados)
      ========================================================= */
+  /* =========================================================
+     Contra o relógio (modo de treino com placar; recordes só deste aparelho)
+     ========================================================= */
+  relampago() {
+    const rl = this.st.relampago || { recordes: [], partidas: 0 }, R2 = RELAMPAGO;
+    return {
+      titulo: 'Contra o relógio',
+      regra: `Até ${R2.questoes} questões sorteadas de Matemática e Linguagens, com ${R2.minutos} minutos no relógio.`,
+      pontos: 'Cada acerto vale 10 pontos vezes o combo (acertos seguidos, até x3). Errar zera o combo. Respondeu todas antes do tempo acabar: cada segundo que sobrou vale 1 ponto.',
+      aviso: 'É treino: não mexe nos níveis da trilha nem no visto do dia.',
+      recordes: rl.recordes.map((r, i) => ({ pos: i + 1, pontos: r.pontos, texto: `${r.acertos} de ${r.total} certas` })),
+      partidas: rl.partidas, questoes: R2.questoes, segundos: R2.minutos * 60,
+    };
+  }
+  /** Fila sorteada: questões do Enem e da equipe de todos os tópicos e capítulos (rand injetável nos testes). */
+  sortearRelampago(rand = Math.random) {
+    const ids = [];
+    for (const id of this.prat.ids()) ids.push(...this.prat.questoes(id));
+    for (const c of this.pack.capitulos) ids.push(...this.pack.questoesDoCap(c.id));
+    for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+    return ids.slice(0, RELAMPAGO.questoes);
+  }
+  questaoRelampago(id) {
+    const pi = this.prat.item(id), item = pi || this.pack.item(id);
+    if (!item) return null;
+    const c = pi ? CONHECIDOS.find(x => x.id === pi.topico) : null;
+    return { item: this._itemVM(item), gabarito: item.gabarito, area: c ? (AREAS.find(a => a.id === c.area) || {}).nome : 'Matemática', tema: c ? c.titulo : this.pack.titulo };
+  }
+  /** Guarda o placar entre os 5 melhores deste aparelho; devolve a posição (0 = fora do pódio de 5). */
+  registrarRelampago({ pontos = 0, acertos = 0, total = 0 } = {}) {
+    let pos = 0;
+    this._acao(() => {
+      const rl = this.st.relampago = this.st.relampago || { recordes: [], partidas: 0 };
+      const novo = { pontos, acertos, total, dia: R.hoje() };
+      rl.partidas++;
+      rl.recordes.push(novo);
+      rl.recordes.sort((a, b) => b.pontos - a.pontos || b.acertos - a.acertos);
+      rl.recordes = rl.recordes.slice(0, 5);
+      pos = rl.recordes.indexOf(novo) + 1;
+    });
+    return pos;
+  }
+
   perfil() {
     const p = this.st.perfil;
     if (!p) return null;
@@ -1765,6 +1817,11 @@ export class Nucleo {
     R.setOffset(0);
     const ex = gerarExemplo(this.pack, R.hoje(), this.prat);
     ex.config.demo = { ativo: true, offset: 0, exemplo: true, guardado: guardado || null };
+    // a demonstração já mostra o jogo: carimbos nas fases concluídas, no Chefão vencido e recordes do Contra o relógio
+    const pad = [3, 2, 3, 1, 2, 3];
+    Object.keys(ex.topicos).filter(id => (ex.topicos[id].caixa || 0) >= 1).forEach((id, i) => { ex.estrelas[id] = pad[i % pad.length]; });
+    if ((ex.chefes[this.pack.id] || {}).venceu) ex.estrelas[`${this.pack.id}:prova`] = 2;
+    ex.relampago = { partidas: 6, recordes: [{ pontos: 412, acertos: 12, total: 15, dia: R.hoje() }, { pontos: 290, acertos: 10, total: 14, dia: R.hoje() }, { pontos: 176, acertos: 7, total: 11, dia: R.hoje() }] };
     this.missao.transicao(() => { this.missao.substituir(ex); return this.missao.virarDia(); });
     return this.tela();
   }

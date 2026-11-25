@@ -8,7 +8,8 @@
    ========================================================= */
 import { h, cada, cru } from './dom.js';
 import { registrar } from './registro.js';
-import { nivel, teoria, prepararFiguras, ampliarFigura, comoFunciona, acompanharSumario, idDaAncora, irParaSecao, iconeArea, TACA } from './componentes.js';
+import { nivel, teoria, prepararFiguras, ampliarFigura, comoFunciona, acompanharSumario, idDaAncora, irParaSecao, iconeArea, TACA, carimbos } from './componentes.js';
+import { telaRelogio, RELOGIO } from './relogio.js';
 
 /* "Como funciona um tópico": aberta até o aluno começar o primeiro tópico (logo abaixo do botão, que fica
    à vista); depois, recolhida. */
@@ -46,6 +47,7 @@ function noFase(f, i) {
       ${f.atual ? h`<span class="fase-aqui">Você está aqui</span>` : ''}
       <span class="fase-num">${f.tipo === 'chefe' ? 'Chefão' : `Fase ${f.n}`}</span>
       <span class="fase-titulo">${f.tipo === 'capitulo' ? f.curto : f.titulo}</span>
+      ${f.estado === 'concluida' && f.tipo !== 'capitulo' || f.estrelas ? carimbos(f.estrelas) : ''}
       ${f.nivel && f.estado === 'concluida' ? nivel({ cheios: f.nivel.cheios, nome: f.nivel.rotulo }) : h`<span class="fase-legenda">${f.atual ? 'Toque para ver o objetivo' : f.legenda}</span>`}
     </span>
   </li>`;
@@ -53,6 +55,10 @@ function noFase(f, i) {
 function mapa(v, emBreve) {
   return h`<h1 class="titulo" tabindex="-1" data-foco-inicial>${v.titulo}</h1>
     <p>${v.intro}</p>
+    <a class="relampago-entrada" href="#/estudar/relogio">
+      <span class="relampago-icone" aria-hidden="true">${cru(RELOGIO)}</span>
+      <span><span class="relampago-titulo">Contra o relógio</span><span class="pequeno texto-2">Questões sorteadas de tudo, 5 minutos. Bata o seu recorde.</span></span>
+    </a>
     ${cada(v.areas, a => h`<section class="trilha-area" aria-labelledby="area-${a.id}">
       <h2 class="mapa-area-titulo" id="area-${a.id}">${iconeArea(a.id)}${a.nome}</h2>
       <div class="trilha-placar">
@@ -141,6 +147,7 @@ function teoriaLivre(v, id, ancora, deErros) {
 export function telaEstudar(ctx, t, rota) {
   const n = ctx.nucleo, id = rota.sub;
   let corpo, titulo = 'Estudar', ancora = null;
+  if (id === 'relogio') return telaRelogio(ctx);
   if (!id) { const ar = n.estudar().areas; corpo = mapa(n.trilha(), ar.filter(a => !a.disponivel)); }
   else if (rota.resto[0] === 'teoria') {
     const resto = rota.resto.filter(x => x !== 'de-erros'), v = n.teoriaLivre(id);
