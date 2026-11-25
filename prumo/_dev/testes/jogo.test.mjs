@@ -68,6 +68,6 @@ for (const pk of await packs()) {
     assert.equal(a.ganhos, soma);
     assert.ok(a.ganhos > 0 && a.ganhos <= a.max);
     assert.equal(n.relampago().melhor, 412);
-    assert.match(n.relampago().chamada, /recorde/);
+    assert.match(n.relampago().chamada, /minutos/);
   });
 }

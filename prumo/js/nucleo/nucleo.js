@@ -1657,7 +1657,7 @@ export class Nucleo {
       recordes: rl.recordes.map((r, i) => ({ pos: i + 1, pontos: r.pontos, texto: `${r.acertos} de ${r.total} certas` })),
       partidas: rl.partidas, questoes: R2.questoes, segundos: R2.minutos * 60,
       melhor: rl.recordes.length ? rl.recordes[0].pontos : null,
-      chamada: rl.recordes.length ? 'Questões sorteadas de tudo, 5 minutos. Dá para bater o seu recorde?' : 'Questões sorteadas de tudo, 5 minutos. Faça o primeiro placar.',
+      chamada: `${R2.questoes} questões · ${R2.minutos} minutos`,
     };
   }
   /** Álbum de carimbos: o que já foi ganho em cada fase da trilha (3 por fase, o melhor resultado fica). */

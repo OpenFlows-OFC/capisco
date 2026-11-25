@@ -73,9 +73,9 @@ async function roteiro(motor, tema) {
     await pg.click('.trilho .aba[href="#/estudar"]');
     await pg.waitForSelector('.trilha-area');
     for (const a of ['Matemática', 'Linguagens', 'Ciências da Natureza', 'Ciências Humanas']) confere(await tem(a), `mapa: ${a}`);
-    confere(await tem('chegam nas próximas versões'), 'mapa: frase honesta das áreas sem conteúdo');
+    confere(await tem('próximas versões'), 'mapa: frase honesta das áreas sem conteúdo');
     confere(await tem('Funções afins'), 'mapa: Funções afins');
-    confere(await tem('Você está aqui'), 'trilha: fase atual');
+    confere((await pg.$$('.fase-atual')).length > 0, 'trilha: fase atual');
     confere((await pg.$$('.fase-bloqueada')).length > 0, 'trilha: fases bloqueadas');
     confere((await pg.$$('.fase-chefe')).length === 1, 'trilha: o Chefão');
     await foto('estudar');

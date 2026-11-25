@@ -1194,3 +1194,7 @@ form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data 
 .album-grade .album-t { font-size: 13px; line-height: 1.25; overflow-wrap: anywhere; }
 .album-total { font: 700 28px/1 var(--font-numeros); color: var(--tinta); }
 @media (prefers-reduced-motion: reduce) { .rl-conta.bate { animation: none; } }
+/* v12.1: trilha sem rótulos; o desenho diz o estado */
+.fase-bloqueada:not(.fase-chefe) .fase-no svg { width: 22px; height: 22px; stroke-width: 2; }
+.trilha-regra { margin-top: var(--space-6); }
+.trilha-regra summary { min-height: var(--alvo); display: flex; align-items: center; cursor: pointer; }

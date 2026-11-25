@@ -91,11 +91,9 @@ function album(a) {
   return h`<section class="secao album" aria-labelledby="album-t">
     <h2 class="titulo-pequeno" id="album-t">${a.titulo}</h2>
     <p><span class="album-total">${a.ganhos}</span> de ${a.max} carimbos</p>
-    <p class="pequeno texto-2" style="margin-top:0">${a.texto}</p>
     ${cada(a.areas, ar => h`<div class="album-area"><h3>${ar.nome}</h3>
       <ul class="album-grade">${cada(ar.fases, f => h`<li class="${!f.estrelas ? 'vazia' : f.estrelas === 3 ? 'cheia' : ''}">
         <span class="album-n">${f.chefe ? 'Chefão' : `Fase ${f.n}`}</span>${carimbos(f.estrelas)}<span class="album-t">${f.titulo}</span></li>`)}</ul></div>`)}
-    <p class="pequeno texto-2">${a.regra}</p>
   </section>`;
 }
 
