@@ -9,11 +9,11 @@
    dia (g.3), e os de texto (Hoje não, pausa, encerrado antes, reta final,
    firme, prova passou).
    ========================================================= */
-import { h, cada } from './dom.js';
+import { h, cada, cru } from './dom.js';
 import { registrar } from './registro.js';
-import { marca, constancia, cabecalhoProva, recado, semQuebra } from './componentes.js';
-import { blocoHojeTrilha, guardarFoto } from './fases.js';
-import { entradaRelogio } from './relogio.js';
+import { marca, constancia, cabecalhoProva, recado, semQuebra, iconeArea } from './componentes.js';
+import { guardarFoto } from './fases.js';
+import { noFase, desenharCaminhos, CADEADO } from './estudar.js';
 
 /** Topo das abas: a marca; em Hoje, a saudação, a data e os risquinhos em destaque. */
 export function topoAba({ data, constancia: c, saudacao } = {}) {
@@ -129,30 +129,114 @@ function venceHoje(v) {
   return h`<p class="pr-recado vence-hoje"><strong class="pr-recado-rotulo"><span class="grifo">${grifada}</span></strong>${resto} ${v.porque}</p>`;
 }
 
-/** Tela Hoje (aba). t = nucleo.tela() nos estados 'hoje' e 'feito'. */
+/* ---------------- Início: a trilha da matéria escolhida, no jeito de jogo ----------------
+   Barra de cima: a matéria (troca no balão), os dias estudados e os carimbos. Faixa da matéria com o
+   avanço e o "guia" (os detalhes da missão). Embaixo, só o caminho; o balão "Começar" fica na fase atual. */
+const MATERIA = 'prumo-ui-materia';
+const ic = d => cru(`<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">${d}</svg>`);
+const RISCOS = '<path d="M6 5v14M10 5v14M14 5v14M18 5v14M3.5 15.5l17-7"/>';
+const SELO = '<circle cx="12" cy="12" r="8.5"/><path d="M8 12.3l2.7 2.7L16 9.5"/>';
+const GUIA = '<path d="M12 6.5C10.3 5.2 7.8 4.5 4 4.5v13c3.8 0 6.3.7 8 2 1.7-1.3 4.2-2 8-2v-13c-3.8 0-6.3.7-8 2z"/><path d="M12 6.5v13"/>';
+const SETA = '<path d="M7 10l5 5 5-5"/>';
+const AVISO = new Set(['pausa', 'folga', 'hojeNao', 'encerradoAntes', 'provaPassou', 'retorno', 'reta', 'firme']);
+
+/** A matéria da tela: a guardada neste aparelho; senão a primeira escolhida no perfil. */
+export function materiaAtual(tr) {
+  let id = null;
+  try { id = localStorage.getItem(MATERIA); } catch (e) { /* sem armazenamento */ }
+  return tr.areas.find(a => a.id === id) || tr.areas.find(a => a.escolhida) || tr.areas[0];
+}
+
+function bolhaInicio(vm, a) {
+  const ac = vm.acao && a.escolhida ? vm.acao : null;
+  if (ac) {
+    const rot = ac.evento === 'CONTINUAR' ? 'Continuar' : ac.evento === 'COMECAR' && vm.estado !== 'hojeNao' ? 'Começar' : ac.rotulo;
+    return h`<button type="button" class="bolha-inicio" data-ev="${ac.evento}">${rot.replace(/-/g, '‑')}</button>`;
+  }
+  if (a.escolhida && (vm.estado === 'feito' || vm.estado === 'encerradoAntes')) return h`<span class="bolha-inicio feito">${ic(SELO)}Feito hoje</span>`;
+  return a.atual ? h`<button type="button" class="bolha-inicio" data-folha="fase" data-arg="${a.atual.id}">Jogar</button>` : '';
+}
+
+/** Tela inicial (aba Trilha). t = nucleo.tela() nos estados 'hoje' e 'feito'. */
 export function telaHoje(ctx, t) {
-  const vm = t.vm;
+  const vm = t.vm, n = ctx.nucleo;
   if (!vm) return { chave: 'hoje:vazio', html: h`<p>Abrindo o caderno…</p>` };
-  const corpo = vm.bloco ? rosto(vm) : semMissao(vm);
+  const tr = n.trilha(), a = materiaAtual(tr), c = vm.constancia || {}, selos = n.album().ganhos;
+  const bolha = bolhaInicio(vm, a);
+  const aviso = (AVISO.has(vm.estado) && vm.texto) || (vm.recomeco && vm.recomeco.titulo) || '';
   return {
-    chave: `hoje:${vm.dia}:${vm.estado}`,
-    titulo: 'Hoje',
-    html: h`${topoAba({ data: vm.data, constancia: vm.constancia, saudacao: vm.saudacao })}
-      ${recomeco(vm.recomeco)}
-      ${vm.intencao ? h`<p class="intencao">${vm.intencao.texto}</p>` : ''}
-      ${vm.bloco ? '' : venceHoje(vm.venceHoje)}
-      ${corpo}
-      ${blocoHojeTrilha(ctx.nucleo)}
-      ${entradaRelogio(ctx.nucleo.relampago())}
-      ${semana(vm.semana)}
-      ${blocoProva(vm.prova)}`,
-    depois() { guardarFoto(ctx.nucleo); },
+    chave: `hoje:${vm.dia}:${vm.estado}:${a.id}`,
+    titulo: 'Trilha',
+    html: h`<header class="jogo-topo">
+        <button type="button" class="jogo-materia" data-folha="materia" aria-label="${`Matéria: ${a.nome}. Trocar de matéria`}">${iconeArea(a.id)}<span>${a.nome}</span>${ic(SETA)}</button>
+        <button type="button" class="jogo-contador" data-folha="semana" aria-label="${c.rotulo || 'Dias estudados'}">${ic(RISCOS)}<b>${c.diasEstudados || 0}</b></button>
+        <a class="jogo-contador selo" href="#/perfil" aria-label="${`${selos} carimbos`}">${ic(SELO)}<b>${selos}</b></a>
+      </header>
+      <section class="unidade" aria-labelledby="unidade-t">
+        <div class="unidade-texto">
+          <h1 class="unidade-titulo" id="unidade-t" tabindex="-1" data-foco-inicial>${a.nome}</h1>
+          <div class="trilha-placar"><span class="trilha-conta" aria-label="${`${a.feitas} de ${a.total} fases`}"><b>${a.feitas}</b>/<b>${a.total}</b></span><span class="trilha-barra" aria-hidden="true"><i style="width:${Math.round(100 * a.feitas / Math.max(1, a.total))}%"></i></span></div>
+        </div>
+        <button type="button" class="unidade-guia" data-folha="missao" aria-label="Detalhes da missão de hoje">${ic(GUIA)}</button>
+      </section>
+      ${aviso ? h`<p class="jogo-aviso">${aviso}</p>` : ''}
+      ${a.atual ? '' : h`<div class="jogo-solta">${bolha}</div>`}
+      <div class="trilha-mapa jogo">
+        <svg class="trilha-caminho" aria-hidden="true" focusable="false"></svg>
+        <ol class="trilha-fases">${cada(a.fases, (f, i) => noFase(f, i, f.atual ? bolha : ''))}</ol>
+      </div>`,
+    depois(raiz, { mudou } = {}) {
+      guardarFoto(n);
+      const atual = raiz.querySelector('.jogo .fase-atual');
+      if (mudou && atual && atual.getBoundingClientRect().bottom > innerHeight - 96) atual.scrollIntoView({ block: 'center' });
+      return desenharCaminhos(raiz);
+    },
   };
+}
+
+/** O "guia" da missão: o que a Hoje antiga mostrava, recolhido num balão. */
+function detalhesMissao(vm) {
+  const b = vm.bloco, f = vm.feito, l = { ...vm, links: (vm.links || []).filter(x => x.aba !== 'estudar') };
+  const composicao = b && (vm.estado === 'questaoDoDia' && vm.texto ? vm.texto : b.composicao);
+  return h`${b ? h`<p class="rotulo">${vm.proximoRotulo}</p><h2 class="titulo-pequeno">${b.titulo}</h2>` : h`<h2 class="titulo-pequeno">${vm.texto || 'Hoje'}</h2>`}
+    ${vm.porqueEstudo ? h`<p class="texto-2">${vm.porqueEstudo}</p>` : ''}
+    ${vm.intencao ? h`<p class="intencao">${vm.intencao.texto}</p>` : ''}
+    ${venceHoje(vm.venceHoje)}
+    ${b && b.atrasada && !(vm.venceHoje && vm.venceHoje.atrasadas) ? h`<p class="atrasada">${b.atrasada}</p>` : ''}
+    ${composicao ? h`<p class="composicao">${composicao}</p>` : ''}
+    ${b ? cabecalhoProva(b.cabecalho) : ''}
+    ${b && b.regra ? h`<p class="ganho">${b.regra}</p>` : ''}
+    ${recado(vm.recado, { papel: 'status' })}
+    ${f ? h`<p class="proxima"><strong class="proxima-rotulo">Próxima missão</strong> ${semQuebra(f.previa)}</p>` : ''}
+    ${blocoProva(vm.prova)}
+    ${links(l, { detalhe: true })}${links(l)}`;
 }
 
 /* ---------------- folhas de Hoje ---------------- */
 registrar({
   folhas: {
+    /** O guia da missão (o livrinho da faixa da matéria). */
+    missao(ctx, dados, t) {
+      const vm = t.vm;
+      if (!vm) return null;
+      return { rotulo: 'Missão de hoje', corpo: h`<div class="guia-missao">${detalhesMissao(vm)}</div>`,
+        pe: vm.acao ? acao(vm) : h`<button type="button" class="botao-sec botao-largo" data-acao="fecharFolha">Fechar</button>` };
+    },
+    /** Os dias estudados (o contador da barra de cima): risquinhos, recomeço e a meta da semana. */
+    semana(ctx, dados, t) {
+      const vm = t.vm;
+      if (!vm) return null;
+      return { rotulo: 'Dias estudados', corpo: h`<div class="linha-data constancia-destaque">${constancia(vm.constancia)}</div>${recomeco(vm.recomeco)}${semana(vm.semana)}` };
+    },
+    /** Trocar de matéria: as do MVP e, apagadas, as que chegam depois. */
+    materia(ctx) {
+      const tr = ctx.nucleo.trilha(), sel = materiaAtual(tr), embreve = ctx.nucleo.estudar().areas.filter(a => !a.disponivel);
+      return { rotulo: 'Matéria', corpo: h`<ul class="materias">
+          ${cada(tr.areas, a => h`<li><button type="button" class="materia-op${a.id === sel.id ? ' atual' : ''}" data-acao="escolherMateria" data-arg="${a.id}" aria-pressed="${a.id === sel.id ? 'true' : 'false'}">${iconeArea(a.id)}<span class="materia-nome">${a.nome}</span><span class="trilha-conta"><b>${a.feitas}</b>/${a.total}</span></button></li>`)}
+          ${cada(embreve, a => h`<li><span class="materia-op inativa">${iconeArea(a.id)}<span class="materia-nome">${a.nome}</span>${cru(CADEADO)}<span class="so-leitor">, em breve</span></span></li>`)}
+        </ul>
+        <details class="trilha-regra"><summary>Como a trilha funciona</summary><p>${tr.intro}</p><p class="pequeno texto-2">${tr.regra}</p></details>` };
+    },
     /** "Ver os passos": os passos numerados como o índice de um livro, com a página à direita. */
     passos(ctx, dados, t) {
       const b = t.vm && t.vm.bloco;
@@ -188,6 +272,11 @@ registrar({
     },
   },
   acoes: {
+    escolherMateria(ctx, el) {
+      try { localStorage.setItem(MATERIA, el.dataset.arg); } catch (e) { /* sem armazenamento: vale só agora */ }
+      ctx.fecharFolha();
+      ctx.render();
+    },
     verRegraPorQue(ctx) {
       if (!ctx.ui.folha) return;
       ctx.ui.folha.dados = Object.assign({}, ctx.ui.folha.dados || {}, { aberta: true });

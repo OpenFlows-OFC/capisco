@@ -27,15 +27,15 @@ export const telaCheia = nome => DENTRO.has(nome) || nome === 'encerramento' || 
 
 // ícones de traço (24 px, stroke 1.75, currentColor): sol nascendo, livro aberto, dado (modos), caderno de espiral, calendário, pessoa
 const ICONES = {
-  hoje: '<path d="M3 18h18M6.5 18a5.5 5.5 0 0 1 11 0"/><path d="M12 6v3M5.6 9.6l2 2M18.4 9.6l-2 2M3 14h1.5M19.5 14H21"/><path d="M9 21h6"/>',
+  hoje: '<circle cx="7" cy="5.5" r="2.5"/><circle cx="16" cy="12" r="2.5"/><circle cx="8" cy="18.5" r="2.5"/><path d="M9.2 6.8l4.6 3.6M13.8 13.6l-3.6 3.4"/>',
   estudar: '<path d="M12 6.5C10.3 5.2 7.8 4.5 4 4.5v13c3.8 0 6.3.7 8 2 1.7-1.3 4.2-2 8-2v-13c-3.8 0-6.3.7-8 2z"/><path d="M12 6.5v13"/>',
   caderno: '<rect x="6" y="3" width="13" height="18" rx="1.5"/><path d="M4 7h3M4 11h3M4 15h3M4 19h3"/><path d="M10 8h6M10 12h6"/>',
   modos: '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8.5" cy="8.5" r=".9"/><circle cx="15.5" cy="8.5" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="8.5" cy="15.5" r=".9"/><circle cx="15.5" cy="15.5" r=".9"/>',
   plano: '<rect x="3.5" y="5" width="17" height="15.5" rx="1.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h2M12 14h2M16 14h.5M8 17.5h2M12 17.5h2"/>',
   perfil: '<circle cx="12" cy="8.5" r="3.75"/><path d="M4.5 20.5c.8-3.9 3.9-6 7.5-6s6.7 2.1 7.5 6"/>',
 };
-const ABAS = [{ id: 'hoje', rotulo: 'Hoje' }, { id: 'estudar', rotulo: 'Trilha' }, { id: 'modos', rotulo: 'Modos' }, { id: 'plano', rotulo: 'Plano' }, { id: 'perfil', rotulo: 'Perfil' }];
-const ROTAS = { hoje: telaHoje, estudar: telaEstudar, caderno: telaCaderno, modos: telaModos, plano: telaPlano, perfil: telaPerfil, ajustes: telaPerfil };
+const ABAS = [{ id: 'hoje', rotulo: 'Trilha' }, { id: 'modos', rotulo: 'Modos' }, { id: 'plano', rotulo: 'Plano' }, { id: 'perfil', rotulo: 'Perfil' }];
+const ROTAS = { hoje: telaHoje, estudar: (ctx, t, rota) => (rota.sub ? telaEstudar(ctx, t, rota) : telaHoje(ctx, t)), caderno: telaCaderno, modos: telaModos, plano: telaPlano, perfil: telaPerfil, ajustes: telaPerfil };
 
 /** Rota das abas pelo hash: #/caderno/erros → { aba: 'caderno', sub: 'erros', resto: [] }. */
 export function rotaAtual() {
@@ -109,8 +109,8 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
   // abas Hoje/Caderno/Plano como divisórias de fichário: a atual desce da folha (raio só embaixo)
   function htmlAbas(rota) {
     return h`<nav class="trilho" aria-label="Seções">
-      <a class="trilho-marca" href="#/hoje" aria-label="Prumo, Hoje">${simbolo()}<span aria-hidden="true">prumo</span></a>
-      ${cada(ABAS, a => h`<a class="aba" href="#/${a.id}" ${rota.aba === a.id || (a.id === 'perfil' && rota.aba === 'ajustes') || (a.id === 'modos' && rota.aba === 'caderno') ? cru('aria-current="page"') : ''}><span class="aba-icone" aria-hidden="true">${cru(`<svg viewBox="0 0 24 24" focusable="false">${ICONES[a.id]}</svg>`)}</span><span class="aba-rotulo">${a.rotulo}</span></a>`)}
+      <a class="trilho-marca" href="#/hoje" aria-label="Prumo, Trilha">${simbolo()}<span aria-hidden="true">prumo</span></a>
+      ${cada(ABAS, a => h`<a class="aba" href="#/${a.id}" ${rota.aba === a.id || (a.id === 'perfil' && rota.aba === 'ajustes') || (a.id === 'modos' && rota.aba === 'caderno') || (a.id === 'hoje' && rota.aba === 'estudar') ? cru('aria-current="page"') : ''}><span class="aba-icone" aria-hidden="true">${cru(`<svg viewBox="0 0 24 24" focusable="false">${ICONES[a.id]}</svg>`)}</span><span class="aba-rotulo">${a.rotulo}</span></a>`)}
     </nav>`;
   }
   function htmlFaixas(f, cheia) {
@@ -248,6 +248,7 @@ export function criarApp(nucleo, raiz, { relogio } = {}) {
     if (el.dataset.ev) {
       e.preventDefault();
       if (el.getAttribute('aria-disabled') === 'true' || el.disabled) return;
+      if (ui.folha && $folha.contains(el)) fecharFolha();   // "Começar" de dentro do balão: fecha o balão e segue
       despachar({ tipo: el.dataset.ev });
     }
   });

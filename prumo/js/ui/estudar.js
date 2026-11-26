@@ -17,7 +17,6 @@ const CHAVE_COMO = 'prumo-ui-como-funciona';
 function jaViuComo() { try { return localStorage.getItem(CHAVE_COMO) === '1'; } catch (e) { return false; } }
 function marcarComo() { try { localStorage.setItem(CHAVE_COMO, '1'); } catch (e) { /* sem armazenamento: segue aberta */ } }
 import { topoAba } from './hoje.js';
-import { guardarFoto } from './fases.js';
 
 function linhaTopico(t) {
   const corpo = h`<span class="topico-titulo">${t.titulo}</span>
@@ -38,39 +37,20 @@ function linhaTopico(t) {
    O Chefão é a Prova do caderno: a taça do troféu, no roxo do carimbo. Tocar numa fase abre o balão
    com o objetivo e o que se ganha (o briefing do Capisco). */
 const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
-const CADEADO = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5.5" y="10.5" width="13" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>';
-const ZIGUE = [0, 1, 2, 1];
-function noFase(f, i) {
+export const CADEADO = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5.5" y="10.5" width="13" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>';
+const ZIGUE = [0, 1, 2, 1, 0, -1, -2, -1];
+/** Uma casa do caminho: só a bolha (o nome vai no aria-label e no balão). bolha = o "Começar" da fase atual. */
+export function noFase(f, i, bolha = '') {
   const miolo = f.tipo === 'chefe' ? cru(TACA) : f.estado === 'concluida' ? cru(CHECK) : f.estado === 'bloqueada' ? cru(CADEADO) : h`<span class="fase-n">${f.n}</span>`;
   const rotulo = `${f.tipo === 'chefe' ? 'Chefão' : `Fase ${f.n}`}: ${f.titulo}. ${f.atual ? 'Você está aqui. ' : ''}${f.legenda}.`;
   return h`<li class="fase fase-${f.estado}${f.atual ? ' fase-atual' : ''}${f.tipo === 'chefe' ? ' fase-chefe' : ''}" style="--zz:${ZIGUE[i % ZIGUE.length]}">
+    ${bolha}
     <button type="button" class="fase-no" data-folha="fase" data-arg="${f.id}" aria-label="${rotulo}">${miolo}</button>
-    <span class="fase-rotulo">
-      <span class="fase-num">${f.tipo === 'chefe' ? 'Chefão' : `Fase ${f.n}`}</span>
-      <span class="fase-titulo">${f.tipo === 'capitulo' ? f.curto : f.titulo}</span>
-      ${f.estado === 'concluida' && f.tipo !== 'capitulo' || f.estrelas ? carimbos(f.estrelas) : ''}
-      ${f.nivel && f.estado === 'concluida' ? nivel({ cheios: f.nivel.cheios, nome: f.nivel.rotulo }) : ''}
-    </span>
+    ${f.estrelas ? carimbos(f.estrelas) : ''}
   </li>`;
 }
-function mapa(v, emBreve) {
-  return h`<h1 class="titulo" tabindex="-1" data-foco-inicial>${v.titulo}</h1>
-    ${cada(v.areas, a => h`<section class="trilha-area" aria-labelledby="area-${a.id}">
-      <h2 class="mapa-area-titulo" id="area-${a.id}">${iconeArea(a.id)}${a.nome}</h2>
-      <div class="trilha-placar">
-        <span class="trilha-conta"><b>${a.feitas}</b> de <b>${a.total}</b> fases</span>
-        <span class="trilha-barra" aria-hidden="true"><i style="width:${Math.round(100 * a.feitas / Math.max(1, a.total))}%"></i></span>
-      </div>
-      <div class="trilha-mapa">
-        <svg class="trilha-caminho" aria-hidden="true" focusable="false"></svg>
-        <ol class="trilha-fases">${cada(a.fases, noFase)}</ol>
-      </div>
-    </section>`)}
-    ${emBreve.length ? h`<section class="mapa-area"><h2 class="titulo-pequeno">Em breve</h2>${cada(emBreve, a => h`<p class="mapa-embreve">${iconeArea(a.id)} <b>${a.nome}</b></p>`)}<p class="pequeno texto-2">Chegam nas próximas versões.</p></section>` : ''}
-    <details class="secao trilha-regra"><summary class="titulo-pequeno">Como a trilha funciona</summary><p>${v.intro}</p><p class="pequeno texto-2">${v.regra}</p></details>`;
-}
 /** Desenha o caminho entre as fases: lápis tracejado; caneta até a fase atual (ou a última concluída). */
-function desenharCaminhos(raiz) {
+export function desenharCaminhos(raiz) {
   const mapas = [...raiz.querySelectorAll('.trilha-mapa')];
   const fazer = () => mapas.forEach(m => {
     const svg = m.querySelector('.trilha-caminho'), nos = [...m.querySelectorAll('.fase-no')];
@@ -142,8 +122,7 @@ export function telaEstudar(ctx, t, rota) {
   const n = ctx.nucleo, id = rota.sub;
   let corpo, titulo = 'Estudar', ancora = null;
   if (id === 'relogio') return telaRelogio(ctx);
-  if (!id) { const ar = n.estudar().areas; corpo = mapa(n.trilha(), ar.filter(a => !a.disponivel)); }
-  else if (rota.resto[0] === 'teoria') {
+  if (rota.resto[0] === 'teoria') {
     const resto = rota.resto.filter(x => x !== 'de-erros'), v = n.teoriaLivre(id);
     ancora = idDaAncora(resto[1]); corpo = teoriaLivre(v, id, ancora, resto.length < rota.resto.length); titulo = v ? `Apostila: ${v.titulo}` : titulo;
   } else { const p = n.topicoPagina(id); corpo = paginaTopico(p, n); titulo = p ? p.titulo : titulo; }
@@ -157,9 +136,7 @@ export function telaEstudar(ctx, t, rota) {
       prepararFiguras(raiz.querySelector('#principal') || raiz, {
         aoAmpliar: el => ampliarFigura(ctx, el),
       });
-      const parar = acompanharSumario(raiz), parar2 = id ? null : desenharCaminhos(raiz);
-      if (!id) guardarFoto(n);
-      return () => { if (parar) parar(); if (parar2) parar2(); };
+      return acompanharSumario(raiz);
     },
   };
 }
@@ -167,7 +144,7 @@ export function telaEstudar(ctx, t, rota) {
 registrar({
   folhas: {
     /** Balão da fase: o objetivo, o que se ganha e o botão para jogar (o briefing do Capisco). */
-    fase(ctx, id) {
+    fase(ctx, id, t) {
       let f = null;
       for (const a of ctx.nucleo.trilha().areas) f = f || a.fases.find(x => x.id === id);
       if (!f) return null;
@@ -180,7 +157,8 @@ registrar({
           <p><strong>${f.estado === 'bloqueada' ? 'Para liberar:' : chefe ? 'Regra:' : f.estado === 'concluida' ? 'Situação:' : 'Objetivo:'}</strong> ${f.motivo}</p>
           ${f.estado !== 'concluida' || chefe ? h`<p class="pr-recado"><strong>Você ganha:</strong> ${f.ganho}</p>` : ''}
         </div>`,
-        pe: f.estado === 'bloqueada' ? '' : h`<a class="botao botao-largo" href="${f.href}">${chefe ? 'Ver a Prova no Caderno' : f.estado === 'concluida' ? 'Abrir a fase' : 'Jogar esta fase'}</a>`,
+        pe: f.estado === 'bloqueada' ? '' : chefe && t.vm && t.vm.prova ? h`<button type="button" class="botao botao-largo" data-ev="${t.vm.prova.acao.evento}">Enfrentar o Chefão</button>`
+          : h`<a class="botao botao-largo" href="${f.href}">${chefe ? 'Ver a Prova no Caderno' : f.estado === 'concluida' ? 'Abrir a fase' : 'Jogar esta fase'}</a>`,
       };
     },
   },

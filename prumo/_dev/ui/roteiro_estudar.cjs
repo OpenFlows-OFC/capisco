@@ -60,21 +60,22 @@ async function roteiro(motor, tema) {
     confere(await tem('Com a data, o Prumo marca as revisões até o dia da prova.'), 'ajuda da data');
     await pg.fill('#pu-data', '2026-12-15');
     await pg.click('button[type="submit"]');
-    await pg.waitForSelector('.manchete');
+    await pg.waitForSelector('.jogo-topo');
     confere((await pg.evaluate(() => window.__prumo.nucleo.st.perfil.areas)).join() === 'MT,LC', 'perfil: Matemática e Linguagens');
     confere((await pg.evaluate(() => window.__prumo.nucleo.st.missao.tipo)) !== 'folga', 'primeiro dia não é folga');
-    confere(await tem('Oi, Daniel'), 'Hoje: saudação com o nome');
-    confere(await tem('Seu próximo conteúdo'), 'Hoje: bloco "Seu próximo conteúdo"');
-    confere((await pg.$('.proximo [data-ev="COMECAR"]')) !== null, 'Hoje: Começar dentro do bloco do próximo conteúdo');
+    confere((await pg.$('.fase-atual .bolha-inicio[data-ev="COMECAR"]')) !== null, 'Início: Começar no balão da fase atual');
     await foto('hoje');
-    // abas: 5, com ícone
-    confere((await pg.$$('.trilho .aba')).length === 5 && (await pg.$$('.trilho .aba svg')).length === 5, '5 abas com ícone');
-    // Estudar: mapa
-    await pg.click('.trilho .aba[href="#/estudar"]');
-    await pg.waitForSelector('.trilha-area');
-    for (const a of ['Matemática', 'Linguagens', 'Ciências da Natureza', 'Ciências Humanas']) confere(await tem(a), `mapa: ${a}`);
-    confere(await tem('próximas versões'), 'mapa: frase honesta das áreas sem conteúdo');
-    confere(await tem('Funções afins'), 'mapa: Funções afins');
+    // abas: 4, com ícone
+    confere((await pg.$$('.trilho .aba')).length === 4 && (await pg.$$('.trilho .aba svg')).length === 4, '4 abas com ícone');
+    // Início: só a trilha da matéria escolhida; as outras no seletor
+    confere((await pg.$$('.jogo .trilha-fases')).length === 1, 'Início: uma matéria por vez');
+    await pg.click('.jogo-materia'); await pg.waitForSelector('.materias');
+    for (const a of ['Matemática', 'Linguagens', 'Ciências da Natureza', 'Ciências Humanas']) confere(await tem(a), `seletor: ${a}`);
+    confere((await pg.$$('.materia-op.inativa')).length === 2, 'seletor: áreas sem conteúdo com cadeado');
+    await pg.click('[data-acao="escolherMateria"][data-arg="MT"]'); await pg.waitForSelector('.materias', { state: 'detached' });
+    await pg.click('.unidade-guia'); await pg.waitForSelector('.guia-missao');
+    confere(await tem('Seu próximo conteúdo'), 'guia: o próximo conteúdo');
+    await pg.click('#folha-raiz [data-acao="fecharFolha"]'); await pg.waitForSelector('.guia-missao', { state: 'detached' });
     confere((await pg.$$('.fase-atual')).length > 0, 'trilha: fase atual');
     confere((await pg.$$('.fase-bloqueada')).length > 0, 'trilha: fases bloqueadas');
     confere((await pg.$$('.fase-chefe')).length === 1, 'trilha: o Chefão');
@@ -147,7 +148,7 @@ async function roteiro(motor, tema) {
     await foto('pronto-quando');
     // estudo livre, por iniciativa do aluno: "Continuar estudando" → Estudar → outro tópico
     await pg.click('[data-acao="continuarEstudando"]');
-    await pg.waitForSelector('.trilha-area');
+    await pg.waitForSelector('.jogo .trilha-fases');
     const outro = await pg.evaluate(i => window.__prumo.nucleo.prat.ids().find(x => x !== i), id);
     await pg.click(`[data-folha="fase"][data-arg="${outro}"]`); await pg.waitForSelector(".balao-fase"); await pg.click("#folha-raiz a.botao");
     await pg.waitForSelector('[data-acao="estudarTopico"]');
@@ -166,8 +167,13 @@ async function roteiro(motor, tema) {
     await pg.click('[data-ev="FECHAR"]');
     await pg.waitForSelector('.trilho');
     confere((await U.estado(pg)) === 'feito', 'volta a missão do dia, já cumprida');
-    confere(/Seu plano: .+, 18h, depois que eu chegar da escola\./.test(await U.texto(pg)), 'Hoje: "Seu plano: …"');
-    confere(/Meta da semana:/.test(await U.texto(pg)) && (await pg.$$('.semana-marcas li')).length === 7, 'Hoje: meta da semana com 7 marcas');
+    confere((await pg.$('.bolha-inicio.feito')) !== null, 'Início: "Feito hoje" no balão');
+    await pg.click('.unidade-guia'); await pg.waitForSelector('.guia-missao');
+    confere(/Seu plano: .+, 18h, depois que eu chegar da escola\./.test(await U.texto(pg)), 'guia: "Seu plano: …"');
+    await pg.click('#folha-raiz [data-acao="fecharFolha"]'); await pg.waitForSelector('.guia-missao', { state: 'detached' });
+    await pg.click('.jogo-contador'); await pg.waitForSelector('.semana-marcas');
+    confere(/Meta da semana:/.test(await U.texto(pg)) && (await pg.$$('.semana-marcas li')).length === 7, 'dias estudados: meta da semana com 7 marcas');
+    await pg.keyboard.press('Escape');
     // a teoria segue livre
     await pg.evaluate(i => { location.hash = `#/estudar/${i}`; }, id);
     await pg.waitForSelector(`a[href="#/estudar/${id}/teoria"]`);

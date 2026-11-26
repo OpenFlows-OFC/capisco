@@ -20,21 +20,24 @@ async function parteA(motor, tema) {
     confere((await pg.$('.faixa-demo [data-acao="sairDemo"]')) !== null, 'faixa com "Sair"');
     const vm = await pg.evaluate(() => window.__prumo.nucleo.tela().vm);
     console.log(`  [${motor} ${tema}] exemplo hoje: ${vm.estado} · ${vm.bloco && vm.bloco.titulo} · ${vm.bloco && vm.bloco.composicao} · ${vm.bloco && vm.bloco.atrasada}`);
-    confere(/dias estudados/.test(await U.texto(pg)), 'constância com "N dias estudados"');
-    confere((await pg.$('.linha-data .pr-risquinhos line')) !== null && (await pg.$('.chama')) === null, 'risquinhos (sem chama) na linha da data');
     await cap(pg, 'hoje-exemplo', true);
+    await pg.click('.jogo-contador'); await pg.waitForSelector('.semana-marcas');
+    confere(/dias estudados/.test(await U.texto(pg)), 'constância com "N dias estudados"');
+    confere((await pg.$('.linha-data .pr-risquinhos line')) !== null && (await pg.$('.chama')) === null, 'risquinhos (sem chama) nos dias estudados');
+    await pg.keyboard.press('Escape'); await pg.waitForTimeout(150);
     // atraso: um só recado. Se o "Hoje vence" do topo já conta as atrasadas, o bloco não repete a linha;
     // e o marca-texto fica só no que vence hoje (atraso em texto normal, sem cobrança em destaque)
     const vh = vm.venceHoje;
-    if (await pg.$('.detalhes-missao > summary')) await pg.click('.detalhes-missao > summary');   // o aviso fica em Detalhes da missão
+    await pg.click('.unidade-guia'); await pg.waitForSelector('.guia-missao');   // o aviso fica no guia da missão
     if (vh && vh.atrasadas) {
       confere(await tem(vh.vence), 'aviso das revisões atrasadas (em Detalhes da missão)');
       if (vm.bloco && vm.bloco.atrasada) confere(!(await tem(vm.bloco.atrasada)), 'atraso sem repetir no bloco da missão');
       if (!vh.hoje) confere((await pg.$('.vence-hoje .grifo')) === null, 'atraso sem marca-texto');
     } else if (vm.bloco && vm.bloco.atrasada) confere(await tem(vm.bloco.atrasada), 'linha da revisão atrasada');
+    await pg.keyboard.press('Escape'); await pg.waitForTimeout(150);
 
     // missão do exemplo: revisão(ões) e mão de cards
-    await pg.click('[data-ev="COMECAR"]');
+    await pg.click('[data-ev="COMECAR"]', { force: true });
     let errouRevisao = false, viuCards = false, viuPendente = false, viuVolta = false;
     for (let g = 0; g < 80; g++) {
       const e = await U.estado(pg);
@@ -95,7 +98,7 @@ async function parteA(motor, tema) {
     confere((await pg.$('.pr-frases')) !== null && !/ · /.test(await pg.textContent('.pr-frases')), 'resumo em frases, sem cadeia de pontos');
     await cap(pg, 'pronto-exemplo', true);
     await pg.click('[data-ev="FECHAR"]');
-    await pg.waitForSelector('.estado-texto');
+    await pg.waitForSelector('.bolha-inicio.feito');
     confere(!(await pg.$('[data-ev="COMECAR"]')) && !(await pg.$('.bloco-prova')), 'feito sem ofertas');
 
     // estados de Hoje pelos dias simulados (modo demonstração)
@@ -111,12 +114,12 @@ async function parteA(motor, tema) {
         await cap(pg, `hoje-${chave}`, true);
         if (chave === 'folga') {
           confere(await tem('Hoje é folga. Nada vence por isso.'), 'folga: texto');
-          await pg.click('[data-ev="ESTUDAR_MESMO_ASSIM"]');
+          await pg.click('[data-ev="ESTUDAR_MESMO_ASSIM"]', { force: true });
           await pg.waitForTimeout(150);
           await cap(pg, 'hoje-folga-estudar-mesmo-assim', true);
         }
         if (chave === 'retorno') confere(/a missão tem só revisões\./.test(await U.texto(pg)), 'modo retorno: texto');
-        if (chave === 'questaoDoDia') confere(/questões dos capítulos que você já abriu|questão dos capítulos que você já abriu/.test(await U.texto(pg)), 'Questão do dia: texto');
+        if (chave === 'questaoDoDia') { await pg.click('.unidade-guia'); await pg.waitForSelector('.guia-missao'); confere(/questões dos capítulos que você já abriu|questão dos capítulos que você já abriu/.test(await U.texto(pg)), 'Questão do dia: texto'); await pg.keyboard.press('Escape'); await pg.waitForTimeout(150); }
       }
     }
     // estudando todo dia (pelo núcleo), as revisões ficam em dia e aparece a Questão do dia
@@ -147,12 +150,14 @@ async function parteA(motor, tema) {
       if (v.regra === 'P3' && !vistos.P3) {
         vistos.P3 = true;
         await cap(pg, 'hoje-p3', true);
-        confere(/Seu próximo conteúdo/.test(await U.texto(pg)) && (await pg.$('.proximo [data-ev="COMECAR"]')) !== null, 'P3: o próximo tópico em Hoje, com Começar');
+        confere((await pg.$('.bolha-inicio[data-ev="COMECAR"]')) !== null, 'P3: o próximo tópico, com Começar no balão');
       }
       if ((v.estado === 'questaoDoDia' || v.estado === 'firme') && !vistos[v.estado]) {
         vistos[v.estado] = true;
         await cap(pg, `hoje-${v.estado}`, true);
+        if (v.estado === 'questaoDoDia') { await pg.click('.unidade-guia'); await pg.waitForSelector('.guia-missao'); }
         confere(/dos capítulos que você já abriu|nível 3 de 5 ou acima/.test(await U.texto(pg)), 'Questão do dia: texto');
+        if (v.estado === 'questaoDoDia') { await pg.keyboard.press('Escape'); await pg.waitForTimeout(150); }
       }
     }
     console.log(`  [${motor} ${tema}] estados vistos: ${Object.keys(vistos).join(', ')}`);
@@ -211,7 +216,7 @@ async function parteB(motor, tema) {
     const vm = await pg.evaluate(() => window.__prumo.nucleo.tela().vm);
     console.log(`  [${motor} ${tema}] dia 2: ${vm.estado} · ${vm.bloco && vm.bloco.titulo} · ${vm.bloco && vm.bloco.composicao}`);
     await cap(pg, 'hoje-dia2', true);
-    await pg.click('[data-ev="COMECAR"]');
+    await pg.click('[data-ev="COMECAR"]', { force: true });
     let viuAD = false, viuImagem = false, viuFim = false;
     for (let g = 0; g < 60; g++) {
       const e = await U.estado(pg);

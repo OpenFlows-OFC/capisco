@@ -54,7 +54,6 @@ export function blocoPassou(lista) {
   return h`<section class="passou-fase" aria-labelledby="passou-t">
     <h2 id="passou-t">Passou de fase!</h2>
     <ul>${cada(lista, x => h`<li>${x}</li>`)}</ul>
-    <p class="pequeno texto-2" style="margin:0">A trilha fica na aba Estudar.</p>
   </section>`;
 }
 

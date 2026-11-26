@@ -16,7 +16,7 @@ const U = require('./comum.cjs');
     await pg.waitForTimeout(800);
     const r = await pg.evaluate(async () => {
       const ks = await caches.keys();
-      const app = await (await caches.open('prumo-pwa-v14')).keys();
+      const app = await (await caches.open('prumo-pwa-v15')).keys();
       const fontes = app.filter(r => /\/fontes\/.+\.woff2$/.test(r.url)).length;
       return { ks, app: app.length, fontes };
     });
@@ -39,7 +39,7 @@ const U = require('./comum.cjs');
     confere(off.texto && off.titulo && off.mono, 'fontes do design system disponíveis offline');
     await pg.click('[data-acao="puExemplo"]');
     await pg.waitForSelector('.faixa-demo');
-    confere(/dias estudados/.test(await U.texto(pg)), 'estado de exemplo offline');
+    confere((await pg.$('.jogo-topo .jogo-contador b')) !== null, 'estado de exemplo offline');
     await cap(pg, 'modo-aviao-exemplo');
   } catch (e) {
     falhas.push('exceção: ' + e.message.split('\n')[0]);

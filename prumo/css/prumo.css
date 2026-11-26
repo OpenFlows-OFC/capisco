@@ -1229,3 +1229,76 @@ form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data 
 @keyframes ct-vira { from { transform: rotateX(70deg); opacity: .3; } to { transform: none; opacity: 1; } }
 .rl-painel-so { justify-content: flex-end; }
 @media (prefers-reduced-motion: reduce) { .ct-cartao.virado { animation: none; } }
+
+/* ---------- v15 · Início no jeito de jogo: barra de cima, faixa da matéria, caminho só de bolhas ---------- */
+.jogo-topo {
+  position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: var(--space-1);
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-4); padding: var(--space-2) var(--space-4);
+  background: var(--papel); border-bottom: 1px solid var(--pauta);
+}
+.jogo-materia {
+  margin-right: auto; display: inline-flex; align-items: center; gap: 8px; min-height: var(--alvo); padding: 0 10px 0 6px;
+  border: 2px solid var(--pauta-forte); border-radius: var(--radius-aba); background: var(--ficha); color: var(--grafite);
+  font: 700 16px/1 var(--font-display); cursor: pointer;
+}
+.jogo-materia > svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.jogo-contador {
+  display: inline-flex; align-items: center; gap: 6px; min-height: var(--alvo); min-width: var(--alvo); padding: 0 8px;
+  border: 0; background: none; color: var(--tinta); font: 600 18px/1 var(--font-numeros); text-decoration: none; cursor: pointer;
+}
+.jogo-contador.selo { color: var(--carimbo); }
+.jogo-contador svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.jogo-materia:focus-visible, .jogo-contador:focus-visible, .unidade-guia:focus-visible, .bolha-inicio:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+
+.unidade { position: sticky; top: 65px; z-index: 4; display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-aba); background: var(--tinta); color: var(--on-tinta); }
+.unidade-texto { flex: 1; min-width: 0; }
+.unidade-titulo { margin: 0; font: 700 22px/28px var(--font-display); color: inherit; }
+.unidade-titulo:focus { outline: none; }
+.unidade .trilha-placar { margin-top: var(--space-2); }
+.unidade .trilha-conta, .unidade .trilha-conta b { color: inherit; }
+.unidade .trilha-barra { background: color-mix(in srgb, var(--on-tinta) 22%, transparent); border-color: transparent; border-radius: 4px; }
+.unidade .trilha-barra i { background: var(--marca-texto); }
+.unidade-guia {
+  flex: none; width: var(--alvo); height: var(--alvo); display: grid; place-items: center; border-radius: var(--radius-controle);
+  border: 2px solid color-mix(in srgb, var(--on-tinta) 45%, transparent); background: none; color: inherit; cursor: pointer;
+}
+.unidade-guia svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+.jogo-aviso { margin: var(--space-3) 0 0; color: var(--grafite-2); font-size: 15px; line-height: 21px; }
+
+.jogo.trilha-mapa { margin-top: var(--space-6); padding-bottom: var(--space-6); }
+.jogo .trilha-fases { justify-items: center; gap: var(--space-5, 20px); }
+.jogo .fase { flex-direction: column; gap: var(--space-2); padding-left: 0; transform: translateX(calc(var(--zz, 0) * min(56px, 13vw))); }
+.jogo .fase .carimbos { margin: 0; }
+.jogo-solta { display: flex; justify-content: center; margin-top: var(--space-6); }
+
+.bolha-inicio {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: var(--alvo); padding: 0 18px;
+  border: 2px solid var(--tinta); border-radius: var(--radius-controle); background: var(--ficha); color: var(--tinta);
+  font: 700 16px/1 var(--font-display); letter-spacing: .02em; white-space: nowrap; cursor: pointer; margin-bottom: 6px;
+  box-shadow: 0 3px 0 var(--tinta);
+}
+.bolha-inicio::after {
+  content: ''; position: absolute; left: 50%; bottom: -8px; width: 12px; height: 12px; background: inherit;
+  border-right: 2px solid var(--tinta); border-bottom: 2px solid var(--tinta); transform: translateX(-50%) rotate(45deg);
+}
+.bolha-inicio:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--tinta); }
+.bolha-inicio.feito { cursor: default; color: var(--carimbo); border-color: var(--carimbo); box-shadow: 0 3px 0 var(--carimbo); }
+.bolha-inicio.feito::after { border-color: var(--carimbo); }
+.bolha-inicio svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: no-preference) {
+  .bolha-inicio:not(.feito) { animation: bolha-boia 2.4s ease-in-out infinite; }
+  @keyframes bolha-boia { 50% { translate: 0 -4px; } }
+}
+
+.materias { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.materia-op {
+  width: 100%; display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: 0 var(--space-3);
+  border: 2px solid var(--pauta-forte); border-radius: var(--radius-ficha); background: var(--ficha); color: var(--grafite);
+  font: 600 17px/1.2 var(--font-display); text-align: left; cursor: pointer;
+}
+.materia-op.atual { border-color: var(--tinta); box-shadow: inset 0 0 0 1px var(--tinta); }
+.materia-nome { flex: 1; }
+.materia-op.inativa { cursor: default; color: var(--grafite-2); border-style: dashed; }
+.materia-op.inativa svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
+.materias + .trilha-regra { margin-top: var(--space-4); }
+.guia-missao > * + * { margin-top: var(--space-3); }
