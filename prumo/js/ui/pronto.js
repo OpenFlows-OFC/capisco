@@ -119,11 +119,6 @@ export function telaPronto(ctx, vm) {
       ${vm.placar ? raspadinha(vm.placar.raspa) : ''}
       ${visto(vm.visto, { novo: nova })}
       ${blocoPassou(passouDeFase(ctx.nucleo))}
-      ${p ? h`<section class="proxima-bloco" aria-label="Próxima missão">
-        <p class="proxima-texto"><strong class="proxima-rotulo">Próxima missão</strong> ${semQuebra(p.texto)}</p>
-        ${p.gancho ? h`<p>${semQuebra(p.gancho)}</p>` : ''}
-        ${p.porque ? h`<details class="porque"><summary class="link">${p.rotuloPorque || 'Por quê?'}</summary><p class="texto-2">${p.porque}</p></details>` : ''}
-      </section>` : ''}
       ${quando(vm.quando)}
       ${constancia(vm.constancia)}
       ${vm.continuar ? h`<p class="continuar-livre">${vm.continuar.texto}</p><p class="links"><button type="button" class="link" data-acao="continuarEstudando">${vm.continuar.rotulo}</button></p>` : ''}

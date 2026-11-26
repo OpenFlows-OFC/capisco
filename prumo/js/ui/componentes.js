@@ -176,10 +176,7 @@ export function linhaAposta(p) {
   if (!p) return '';
   return h`${p.bonus ? h`<p class="aposta-res ganhou"><b>Dobrou!</b> +${p.bonus} pontos</p>` : ''}
     ${p.perdeu ? h`<p class="aposta-res perdeu"><b>Perdeu o pote:</b> −${p.perdeu} pontos</p>` : ''}
-    ${p.oferta ? h`<div class="aposta-oferta" role="group" aria-labelledby="aposta-t">
-      <p class="aposta-titulo" id="aposta-t">${p.seq} seguidas!</p>
-      <p class="aposta-pote"><b>${p.pote}</b> pontos no pote</p>
-    </div>` : ''}`;
+`;
 }
 /** Linha do acerto no feedback: "+20 pontos · 2 seguidas, x2". */
 export function linhaCombo(p) {

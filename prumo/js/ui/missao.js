@@ -179,7 +179,7 @@ function feedback(ctx, vm) {
       ${corpoFeedback(ctx, vm, { animar: nova })}
     </main>`,
     barra: vm.topo && vm.topo.placar && vm.topo.placar.oferta
-      ? h`<button type="button" class="botao-sec botao-largo" data-acao="apostar" data-arg="garantir" data-evento="${vm.continuar.evento}">Garantir ${vm.topo.placar.pote}</button><button type="button" class="botao botao-largo botao-dobrar" data-acao="apostar" data-arg="dobrar" data-evento="${vm.continuar.evento}">Dobrar</button>`
+      ? h`<button type="button" class="botao-sec botao-largo" data-acao="apostar" data-arg="garantir" data-evento="${vm.continuar.evento}" aria-label="${`Garantir ${vm.topo.placar.pote} pontos`}">Garantir ${vm.topo.placar.pote}</button><button type="button" class="botao botao-largo botao-dobrar" data-acao="apostar" data-arg="dobrar" data-evento="${vm.continuar.evento}" aria-label="${`Arriscar na próxima: acertando, ${vm.topo.placar.pote} vira ${vm.topo.placar.pote * 2}`}">Dobrar p/ ${vm.topo.placar.pote * 2}</button>`
       : botaoContinuar(vm.continuar),
     depois(raiz, { mudou }) {
       figuras(ctx, raiz, vm.item);
