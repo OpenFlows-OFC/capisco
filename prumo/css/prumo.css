@@ -207,7 +207,7 @@ details > summary::-webkit-details-marker { display: none; }
 .sem-faixa .conteudo { padding-top: calc(var(--space-4) + var(--seguro-topo)); }
 .trilho {
   position: fixed; z-index: 4; left: 0; right: 0; bottom: 0;
-  display: grid; grid-template-columns: repeat(5, 1fr); align-items: stretch;
+  display: grid; grid-template-columns: repeat(4, 1fr); align-items: stretch;
   padding: 4px max(4px, env(safe-area-inset-left, 0px)) max(6px, var(--seguro-baixo)) max(4px, env(safe-area-inset-right, 0px));
   background: var(--papel); border-top: 1px solid var(--pauta);
 }
