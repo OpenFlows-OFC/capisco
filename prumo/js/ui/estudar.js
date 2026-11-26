@@ -93,8 +93,8 @@ function paginaTopico(p, n) {
     <h1 class="titulo" tabindex="-1" data-foco-inicial>${p.titulo}</h1>
     ${p.disponivel ? h`
       ${nivel({ cheios: p.nivel.cheios, nome: p.nivel.cheios ? p.nivel.rotulo : null })}
-      <p style="margin:8px 0 0">${p.estadoTexto}</p>
-      ${p.progresso ? h`<p class="texto-2" style="margin:4px 0 0">${p.progresso.texto}</p>` : ''}
+      <p class="so-leitor">${p.estadoTexto}</p>
+      ${p.progresso && p.progresso.total ? h`<p class="topico-pontos" role="img" aria-label="${p.progresso.texto}">${cada(Array.from({ length: p.progresso.total }, (_, i) => i < p.progresso.feitas), f => h`<i class="${f ? 'feita' : ''}"></i>`)}</p>` : ''}
       ${botaoAcao(p.acao)}
       ${p.comoFunciona === null || jaViuComo() ? '' : comoFunciona({ aberto: true, itens: curto(p.comoFunciona) })}
       ${p.capitulos ? h`<ul class="lista-topicos">${cada(p.capitulos, (c, k) => linhaCapitulo(c, primeiraPagina(n, c, k)))}</ul>` : ''}

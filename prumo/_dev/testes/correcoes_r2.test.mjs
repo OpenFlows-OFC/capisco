@@ -280,7 +280,7 @@ for (const pk of await packs()) {
     const nota = n.topicoPagina(novoTop).acao.nota;
     assert.ok(vencidas.length > 3, 'o exemplo tem mais revisões vencidas do que cabem junto com um tópico');
     {
-      assert.match(nota, /^Ele entra na missão de hoje\. .+ continuam; .+ (vai|vão) para o próximo dia de estudo: junto com um tópico, entram até 3 revisões por dia\.$/);
+      assert.match(nota, /^Entra na missão de hoje\. \d+ revis(ão|ões) continuam?; \d+ revis(ão|ões) (vai|vão) para o próximo dia \(cabem até 3 por dia\)\.$/);
       n.despachar({ tipo: 'ESTUDAR_TOPICO', id: novoTop });
       const m = n.st.missao;
       assert.equal(m.foraPor, 'capacidade');

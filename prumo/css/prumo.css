@@ -1302,3 +1302,8 @@ form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data 
 .materia-op.inativa svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
 .materias + .trilha-regra { margin-top: var(--space-4); }
 .guia-missao > * + * { margin-top: var(--space-3); }
+
+/* v15.2 · página do tópico: o avanço em bolinhas, sem frase */
+.topico-pontos { display: flex; flex-wrap: wrap; gap: 6px; margin: var(--space-3) 0 0; }
+.topico-pontos i { width: 14px; height: 14px; border-radius: var(--radius-bolha); border: 2px solid var(--pauta-forte); }
+.topico-pontos i.feita { background: var(--tinta); border-color: var(--tinta); }

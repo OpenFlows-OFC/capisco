@@ -1545,11 +1545,11 @@ export class Nucleo {
     if (m.tipo === 'pausa') return { disponivel: false, rotulo, motivo: `Você marcou pausa até ${R.fmtDiaMes(this.st.pausa.ate)}. Para estudar, encerre a pausa no Plano.` };
     const ehEste = fa ? m.tipo !== 'topico' && m.tipo !== 'folga' : m.tipo === 'topico' && m.cap === id;
     if (m.iniciada) return ehEste
-      ? { disponivel: true, evento: 'CONTINUAR', rotulo: `Continuar do passo ${Math.min(m.i + 1, m.passos.length)} de ${m.passos.length}`, nota: 'Este tópico já é a sua missão de hoje.' }
+      ? { disponivel: true, evento: 'CONTINUAR', rotulo: `Continuar do passo ${Math.min(m.i + 1, m.passos.length)} de ${m.passos.length}`, nota: null }
       : { disponivel: false, rotulo, motivo: 'A missão de hoje já começou. Termine ou encerre por hoje; amanhã este tópico pode ser a missão.' };
     const atual = m.tipo === 'folga' || !m.passos.length ? null : this._titulo(m);
     return { disponivel: true, evento: 'ESTUDAR_TOPICO', id, rotulo,
-      nota: ehEste ? 'Este tópico já é a sua missão de hoje.' : m.tipo === 'folga' ? 'Hoje é folga. Estudar conta como dia estudado, mas não para a meta da semana.' : atual ? this._notaTrocaTopico(id, m, d, atual) : 'Ele vira a sua missão de hoje.' };
+      nota: ehEste ? null : m.tipo === 'folga' ? 'Conta como dia estudado, não para a meta da semana.' : atual ? this._notaTrocaTopico(id, m, d, atual) : null };
   }
   /** Nota de "Estudar este tópico hoje" montada da missão que o P0 montaria: o que ele substitui, as revisões
    *  que continuam e as que vão para o próximo dia de estudo (com o motivo: até capacidade(st) junto com um tópico). */
@@ -1557,13 +1557,13 @@ export class Nucleo {
     const mm = montarMissaoGeral(this.st, this.pack, this.M, this.prat, d, { topico: id, estudarMesmoAssim: !!m.estudarMesmoAssim });
     const ficam = [...new Set(mm.passos.filter(p => p.t === 'revisao' && p.cap !== id).map(p => p.cap))];
     const saem = [...new Set(mm.revisoesFora || [])];
-    if (!ficam.length && !saem.length) return `Ele vira a sua missão de hoje no lugar de “${atual}”. É uma missão por dia.`;
-    const comArtigo = caps => `${caps.length === 1 ? 'a' : 'as'} ${this._revisoes(caps)}`;
-    const pt = this._partesMissao(m), sai = pt.principal ? (m.tipo === 'novo' || m.tipo === 'pratica' ? this._tituloCap(m.cap) : pt.principal) : null;
+    if (!ficam.length && !saem.length) return `Entra no lugar de “${atual}”.`;
+    // curta: quanto fica e quanto sai, em números (o nome de cada revisão está no guia da missão)
+    const nr = k => (k === 1 ? '1 revisão' : `${k} revisões`);
     const partes = [];
-    if (ficam.length) partes.push(`${cap1(comArtigo(ficam))} ${ficam.length === 1 ? 'continua' : 'continuam'}`);
-    if (saem.length) partes.push(`${ficam.length ? comArtigo(saem) : cap1(comArtigo(saem))} ${saem.length === 1 ? 'vai' : 'vão'} para o próximo dia de estudo: junto com um tópico, entram até ${Plano.capacidade(this.st)} revisões por dia`);
-    return `Ele entra na missão de hoje${sai ? ` no lugar de “${sai}”` : ''}. ${partes.join('; ')}.`;
+    if (ficam.length) partes.push(`${nr(ficam.length)} ${ficam.length === 1 ? 'continua' : 'continuam'}`);
+    if (saem.length) partes.push(`${nr(saem.length)} ${saem.length === 1 ? 'vai' : 'vão'} para o próximo dia (cabem até ${Plano.capacidade(this.st)} por dia)`);
+    return `Entra na missão de hoje. ${cap1(partes.join('; '))}.`;
   }
   /** Página do tópico: título, por que cai no Enem, o nível do aluno e "Estudar este tópico hoje". */
   topicoPagina(id) {
