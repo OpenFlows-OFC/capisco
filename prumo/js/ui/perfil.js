@@ -109,7 +109,6 @@ function colecao(c) {
     <table class="calendario"><thead><tr>${cada(c.cabecalho, x => h`<th scope="col">${x}</th>`)}</tr></thead>
       <tbody>${cada(c.semanas, s => h`<tr>${cada(s, x => h`<td class="${x.fora ? 'fora' : ''} ${x.hoje ? 'hoje' : ''}">${x.fora ? '' : h`<span class="cal-n">${x.n}</span>${x.visto ? h`<span class="mini-visto" role="img" aria-label="visto">V</span>` : ''}`}</td>`)}</tr>`)}</tbody></table>
     <p>${c.texto}</p>
-    <p class="pequeno texto-2">${c.regra}</p>
   </section>`;
 }
 

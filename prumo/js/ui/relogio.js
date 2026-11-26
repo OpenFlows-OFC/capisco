@@ -57,11 +57,8 @@ function terminar(ctx, { porTempo }) {
 
 function entrada(v, modo) {
   return h`<main class="missao relampago" style="padding-top:32px">
-    <p class="rotulo">Modo de jogo</p>
     <h1 class="titulo" tabindex="-1" data-foco-inicial style="margin:8px 0 12px">${v.titulo}</h1>
     <p style="font-size:18px;line-height:28px">${v.regra}</p>
-    <p>${v.pontos}</p>
-    <p class="texto-2">${v.aviso}</p>
     ${modo === 'revanche' ? '' : recordes(v)}
   </main>`;
 }
@@ -70,7 +67,6 @@ function recordes(v, destaque = 0) {
   return h`<section class="rl-recordes" aria-labelledby="rl-rec-t">
     <h2 class="titulo-pequeno" id="rl-rec-t">Seus recordes</h2>
     <ol>${cada(v.recordes, r => h`<li class="${r.pos === destaque ? 'agora' : ''}"><span class="rl-pos">${r.pos}º</span><b>${r.pontos}</b> pts <span class="texto-2">${r.texto}</span></li>`)}</ol>
-    <p class="pequeno texto-2" style="margin:0">${v.partidas} ${v.partidas === 1 ? 'partida jogada' : 'partidas jogadas'} neste aparelho.</p>
   </section>`;
 }
 function topoJogo(rl, titulo) {

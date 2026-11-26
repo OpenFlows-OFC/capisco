@@ -34,7 +34,6 @@ export function telaProva(ctx, t) {
         <h1 class="titulo" tabindex="-1" data-foco-inicial style="margin:8px 0 12px">${vm.titulo}</h1>
         <p style="font-size:18px;line-height:28px">${vm.regra}</p>
         <p>${vm.tamanho}</p>
-        <p class="texto-2">${vm.aviso}</p>
         <p class="prova-vidas">${lapis({ total: 3, restam: 3 })} ${vm.vidas}</p>
         <hr class="fio">
         <p>${vm.trofeu}</p>

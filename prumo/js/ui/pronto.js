@@ -115,7 +115,6 @@ export function telaPronto(ctx, vm) {
           ${carimbos(vm.placar.estrelas, { grande: true, novo: nova })}
         </div>
         <p>${vm.placar.acertos} de ${vm.placar.total} certas · maior sequência: ${vm.placar.maxSeq}${vm.placar.recorde ? h` · <strong class="recorde">${vm.placar.recorde === 'primeiro' ? 'Primeiros carimbos da fase!' : 'Novo recorde da fase!'}</strong>` : ''}</p>
-        <p class="pequeno texto-2" style="margin:0">${vm.placar.regra}</p>
       </section>` : ''}
       ${vm.placar ? raspadinha(vm.placar.raspa) : ''}
       ${visto(vm.visto, { novo: nova })}
