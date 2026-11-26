@@ -71,3 +71,29 @@ for (const pk of await packs()) {
     assert.match(n.relampago().chamada, /minutos/);
   });
 }
+
+for (const pk of await packs()) {
+  test(`[${pk.nome}] modos: cartões do Enem + os seus, criar e apagar, revanche só com erros`, async () => {
+    const { n } = novo(pk.dados);
+    assert.equal(n.cartoes().total, 0);
+    assert.equal(n.revanche().fila.length, 0);
+    assert.equal(n.criarCartao({ frente: '  ', verso: 'x' }), null);
+    const id = n.criarCartao({ frente: 'Quanto é 15% de 80?', verso: '12' });
+    assert.ok(id);
+    assert.equal(n.cartoes().meus.length, 1);
+    assert.equal(n.sortearCartoes(() => 0).length, 1);
+    const { normalizar } = await import('../../js/nucleo/estado.js');
+    const st = normalizar(JSON.parse(JSON.stringify(n.st)));
+    assert.equal(st.meusCartoes[0].frente, 'Quanto é 15% de 80?');
+    assert.ok(n.apagarCartao(id));
+    assert.equal(n.cartoes().meus.length, 0);
+    n.carregarExemplo();
+    const c = n.cartoes();
+    assert.ok(c.enem.length > 0, 'o exemplo tem cartões no baralho');
+    assert.ok(n.sortearCartoes().length <= 10);
+    const r = n.revanche().fila;
+    assert.ok(r.length > 0 && r.length <= 10 && new Set(r).size === r.length);
+    for (const x of r) assert.ok(n.questaoRelampago(x));
+    assert.match(n.modos().revanche.linha, /quest/);
+  });
+}

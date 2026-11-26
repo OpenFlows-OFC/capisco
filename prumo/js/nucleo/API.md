@@ -221,3 +221,11 @@ Testes: `node --test "_dev/testes/*.test.mjs"` (na pasta `prumo/`). Rodam contra
 - `relampago()` ganha `melhor` (maior placar ou `null`) e `chamada` (texto do cartão em Hoje e Estudar).
 - `encerramento().placar.recorde` agora é `'primeiro'`, `'melhor'` ou `false`.
 - Contra o relógio (UI): contagem 3-2-1 antes do relógio correr; feedback curto (alternativas + "Rever o enunciado").
+
+## v14 (Modos)
+- Aba Caderno saiu das abas; no lugar, **Modos** (`#/modos`). Rotas do Caderno (`#/caderno/erros`, `/notas`, `/pagina/...`) continuam.
+- `modos()` → `{relogio, cartoes, revanche}` com `titulo`, `linha` (e `melhor`/`total`).
+- `cartoes()` → `{enem:[{id, frente, verso, origem}], meus:[...], total, max}`; `sortearCartoes(rand)` até 10.
+- `criarCartao({frente, verso})` → id ou `null`; `apagarCartao(id)` → boolean. Estado: `st.meusCartoes`.
+- `revanche()` → `{fila}`: itens errados, sem repetir, mais recentes primeiro, até 10.
+- Todos são treino: não mexem em nível, revisão dos cartões da missão nem visto do dia.

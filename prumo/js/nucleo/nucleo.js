@@ -16,6 +16,7 @@ import * as Prova from './prova.js';
 import { gerarExemplo } from './exemplo.js';
 
 /** Contra o relógio: questões sorteadas de todas as fases, relógio corrido. É treino: não mexe em nível nem no visto. */
+export const CARTOES_SESSAO = 10, REVANCHE_MAX = 10;
 export const RELAMPAGO = Object.freeze({ questoes: 15, minutos: 5 });
 import { Praticas, limparSvg, AREAS, CONHECIDOS, estadoTopico, montarMissaoGeral, ineditas, regraTopico, passosTopico, estimarMinutosTopico, minutosDaTeoriaNaMissao, QUESTOES_POR_MINUTOS } from './pratica.js';
 
@@ -1659,6 +1660,59 @@ export class Nucleo {
       melhor: rl.recordes.length ? rl.recordes[0].pontos : null,
       chamada: `${R2.questoes} questões · ${R2.minutos} minutos`,
     };
+  }
+  /* =========================================================
+     Modos: a missão do dia é o principal; Contra o relógio, Cartões e Revanche são treino
+     (não mexem em nível, revisão nem visto do dia)
+     ========================================================= */
+  modos() {
+    const c = this.cartoes(), r = this.revanche(), rl = this.relampago();
+    return {
+      relogio: { titulo: rl.titulo, linha: rl.chamada, melhor: rl.melhor },
+      cartoes: { titulo: 'Cartões', linha: c.total ? `${c.total} ${c.total === 1 ? 'cartão' : 'cartões'}` : 'Crie o seu primeiro', total: c.total },
+      revanche: { titulo: 'Revanche', linha: r.fila.length ? `${r.fila.length} ${r.fila.length === 1 ? 'questão errada' : 'questões erradas'}` : 'Nenhum erro guardado', total: r.fila.length },
+    };
+  }
+  /** Cartões do modo: os do Enem que já entraram no baralho (capítulos estudados) e os seus. */
+  cartoes() {
+    const pk = this.pack, st = this.st;
+    const enem = Object.keys(st.cards || {}).map(id => pk.card(id)).filter(Boolean).map(k => {
+      const cap = pk.capitulo(pk.capDoCard(k.id));
+      return { id: k.id, frente: k.frente, verso: k.verso, origem: cap ? `Cap. ${cap.n}` : '' };
+    });
+    const meus = (st.meusCartoes || []).map(c => ({ id: c.id, frente: c.frente, verso: c.verso, origem: 'Seu cartão', meu: true }));
+    return { enem, meus, total: enem.length + meus.length, max: CARTOES_SESSAO };
+  }
+  /** Sessão do modo Cartões: até 10, sorteados entre os do Enem e os seus (rand injetável nos testes). */
+  sortearCartoes(rand = Math.random) {
+    const c = this.cartoes(), todos = [...c.enem, ...c.meus];
+    for (let i = todos.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [todos[i], todos[j]] = [todos[j], todos[i]]; }
+    return todos.slice(0, CARTOES_SESSAO);
+  }
+  /** Cria um cartão do aluno. Devolve o id, ou null se faltar frente ou verso. */
+  criarCartao({ frente = '', verso = '' } = {}) {
+    const f = String(frente).trim().slice(0, 200), v = String(verso).trim().slice(0, 400);
+    if (!f || !v) return null;
+    const lista = this.st.meusCartoes || [];
+    let n = lista.length + 1;
+    while (lista.some(x => x.id === `meu-${n}`)) n++;
+    const id = `meu-${n}`;
+    this._acao(() => { (this.st.meusCartoes = this.st.meusCartoes || []).push({ id, frente: f, verso: v, dia: R.hoje() }); });
+    return id;
+  }
+  apagarCartao(id) {
+    let ok = false;
+    this._acao(() => { const l = this.st.meusCartoes || []; const i = l.findIndex(x => x.id === id); if (i >= 0) { l.splice(i, 1); ok = true; } });
+    return ok;
+  }
+  /** Revanche: as questões que você errou (a mais recente primeiro, sem repetir), até 10. */
+  revanche() {
+    const vistos = new Set(), fila = [];
+    for (const e of [...(this.st.erros || [])].sort((a, b) => (a.dia < b.dia ? 1 : a.dia > b.dia ? -1 : 0))) {
+      if (vistos.has(e.item) || !this.questaoRelampago(e.item)) continue;
+      vistos.add(e.item); fila.push(e.item);
+    }
+    return { fila: fila.slice(0, REVANCHE_MAX) };
   }
   /** Álbum de carimbos: o que já foi ganho em cada fase da trilha (3 por fase, o melhor resultado fica). */
   album() {
