@@ -96,9 +96,7 @@ function paginaTopico(p, n) {
       <p style="margin:8px 0 0">${p.estadoTexto}</p>
       ${p.progresso ? h`<p class="texto-2" style="margin:4px 0 0">${p.progresso.texto}</p>` : ''}
       ${botaoAcao(p.acao)}
-      ${p.comoFunciona === null ? '' : comoFunciona({ aberto: !jaViuComo(), itens: curto(p.comoFunciona) })}
-      <section class="secao" aria-labelledby="pq-t"><h2 class="titulo-pequeno" id="pq-t">Por que cai no Enem</h2><p>${p.porQueCai}</p></section>
-      ${p.ideias && p.ideias.length ? h`<section class="secao" aria-labelledby="id-t"><h2 class="titulo-pequeno" id="id-t">O essencial</h2><ul class="teoria-lista">${cada(p.ideias, x => h`<li>${x}</li>`)}</ul></section>` : ''}
+      ${p.comoFunciona === null || jaViuComo() ? '' : comoFunciona({ aberto: true, itens: curto(p.comoFunciona) })}
       ${p.capitulos ? h`<ul class="lista-topicos">${cada(p.capitulos, (c, k) => linhaCapitulo(c, primeiraPagina(n, c, k)))}</ul>` : ''}
       <p class="secao">${p.leitura.aba ? h`<a class="link" href="#/${p.leitura.aba}">${p.leitura.rotulo}</a>` : h`<a class="link" href="#/estudar/${p.id}/teoria">${p.leitura.rotulo}</a>`}</p>`
     : h`<p>${p.estadoTexto}</p>`}`;

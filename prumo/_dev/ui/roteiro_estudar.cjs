@@ -88,7 +88,7 @@ async function roteiro(motor, tema) {
     confere(await tem('Você ganha:'), 'balão: o que se ganha');
     await pg.click('#folha-raiz a.botao');
     await pg.waitForSelector('[data-acao="estudarTopico"]');
-    confere(await tem('Por que cai no Enem'), 'tópico: por que cai');
+    confere(!(await tem('Por que cai no Enem')) && !(await tem('O essencial')), 'tópico: sem textos de apoio (só o botão)');
     confere(await tem('Estudar este tópico hoje'), 'tópico: botão');
     await foto('topico');
     await pg.click('[data-acao="estudarTopico"]');
