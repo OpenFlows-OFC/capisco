@@ -1307,3 +1307,47 @@ form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data 
 .topico-pontos { display: flex; flex-wrap: wrap; gap: 6px; margin: var(--space-3) 0 0; }
 .topico-pontos i { width: 14px; height: 14px; border-radius: var(--radius-bolha); border: 2px solid var(--pauta-forte); }
 .topico-pontos i.feita { background: var(--tinta); border-color: var(--tinta); }
+
+/* ---------- v16 · Plano no jeito da aba de metas: contagem, metas com barra, 14 dias em quadradinhos, ritmo ---------- */
+.pl-titulo { margin-bottom: var(--space-4); }
+.pl-prova { padding: var(--space-5, 20px) var(--space-4); border-radius: var(--radius-aba); background: var(--tinta); color: var(--on-tinta); }
+.pl-prova-n { margin: 0; font: 600 20px/1 var(--font-numeros); }
+.pl-prova-n b { font: 700 56px/1 var(--font-numeros); letter-spacing: -.02em; margin-right: 4px; }
+.pl-prova-sub { margin: var(--space-2) 0 0; font: 600 15px/20px var(--font-texto); opacity: .9; }
+.pl-prova-sem { margin: 0; }
+.pl-prova-link { display: inline-flex; align-items: center; min-height: var(--alvo); margin-top: var(--space-2); color: inherit; font-weight: 700; text-underline-offset: 4px; }
+
+.pl-metas, .pl-linhas { list-style: none; margin: var(--space-3) 0 0; padding: 0; border: 2px solid var(--pauta-forte); border-radius: var(--radius-ficha); background: var(--ficha); }
+.pl-metas > li + li, .pl-linhas > li + li { border-top: 1px solid var(--pauta); }
+.pl-meta { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); }
+.pl-meta-icone, .pl-linha-icone { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--radius-controle); background: var(--papel-2); color: var(--tinta); }
+.pl-meta-icone svg, .pl-linha-icone svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pl-meta.feita .pl-meta-icone { background: var(--carimbo); color: var(--on-tinta); }
+.pl-meta-corpo { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.pl-meta-titulo { font: 700 16px/20px var(--font-display); color: var(--grafite); }
+.pl-meta-barra { position: relative; display: block; height: 16px; margin-right: 52px; border-radius: 8px; background: var(--papel-2); }
+.pl-meta-barra i { display: block; height: 100%; border-radius: 8px; background: var(--marca-texto); }
+.pl-meta.feita .pl-meta-barra i { background: var(--carimbo); }
+.pl-meta-barra b { position: absolute; top: 50%; left: calc(100% + 8px); transform: translateY(-50%); font: 600 14px/1 var(--font-numeros); color: var(--grafite); white-space: nowrap; }
+
+.pl-dias { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.pl-dia {
+  width: 100%; min-height: 64px; display: grid; justify-items: center; align-content: center; gap: 2px; padding: 4px 0;
+  border: 2px solid var(--pauta-forte); border-radius: var(--radius-controle); background: var(--ficha); color: var(--grafite); cursor: pointer;
+}
+.pl-dia-sem { font: 600 11px/14px var(--font-texto); color: var(--grafite-2); }
+.pl-dia-n { font: 600 17px/20px var(--font-numeros); }
+.pl-dia-marca { width: 8px; height: 8px; border-radius: var(--radius-bolha); display: grid; place-items: center; }
+.pl-dia.tem .pl-dia-marca { background: var(--tinta); }
+.pl-dia.feito .pl-dia-marca { width: 16px; height: 16px; background: var(--carimbo); color: var(--on-tinta); }
+.pl-dia-marca svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.pl-dia.pl-folga { border-style: dashed; background: transparent; color: var(--grafite-2); }
+.pl-dia.pl-pausa { border-style: dashed; background: repeating-linear-gradient(135deg, transparent 0 5px, var(--papel-2) 5px 10px); color: var(--grafite-2); }
+.pl-dia.hoje { border-color: var(--tinta); box-shadow: 0 0 0 3px color-mix(in srgb, var(--marca-texto) 75%, transparent); }
+.pl-dia:focus-visible, .pl-linha:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+
+.pl-linha { width: 100%; display: flex; align-items: center; gap: var(--space-3); min-height: 64px; padding: var(--space-2) var(--space-3); border: 0; background: none; color: var(--grafite); text-align: left; text-decoration: none; cursor: pointer; font: inherit; }
+.pl-linha-texto { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.pl-linha-titulo { font: 700 16px/20px var(--font-display); }
+.pl-linha-valor { font-size: 14px; line-height: 18px; color: var(--grafite-2); }
+.pl-linha > svg:last-child { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--grafite-2); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }

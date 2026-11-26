@@ -16,7 +16,7 @@ const U = require('./comum.cjs');
     await pg.waitForTimeout(800);
     const r = await pg.evaluate(async () => {
       const ks = await caches.keys();
-      const app = await (await caches.open('prumo-pwa-v15.3')).keys();
+      const app = await (await caches.open('prumo-pwa-v16')).keys();
       const fontes = app.filter(r => /\/fontes\/.+\.woff2$/.test(r.url)).length;
       return { ks, app: app.length, fontes };
     });

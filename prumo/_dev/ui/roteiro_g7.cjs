@@ -39,7 +39,7 @@ async function roteiro(motor, tema) {
     await cap(pg, 'mudar-dias', true);
     await pg.click('button[type="submit"]');
     // o lembrete saiu do cadastro: o Plano mostra o alarme "Prumo" às 19:00 com os dias
-    await pg.waitForSelector('.manchete');
+    await pg.waitForSelector('.jogo-topo');
     confere((await pg.evaluate(() => window.__prumo.nucleo.st.missao.tipo)) !== 'folga', 'primeiro dia não é folga');
     await pg.click('.trilho .aba[href="#/plano"]');
     await pg.waitForTimeout(200);
@@ -48,19 +48,19 @@ async function roteiro(motor, tema) {
     await pg.click('.trilho .aba[href="#/hoje"]');
 
     // 2 · Hoje como folha de rosto; "Por que esta missão?" → "ver a regra"
-    await pg.waitForSelector('.manchete');
-    confere((await U.texto(pg)).toUpperCase().includes('MISSÃO 1'), 'Hoje: "Missão 1"');
-    confere(await tem('Funções afins: Parte fixa e parte que varia'), 'Hoje: manchete com o nome do capítulo');
-    await pg.click('.detalhes-missao > summary');
+    await pg.waitForSelector('.jogo-topo');
+    confere((await pg.$('.fase-atual .bolha-inicio[data-ev="COMECAR"]')) !== null, 'Início: Começar na fase atual');
+    confere((await pg.textContent('.jogo-contador b')).trim() === '0', 'Início: 0 dias estudados no contador');
+    await pg.click('.unidade-guia'); await pg.waitForSelector('.guia-missao');
+    confere(await tem('Funções afins: Parte fixa e parte que varia'), 'guia: o nome do capítulo');
     confere((await pg.$('.pr-cabecalho')) !== null && await tem('Capítulo') && await tem('Tempo') && !(await tem('Data')), 'Hoje: Cabecalho (Capítulo | Páginas | Tempo), sem Data');
     confere(await tem('No fim, o visto do dia.'), 'Hoje: regra anuncia o visto');
-    confere(await tem('0 dias estudados'), 'Hoje: 0 dias estudados');
     confere((await pg.evaluate(() => window.__prumo.nucleo.st.perfil.prova)) === '2026-12-15', 'perfil com a prova em 15/12');
     await cap(pg, 'hoje-primeiro-dia', true);
-    await pg.evaluate(() => document.querySelectorAll('.detalhes-missao').forEach(d => d.open = true)); await pg.click('[data-folha="passos"]'); await cap(pg, 'ver-passos');
+    await pg.click('#folha-raiz [data-folha="passos"]'); await cap(pg, 'ver-passos');
     confere(await tem('Pergunta antes do § 4'), 'ver passos: "Pergunta antes do § 4"');
     await pg.click('#folha-raiz .folha-pe [data-acao="fecharFolha"]');
-    await pg.evaluate(() => document.querySelectorAll('.detalhes-missao').forEach(d => d.open = true)); await pg.click('[data-folha="porQue"]'); await cap(pg, 'por-que');
+    await pg.waitForTimeout(150); await pg.click('.unidade-guia'); await pg.waitForSelector('.guia-missao'); await pg.click('#folha-raiz [data-folha="porQue"]'); await cap(pg, 'por-que');
     await pg.click('[data-acao="verRegraPorQue"]'); await cap(pg, 'ver-a-regra');
     confere(/\d+\. sim: /.test(await U.texto(pg)), 'ver a regra: a linha da regra que decidiu ("N. sim: …")');
     await pg.click('#folha-raiz .folha-pe [data-acao="fecharFolha"]');
@@ -68,7 +68,7 @@ async function roteiro(motor, tema) {
     confere(!(await pg.$('#folha-raiz .folha')), 'folha fechada');
 
     // 3 · Pré-pergunta da p. 1 (sem sinal de acerto) + leitura + checagem
-    await pg.click('[data-ev="COMECAR"]');
+    await pg.click('[data-ev="COMECAR"]', { force: true });
     await pg.waitForSelector('.alternativas');
     confere(await tem('Antes de ler a p. 1'), 'rótulo Antes de ler a p. 1');
     confere(await tem('Tente antes de ler. Esta página responde.'), 'aviso da pré-pergunta');
@@ -171,10 +171,12 @@ async function roteiro(motor, tema) {
     confere((await tem('Parar e continuar mais tarde')) && (await tem('aberta até a meia-noite')) && (await tem('Encerrar por hoje')), 'folha Encerrar com duas saídas');
     await cap(pg, 'folha-encerrar');
     await pg.click('#folha-raiz [data-ev="PAUSAR"]');
-    await pg.waitForSelector('.manchete');
-    confere(/Continuar do passo \d+ de \d+/.test(await U.texto(pg)) && /aberta até a meia.noite/.test(await U.texto(pg)), 'Hoje em curso: "Continuar do passo N de M"');
+    await pg.waitForSelector('.bolha-inicio[data-ev="CONTINUAR"]');
+    await pg.click('.unidade-guia'); await pg.waitForSelector('.guia-missao');
+    confere(/Continuar do passo \d+ de \d+/.test(await U.texto(pg)) && /aberta até a meia.noite/.test(await U.texto(pg)), 'em curso: "Continuar do passo N de M" no guia');
+    await pg.keyboard.press('Escape'); await pg.waitForTimeout(150);
     await cap(pg, 'hoje-em-curso');
-    await pg.click('[data-ev="CONTINUAR"]');
+    await pg.click('[data-ev="CONTINUAR"]', { force: true });
     await pg.waitForSelector('.feedback');
     confere((await U.estado(pg)) === 'feedback', 'Continuar volta ao feedback');
     await U.continuar(pg);
@@ -210,8 +212,8 @@ async function roteiro(motor, tema) {
     const nt = await U.tentativas(pg);
     confere(nt === 5, `5 tentativas avaliadas (veio ${nt})`);
     await pg.click('[data-ev="FECHAR"]');
-    await pg.waitForSelector('.estado-texto');
-    confere(await tem('Hoje está feito.'), 'Hoje feito');
+    await pg.waitForSelector('.bolha-inicio.feito');
+    confere(await tem('Feito hoje'), 'Início: Feito hoje');
     confere(!(await pg.$('[data-ev="COMECAR"]')) && !(await pg.$('.bloco-prova')), 'Feito: nenhuma oferta');
     await cap(pg, 'hoje-feito', true);
     const t = (await U.texto(pg)).toLowerCase();
