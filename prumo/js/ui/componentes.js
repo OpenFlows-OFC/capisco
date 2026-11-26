@@ -179,7 +179,6 @@ export function linhaAposta(p) {
     ${p.oferta ? h`<div class="aposta-oferta" role="group" aria-labelledby="aposta-t">
       <p class="aposta-titulo" id="aposta-t">${p.seq} seguidas!</p>
       <p class="aposta-pote"><b>${p.pote}</b> pontos no pote</p>
-      <p class="aposta-regra">Garanta agora ou aposte na próxima: acertou, o pote dobra; errou, ele some.</p>
     </div>` : ''}`;
 }
 /** Linha do acerto no feedback: "+20 pontos · 2 seguidas, x2". */

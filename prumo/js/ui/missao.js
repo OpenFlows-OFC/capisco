@@ -134,6 +134,11 @@ function leitura(ctx, vm) {
 }
 
 /* ---------------- feedback (c.3e, c.3h) ---------------- */
+/** Título do resultado: só "Certa!" ou "Errada." à vista; a frase inteira (nível, próxima revisão) fica para o
+ *  leitor de tela. A régua de nível logo abaixo já mostra o nível. */
+function tituloCurto(vm) {
+  return h`<span aria-hidden="true">${vm.certa ? 'Certa!' : 'Errada.'}</span><span class="so-leitor">${vm.titulo}</span>`;
+}
 function corpoFeedback(ctx, vm, { foco = true, animar = false } = {}) {
   const rev = vm.revisao;
   const res = vm.resolucao;
@@ -144,7 +149,7 @@ function corpoFeedback(ctx, vm, { foco = true, animar = false } = {}) {
       ${alternativasFeedback(vm.alternativas)}
       ${rodape(vm.item.rodape, vm.item.licencaUrl)}
       <section class="feedback" id="feedback" aria-labelledby="fb-titulo">
-        ${foco ? h`<h1 class="feedback-titulo" id="fb-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>` : h`<p class="feedback-titulo" id="fb-titulo">${vm.titulo}</p>`}
+        ${foco ? h`<h1 class="feedback-titulo" id="fb-titulo" tabindex="-1" data-foco-inicial>${tituloCurto(vm)}</h1>` : h`<p class="feedback-titulo" id="fb-titulo">${tituloCurto(vm)}</p>`}
         ${vm.certa && vm.topo ? linhaCombo(vm.topo.placar) : ''}
         ${vm.topo ? linhaAposta(vm.topo.placar) : ''}
         ${vm.porque ? h`<p>${vm.porque}</p>` : ''}

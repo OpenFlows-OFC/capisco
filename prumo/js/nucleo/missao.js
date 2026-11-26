@@ -228,7 +228,9 @@ export class Missao {
       m.placar.estrelas = n;
       m.placar.recorde = alvos.map(id => guardarEstrelas(st, id, n)).find(Boolean) || false;
       m.placar.dobro = false; m.placar.oferta = false;
-      m.placar.raspa = { premio: sortearRaspadinha(), raspada: false };
+      // sorteio estável (dia + nº da partida): a mesma partida dá o mesmo prêmio; partidas diferentes variam
+      const semente = [...`${m.dia}:${(st.historico || []).length}`].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+      m.placar.raspa = { premio: sortearRaspadinha(((semente * 2654435761) >>> 0) / 4294967296), raspada: false };
     }
     // o visto do dia (carimbo) é da missão: só quando o dia contou como estudado e não é estudo livre; só cresce
     if (!m.livre && st.dias && st.dias[m.dia]) { st.carimbos = st.carimbos || {}; st.carimbos[m.dia] = true; }
