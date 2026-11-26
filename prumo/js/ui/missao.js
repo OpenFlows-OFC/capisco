@@ -9,7 +9,7 @@
 import { h, cru, cada } from './dom.js';
 import { registrar } from './registro.js';
 import {
-  topo, linhaCombo, enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, nivel,
+  topo, linhaCombo, linhaAposta, enunciado, alternativasPergunta, alternativasFeedback, rodape, blocos, nivel,
   botaoContinuar, animarContinuar, prepararFiguras, ampliarFigura, questaoCab, teoria, acompanharSumario, idDaAncora,
 } from './componentes.js';
 
@@ -146,6 +146,7 @@ function corpoFeedback(ctx, vm, { foco = true, animar = false } = {}) {
       <section class="feedback" id="feedback" aria-labelledby="fb-titulo">
         ${foco ? h`<h1 class="feedback-titulo" id="fb-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>` : h`<p class="feedback-titulo" id="fb-titulo">${vm.titulo}</p>`}
         ${vm.certa && vm.topo ? linhaCombo(vm.topo.placar) : ''}
+        ${vm.topo ? linhaAposta(vm.topo.placar) : ''}
         ${vm.porque ? h`<p>${vm.porque}</p>` : ''}
         ${vm.falta ? h`<p class="falta"><strong>O que faltou.</strong> ${vm.falta}</p>` : ''}
         ${rev && !vm.certa ? h`<p>${rev.texto}</p>` : ''}
@@ -172,7 +173,9 @@ function feedback(ctx, vm) {
       ${topo(vm.topo, { medidor: vm.medidor, rotuloDaTela: vm.rotulo, trilha: trilhaDe(ctx, vm, 'feedback') })}
       ${corpoFeedback(ctx, vm, { animar: nova })}
     </main>`,
-    barra: botaoContinuar(vm.continuar),
+    barra: vm.topo && vm.topo.placar && vm.topo.placar.oferta
+      ? h`<button type="button" class="botao-sec botao-largo" data-acao="apostar" data-arg="garantir" data-evento="${vm.continuar.evento}">Garantir ${vm.topo.placar.pote}</button><button type="button" class="botao botao-largo botao-dobrar" data-acao="apostar" data-arg="dobrar" data-evento="${vm.continuar.evento}">Dobrar</button>`
+      : botaoContinuar(vm.continuar),
     depois(raiz, { mudou }) {
       figuras(ctx, raiz, vm.item);
       if (mudou) {
@@ -377,6 +380,13 @@ function marcarEscolha(form) {
 }
 registrar({
   acoes: {
+    /** Garantir ou dobrar: guarda a escolha e segue (se a pausa do feedback ainda corre, só redesenha). */
+    apostar(ctx, el) {
+      const dobrar = el.dataset.arg === 'dobrar';
+      ctx.nucleo.apostar(dobrar);
+      ctx.tocar(dobrar ? 'marco' : 'acerto');
+      if (!ctx.despachar({ tipo: el.dataset.evento })) ctx.render();
+    },
     escolherAlt(ctx, el) {
       const form = el.closest('form');
       if (!form) return;

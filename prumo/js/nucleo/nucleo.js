@@ -8,7 +8,7 @@ import * as R from './relogio.js';
 import * as E from './estado.js';
 import { criarMotor, P, NIVEL, MATERIAS, rotuloNivel, noNivel, dataEfetiva, revisaoAtrasada, voltaPorErro, passouPorHojeNao } from './motor.js';
 import { Pack } from './pack.js';
-import { Missao, DENTRO, DENTRO_PROVA, estrelasDe, VIDAS_PROVA } from './missao.js';
+import { Missao, DENTRO, DENTRO_PROVA, estrelasDe, VIDAS_PROVA, apostarPlacar } from './missao.js';
 import { montarMissao, regraDaFila, verARegra, paginasComErro, proximaVariante, quandoRevisao } from './recomendador.js';
 import * as Plano from './plano.js';
 import * as Cards from './cards.js';
@@ -709,7 +709,8 @@ export class Nucleo {
     };
   }
   /** Placar da partida para o topo: pontos e combo (só depois da 1ª resposta). */
-  _placar(p) { return p && p.total ? { pontos: p.pontos, seq: p.seq, mult: p.mult, ganho: p.ganho, combo: p.seq >= 2 ? `x${p.mult}` : null } : null; }
+  _placar(p) { return p && p.total ? { pontos: p.pontos, seq: p.seq, mult: p.mult, ganho: p.ganho, combo: p.seq >= 2 ? `x${p.mult}` : null,
+    pote: p.pote || 0, oferta: !!p.oferta, dobro: !!p.dobro, bonus: p.bonus || 0, perdeu: p.perdeu || 0 } : null; }
   passoAtual() {
     const vm = this._passoAtual(), m = this.st.missao;
     // estudo por conta própria (depois do Pronto): a tela troca a última etapa da trilha e o texto de "Encerrar"
@@ -1078,6 +1079,8 @@ export class Nucleo {
       mudancas: mud,
       placar: m.placar && m.placar.total && !m.parcial ? { pontos: m.placar.pontos, acertos: m.placar.acertos, total: m.placar.total, maxSeq: m.placar.maxSeq,
         estrelas: m.placar.estrelas || estrelasDe(m.placar), recorde: m.placar.recorde || false,
+        raspa: m.placar.raspa ? { raspada: !!m.placar.raspa.raspada, tipo: m.placar.raspa.premio.tipo, valor: m.placar.raspa.premio.valor || 0,
+          texto: m.placar.raspa.premio.tipo === 'dourado' ? 'Carimbo dourado!' : `+${m.placar.raspa.premio.valor} pontos` } : null,
         regra: '3 carimbos acertando 9 de cada 10 questões, 2 acertando 6 de cada 10, 1 por terminar a partida.' } : null,
       nivelAnimado: ultimaRodada && ultimaRodada.venceu && !ultimaRodada.extra ? { cap: ultimaRodada.cap, de: ultimaRodada.caixaAntes, para: ultimaRodada.caixaDepois, nome: rotuloNivel(ultimaRodada.caixaDepois), rotulo: rotuloNivel(ultimaRodada.caixaDepois) } : null,
       parcial: m.parcial ? `Você encerrou no passo ${m.encerradoNoPasso} de ${m.passos.length}. O que já tinha fechado hoje continua; o resto não mudou nenhum nível.` : null,
@@ -1700,6 +1703,24 @@ export class Nucleo {
     this._acao(() => { (this.st.meusCartoes = this.st.meusCartoes || []).push({ id, frente: f, verso: v, dia: R.hoje() }); });
     return id;
   }
+  /** Garantir ou dobrar, no feedback de um acerto que fechou 3 seguidas. */
+  apostar(dobrar) {
+    let ok = false;
+    this._acao(() => { const m = this.st.missao; ok = apostarPlacar(m && m.placar, !!dobrar); });
+    return ok;
+  }
+  /** Raspadinha do Pronto por hoje: revela o prêmio uma vez (pontos na partida ou um carimbo dourado). */
+  raspar() {
+    let premio = null;
+    this._acao(() => {
+      const m = this.st.missao, p = m && m.placar, r = p && p.raspa;
+      if (!r || r.raspada) return;
+      r.raspada = true; premio = r.premio;
+      if (premio.tipo === 'pontos') p.pontos += premio.valor;
+      else this.st.dourados = (this.st.dourados || 0) + 1;
+    });
+    return premio;
+  }
   apagarCartao(id) {
     let ok = false;
     this._acao(() => { const l = this.st.meusCartoes || []; const i = l.findIndex(x => x.id === id); if (i >= 0) { l.splice(i, 1); ok = true; } });
@@ -1721,9 +1742,9 @@ export class Nucleo {
       fases: a.fases.map(f => ({ id: f.id, n: f.n, titulo: f.titulo, chefe: f.tipo === 'chefe', estrelas: f.estrelas || 0, feita: f.estado === 'concluida' })) }))
       .filter(a => a.fases.length);
     const ganhos = areas.reduce((s, a) => s + a.fases.reduce((x, f) => x + f.estrelas, 0), 0);
-    const max = areas.reduce((s, a) => s + a.fases.length * 3, 0);
+    const max = areas.reduce((s, a) => s + a.fases.length * 3, 0), dourados = this.st.dourados || 0;
     const cheias = areas.reduce((s, a) => s + a.fases.filter(f => f.estrelas === 3).length, 0);
-    return { titulo: 'Álbum de carimbos', ganhos, max, cheias, areas,
+    return { titulo: 'Álbum de carimbos', ganhos, max, cheias, areas, dourados,
       texto: ganhos ? (cheias ? `${cheias} ${cheias === 1 ? 'fase' : 'fases'} com os 3 carimbos. Cada fase vale até 3.` : 'Cada fase vale até 3 carimbos.') : 'Nenhum carimbo ainda. Cada fase vale até 3.',
       regra: 'Cada fase guarda o melhor carimbo que você já tirou nela. Um resultado pior não apaga o melhor.' };
   }

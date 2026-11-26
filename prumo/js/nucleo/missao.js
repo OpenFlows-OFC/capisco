@@ -21,14 +21,36 @@ const LETRAS = ['A', 'B', 'C', 'D', 'E'];
 export const DENTRO = new Set(['pergunta', 'leitura', 'feedback', 'trecho', 'fimDaRodada', 'cards', 'trechoCard', 'fimDaMao']);
 /* ---------------- placar da partida (combo, pontos e carimbos) ----------------
    Cada acerto vale 10 pontos vezes o combo (acertos seguidos, até x3); errar zera o combo.
-   Carimbos da partida: 3 acertando 9 de cada 10, 2 acertando 6 de cada 10, 1 por terminar. */
+   Carimbos da partida: 3 acertando 9 de cada 10, 2 acertando 6 de cada 10, 1 por terminar.
+   Garantir ou dobrar (o "cash out"): os pontos da sequência formam o pote. A cada 3 acertos seguidos, o aluno
+   garante o pote ou aposta que acerta a próxima: acertando, o pote dobra; errando, perde só o pote.
+   Nível, revisão e carimbos não entram na aposta: ela mexe só nos pontos da partida. */
 export const VIDAS_PROVA = 3;
 export function marcarPlacar(m, res) {
   const p = m.placar || (m.placar = { pontos: 0, seq: 0, maxSeq: 0, acertos: 0, total: 0, ganho: 0, mult: 1 });
-  p.total++;
-  if (res === 'ok') { p.acertos++; p.seq++; p.maxSeq = Math.max(p.maxSeq, p.seq); p.mult = Math.min(3, p.seq); p.ganho = 10 * p.mult; p.pontos += p.ganho; }
-  else { p.seq = 0; p.mult = 1; p.ganho = 0; }
+  const dobro = !!p.dobro;
+  p.total++; p.bonus = 0; p.perdeu = 0; p.dobro = false; p.oferta = false;
+  if (res === 'ok') {
+    p.acertos++; p.seq++; p.maxSeq = Math.max(p.maxSeq, p.seq); p.mult = Math.min(3, p.seq); p.ganho = 10 * p.mult;
+    if (dobro) { p.bonus = p.pote || 0; p.pontos += p.bonus; p.pote = 0; }
+    p.pontos += p.ganho; p.pote = (p.pote || 0) + p.ganho;
+    p.oferta = !dobro && p.seq % 3 === 0;
+  } else {
+    if (dobro) { p.perdeu = p.pote || 0; p.pontos -= p.perdeu; }
+    p.seq = 0; p.mult = 1; p.ganho = 0; p.pote = 0;
+  }
   return p;
+}
+/** Escolha do "Garantir ou dobrar" (só quando há oferta). Garantir: o pote fica a salvo. */
+export function apostarPlacar(p, dobrar) {
+  if (!p || !p.oferta) return false;
+  p.oferta = false;
+  if (dobrar) p.dobro = true; else p.pote = 0;
+  return true;
+}
+/** Raspadinha do fim da partida: sempre ganha. 8% carimbo dourado, 12% +100, 30% +50, 50% +20. */
+export function sortearRaspadinha(r = Math.random()) {
+  return r < 0.08 ? { tipo: 'dourado' } : r < 0.2 ? { tipo: 'pontos', valor: 100 } : r < 0.5 ? { tipo: 'pontos', valor: 50 } : { tipo: 'pontos', valor: 20 };
 }
 export function estrelasDe(p) {
   if (!p || !p.total) return 0;
@@ -205,6 +227,8 @@ export class Missao {
       const n = estrelasDe(m.placar), alvos = m.topico ? [m.topico] : (m.resumo.rodadas || []).filter(fr => fr.venceu && !fr.extra).map(fr => fr.cap);
       m.placar.estrelas = n;
       m.placar.recorde = alvos.map(id => guardarEstrelas(st, id, n)).find(Boolean) || false;
+      m.placar.dobro = false; m.placar.oferta = false;
+      m.placar.raspa = { premio: sortearRaspadinha(), raspada: false };
     }
     // o visto do dia (carimbo) é da missão: só quando o dia contou como estudado e não é estudo livre; só cresce
     if (!m.livre && st.dias && st.dias[m.dia]) { st.carimbos = st.carimbos || {}; st.carimbos[m.dia] = true; }

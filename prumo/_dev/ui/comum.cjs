@@ -53,6 +53,8 @@ async function escolher(pg, alt) {
 }
 async function responderCerta(pg) { await escolher(pg, await gabarito(pg)); }
 async function continuar(pg) {
+  // "Garantir ou dobrar" no lugar do Continuar (3 acertos seguidos): o roteiro garante e segue
+  if (await pg.$('[data-acao="apostar"][data-arg="garantir"]')) await pg.click('[data-acao="apostar"][data-arg="garantir"]');
   await pg.waitForSelector('[data-continuar][aria-disabled="false"]', { timeout: 8000 });
   await pg.click('[data-continuar]');
 }

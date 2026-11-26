@@ -169,7 +169,18 @@ export function lapis(v) {
 /** Placar no topo da partida: pontos e combo. */
 export function placarTopo(p) {
   if (!p) return '';
-  return h`<span class="placar-topo" aria-label="${`${p.pontos} pontos${p.combo ? `, combo ${p.combo}` : ''}`}"><b>${p.pontos}</b> pts${p.combo ? h` <span class="combo">${p.combo}</span>` : ''}</span>`;
+  return h`<span class="placar-topo" aria-label="${`${p.pontos} pontos${p.combo ? `, combo ${p.combo}` : ''}${p.dobro ? `, ${p.pote} pontos em jogo` : ''}`}"><b>${p.pontos}</b> pts${p.combo ? h` <span class="combo">${p.combo}</span>` : ''}${p.dobro ? h` <span class="combo combo-dobro">${p.pote} em jogo</span>` : ''}</span>`;
+}
+/** Garantir ou dobrar: o resultado da aposta (dobrou / perdeu o pote) e a oferta depois de 3 seguidas. */
+export function linhaAposta(p) {
+  if (!p) return '';
+  return h`${p.bonus ? h`<p class="aposta-res ganhou"><b>Dobrou!</b> +${p.bonus} pontos</p>` : ''}
+    ${p.perdeu ? h`<p class="aposta-res perdeu"><b>Perdeu o pote:</b> −${p.perdeu} pontos</p>` : ''}
+    ${p.oferta ? h`<div class="aposta-oferta" role="group" aria-labelledby="aposta-t">
+      <p class="aposta-titulo" id="aposta-t">${p.seq} seguidas!</p>
+      <p class="aposta-pote"><b>${p.pote}</b> pontos no pote</p>
+      <p class="aposta-regra">Garanta agora ou aposte na próxima: acertou, o pote dobra; errou, ele some.</p>
+    </div>` : ''}`;
 }
 /** Linha do acerto no feedback: "+20 pontos · 2 seguidas, x2". */
 export function linhaCombo(p) {

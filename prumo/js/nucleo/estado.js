@@ -42,6 +42,7 @@ export function vazio() {
     marcos: {},
     chefes: {}, selos: [], chefeAvisado: {},
     estrelas: {},          // melhor partida de cada fase da trilha: 1 a 3 carimbos
+    dourados: 0,           // carimbos dourados da raspadinha (prêmio raro do fim da partida)
     relampago: { recordes: [], partidas: 0 },   // Contra o relógio: os 5 melhores placares deste aparelho
     meusCartoes: [],       // cartões que o aluno escreveu (modo Cartões): { id, frente, verso, dia }
     historico: [],
@@ -169,6 +170,7 @@ export function normalizar(s) {
   for (const [k, d] of Object.entries(obj(s.marcos))) if (/^m\.[\w]+$/.test(k) && R.ehData(d)) v.marcos[k] = d;
   for (let [k, c] of Object.entries(obj(s.chefes))) if (ehId(k)) { c = obj(c); v.chefes[k] = { dia: data(c.dia, R.hoje()), tentativas: int(c.tentativas, 0, 99, 0), venceu: c.venceu !== false, tentativasFeitas: int(c.tentativasFeitas, 0, 999, 0) }; }
   for (const [k, n] of Object.entries(obj(s.estrelas)).slice(0, 300)) if (ehId(k)) v.estrelas[k] = int(n, 1, 3, 1);
+  v.dourados = int(s.dourados, 0, 1e6, 0);
   v.meusCartoes = arr(s.meusCartoes).slice(0, 300).map(c => (c = obj(c), ehId(c.id) && str(c.frente, 200).trim() && str(c.verso, 400).trim()
     ? { id: c.id, frente: str(c.frente, 200).trim(), verso: str(c.verso, 400).trim(), dia: data(c.dia, R.hoje()) } : null)).filter(Boolean);
   { const rl = obj(s.relampago); v.relampago = { partidas: int(rl.partidas, 0, 1e6, 0), recordes: arr(rl.recordes).slice(0, 5).map(r => (r = obj(r), { pontos: int(r.pontos, 0, 1e6, 0), acertos: int(r.acertos, 0, 999, 0), total: int(r.total, 0, 999, 0), dia: data(r.dia, R.hoje()) })) }; }

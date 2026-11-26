@@ -1351,3 +1351,41 @@ form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data 
 .pl-linha-titulo { font: 700 16px/20px var(--font-display); }
 .pl-linha-valor { font-size: 14px; line-height: 18px; color: var(--grafite-2); }
 .pl-linha > svg:last-child { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--grafite-2); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- v17 · Garantir ou dobrar (o "cash out" da partida) e a raspadinha do fim ---------- */
+.aposta-oferta {
+  margin: 0 0 var(--space-3); padding: var(--space-4); border-radius: var(--radius-ficha);
+  background: var(--tinta); color: var(--on-tinta); display: grid; gap: 4px;
+}
+.aposta-titulo { margin: 0; font: 800 22px/1.1 var(--font-display); }
+.aposta-pote { margin: 0; font: 600 16px/1.2 var(--font-texto); }
+.aposta-pote b { font: 700 34px/1 var(--font-numeros); color: var(--marca-texto); margin-right: 6px; }
+.aposta-regra { margin: 4px 0 0; font-size: 14px; line-height: 19px; opacity: .9; }
+.aposta-res { margin: 0 0 var(--space-3); font: 600 17px/1.2 var(--font-texto); }
+.aposta-res b { font: 800 20px/1 var(--font-display); }
+.aposta-res.ganhou b { color: var(--carimbo); }
+.aposta-res.perdeu { color: var(--grafite-2); }
+.botao-dobrar { background: var(--carimbo); border-color: var(--carimbo); }
+.combo-dobro { background: var(--carimbo); color: var(--on-tinta); }
+@media (prefers-reduced-motion: no-preference) {
+  .aposta-oferta { animation: pulo-ganho .45s cubic-bezier(.2,.9,.3,1.3) both; }
+  .combo-dobro { animation: dobro-pulsa 1.6s ease-in-out infinite; }
+  @keyframes dobro-pulsa { 50% { transform: scale(1.08); } }
+}
+
+.raspa { margin-top: var(--space-6); }
+.raspa-cartao {
+  --raspa-tinta: #b9bfc8; --raspa-texto: #5b6270;
+  position: relative; margin-top: var(--space-3); height: 120px; border-radius: var(--radius-ficha); overflow: hidden;
+  border: 2px dashed var(--pauta-forte); background: var(--ficha); display: grid; place-items: center;
+}
+.raspa-premio { margin: 0; display: inline-flex; align-items: center; gap: 10px; font: 800 28px/1 var(--font-display); color: var(--tinta); }
+.raspa-premio svg { width: 40px; height: 40px; fill: #f2c94c; stroke: #8a6a10; stroke-width: 1.4; stroke-linejoin: round; }
+.raspa-dourado { color: #8a6a10; }
+.raspa-tinta { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.raspa.raspada .raspa-cartao { border-style: solid; border-color: var(--tinta); }
+.raspa-pe { margin: var(--space-2) 0 0; }
+@media (prefers-reduced-motion: no-preference) { .raspa.raspada .raspa-premio { animation: pulo-ganho .5s cubic-bezier(.2,.9,.3,1.3) both; } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .raspa-cartao { --raspa-tinta: #4a505c; --raspa-texto: #c9ced8; } :root:not([data-theme="light"]) .raspa-dourado { color: #f2c94c; } }
+:root[data-theme="dark"] .raspa-cartao { --raspa-tinta: #4a505c; --raspa-texto: #c9ced8; }
+:root[data-theme="dark"] .raspa-dourado { color: #f2c94c; }

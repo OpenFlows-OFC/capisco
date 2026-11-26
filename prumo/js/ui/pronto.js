@@ -31,6 +31,62 @@ function quando(q) {
   </form></details>`;
 }
 
+const DOURADO = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M12 6.8l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z"/></svg>';
+/** Raspadinha: o prêmio já está sorteado (núcleo); raspar só revela. Sempre ganha. */
+function raspadinha(r) {
+  if (!r) return '';
+  return h`<section class="raspa${r.raspada ? ' raspada' : ''}" aria-labelledby="raspa-t">
+    <h2 class="titulo-pequeno" id="raspa-t">Raspadinha</h2>
+    <div class="raspa-cartao">
+      <p class="raspa-premio raspa-${r.tipo}" ${r.raspada ? '' : cru('aria-hidden="true"')}>${r.tipo === 'dourado' ? cru(DOURADO) : ''}<b>${r.texto}</b></p>
+      ${r.raspada ? '' : h`<canvas class="raspa-tinta" aria-hidden="true"></canvas>`}
+    </div>
+    ${r.raspada ? '' : h`<p class="raspa-pe"><button type="button" class="link" data-acao="raspar">Raspar de uma vez</button></p>`}
+  </section>`;
+}
+/** A camada prateada: o dedo (ou o mouse) apaga; passou da metade, revela. */
+function prepararRaspa(ctx, raiz) {
+  const cv = raiz.querySelector('.raspa-tinta');
+  if (!cv) return null;
+  const caixa = cv.parentElement.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(caixa.width * dpr); cv.height = Math.round(caixa.height * dpr);
+  const g = cv.getContext('2d');
+  if (!g) return null;
+  const css = getComputedStyle(cv);
+  g.scale(dpr, dpr);
+  g.fillStyle = css.getPropertyValue('--raspa-tinta').trim() || '#b9bfc8';
+  g.fillRect(0, 0, caixa.width, caixa.height);
+  g.fillStyle = css.getPropertyValue('--raspa-texto').trim() || '#5b6270';
+  g.font = '700 18px Gabarito, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('RASPE AQUI', caixa.width / 2, caixa.height / 2);
+  g.globalCompositeOperation = 'destination-out';
+  let ativo = false, n = 0, feito = false;
+  const ponto = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const raspar = e => {
+    if (!ativo || feito) return;
+    const [x, y] = ponto(e);
+    g.beginPath(); g.arc(x, y, 22, 0, Math.PI * 2); g.fill();
+    if (++n % 8 === 0) {
+      const d = g.getImageData(0, 0, cv.width, cv.height).data;
+      let vazio = 0, total = 0;
+      for (let k = 3; k < d.length; k += 4 * 37) { total++; if (d[k] === 0) vazio++; }
+      if (vazio / total > 0.5) { feito = true; revelar(ctx); }
+    }
+  };
+  const ini = e => { ativo = true; cv.setPointerCapture && cv.setPointerCapture(e.pointerId); raspar(e); };
+  const fim = () => { ativo = false; };
+  cv.addEventListener('pointerdown', ini); cv.addEventListener('pointermove', raspar);
+  cv.addEventListener('pointerup', fim); cv.addEventListener('pointercancel', fim);
+  return () => { cv.removeEventListener('pointerdown', ini); cv.removeEventListener('pointermove', raspar); cv.removeEventListener('pointerup', fim); cv.removeEventListener('pointercancel', fim); };
+}
+function revelar(ctx) {
+  const p = ctx.nucleo.raspar();
+  if (!p) return;
+  ctx.tocar('marco');
+  ctx.anunciar(p.tipo === 'dourado' ? 'Você ganhou um carimbo dourado!' : `Você ganhou ${p.valor} pontos!`);
+  ctx.render();
+}
+
 export function telaPronto(ctx, vm) {
   if (!vm) return { chave: 'pronto:vazio', html: h`<main class="colofao"></main>` };
   const chave = `pronto:${vm.data}`;
@@ -61,6 +117,7 @@ export function telaPronto(ctx, vm) {
         <p>${vm.placar.acertos} de ${vm.placar.total} certas · maior sequência: ${vm.placar.maxSeq}${vm.placar.recorde ? h` · <strong class="recorde">${vm.placar.recorde === 'primeiro' ? 'Primeiros carimbos da fase!' : 'Novo recorde da fase!'}</strong>` : ''}</p>
         <p class="pequeno texto-2" style="margin:0">${vm.placar.regra}</p>
       </section>` : ''}
+      ${vm.placar ? raspadinha(vm.placar.raspa) : ''}
       ${visto(vm.visto, { novo: nova })}
       ${blocoPassou(passouDeFase(ctx.nucleo))}
       ${p ? h`<section class="proxima-bloco" aria-label="Próxima missão">
@@ -74,15 +131,17 @@ export function telaPronto(ctx, vm) {
       ${vm.copia ? h`<p><button type="button" class="link" data-acao="salvarCopia">${vm.copia.rotulo}</button></p>` : ''}
       <div class="fechar"><button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>
     </main>`,
+    depois(raiz) { return prepararRaspa(ctx, raiz); },
   };
 }
 
 registrar({
   acoes: {
+    raspar(ctx) { revelar(ctx); },
     guardarQuando(ctx, form) {
       const fd = new FormData(form), outra = String(fd.get('outra') || '').trim();
       const ok = ctx.nucleo.definirIntencao({ dia: form.dataset.dia, horario: fd.get('horario'), ancora: outra || fd.get('ancora') || null });
-      ctx.avisar(ok ? 'Plano guardado. Ele aparece em Hoje.' : 'Escolha uma hora válida.');
+      ctx.avisar(ok ? 'Plano guardado.' : 'Escolha uma hora válida.');
       ctx.render();
     },
     /** "Continuar estudando": fecha o Pronto por hoje (o visto já foi dado) e abre a aba Estudar. Iniciativa do aluno. */

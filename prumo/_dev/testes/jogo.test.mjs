@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { packs, novo, continuar } from './ajuda.mjs';
-import { marcarPlacar, estrelasDe } from '../../js/nucleo/missao.js';
+import { marcarPlacar, estrelasDe, apostarPlacar, sortearRaspadinha } from '../../js/nucleo/missao.js';
 
 function liberada(n) {
   for (const c of n.pack.capitulos) n.st.topicos[c.id] = { caixa: 2, proxima: '2026-11-25', tentativas: [{ item: 'x', dia: '2026-11-10', em: 1, res: 'ok' }], rodadas: [{ dia: '2026-11-10', venceu: true, tentativas: 3, de: 0, para: 1, tipo: 'novo' }] };
@@ -95,5 +95,46 @@ for (const pk of await packs()) {
     assert.ok(r.length > 0 && r.length <= 10 && new Set(r).size === r.length);
     for (const x of r) assert.ok(n.questaoRelampago(x));
     assert.match(n.modos().revanche.linha, /quest/);
+  });
+}
+
+test('Garantir ou dobrar: oferta a cada 3 seguidas; dobrar e acertar dobra o pote, errar perde só o pote', () => {
+  const m = {};
+  for (const r of ['ok', 'ok', 'ok']) marcarPlacar(m, r);
+  const p = m.placar;
+  assert.equal(p.oferta, true); assert.equal(p.pote, 60); assert.equal(p.pontos, 60);
+  assert.equal(apostarPlacar(p, true), true);
+  assert.equal(apostarPlacar(p, true), false, 'uma escolha por oferta');
+  marcarPlacar(m, 'ok');                       // +30 do acerto e +60 do pote dobrado
+  assert.equal(p.bonus, 60); assert.equal(p.pontos, 150); assert.equal(p.oferta, false);
+  for (const r of ['ok', 'ok']) marcarPlacar(m, r);   // 6 seguidas: nova oferta
+  assert.equal(p.oferta, true);
+  const pote = p.pote, antes = p.pontos;
+  apostarPlacar(p, true); marcarPlacar(m, 'erro');
+  assert.equal(p.perdeu, pote); assert.equal(p.pontos, antes - pote); assert.equal(p.seq, 0);
+  // garantir: o pote fica a salvo e o erro seguinte não tira nada
+  const g = {};
+  for (const r of ['ok', 'ok', 'ok']) marcarPlacar(g, r);
+  apostarPlacar(g.placar, false); marcarPlacar(g, 'erro');
+  assert.equal(g.placar.pontos, 60); assert.equal(g.placar.perdeu, 0);
+});
+
+test('raspadinha: sempre ganha; 8% dourado, depois +100, +50, +20', () => {
+  assert.deepEqual(sortearRaspadinha(0.01), { tipo: 'dourado' });
+  assert.deepEqual(sortearRaspadinha(0.1), { tipo: 'pontos', valor: 100 });
+  assert.deepEqual(sortearRaspadinha(0.3), { tipo: 'pontos', valor: 50 });
+  assert.deepEqual(sortearRaspadinha(0.99), { tipo: 'pontos', valor: 20 });
+});
+
+for (const pk of await packs()) {
+  test(`[${pk.nome}] raspadinha no Pronto: revela uma vez, soma os pontos ou guarda o dourado`, () => {
+    const { n } = novo(pk.dados);
+    n.st.missao = { fechada: true, placar: { pontos: 40, total: 3, acertos: 2, raspa: { premio: { tipo: 'pontos', valor: 50 }, raspada: false } } };
+    assert.deepEqual(n.raspar(), { tipo: 'pontos', valor: 50 });
+    assert.equal(n.st.missao.placar.pontos, 90);
+    assert.equal(n.raspar(), null, 'só uma vez');
+    n.st.missao.placar.raspa = { premio: { tipo: 'dourado' }, raspada: false };
+    n.raspar();
+    assert.equal(n.album().dourados, 1);
   });
 }
