@@ -109,7 +109,7 @@ export function telaPronto(ctx, vm) {
       ${tr ? trilha(['visto', 'registro'].includes(tr.fase) ? 'fim' : tr.fase, { livre: tr.livre }) : ''}
       <h1 class="manchete colofao-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>
       ${ps ? h`<section class="pr-passos" aria-label="${[vm.parcial, vm.vazio, vm.naoContou].filter(Boolean).join(' ')}">
-        <div class="pr-passos-barra" aria-hidden="true">${cada(Array.from({ length: ps.total }, (_, i) => i < ps.feitos), c => h`<i class="${c ? 'cheio' : ''}"></i>`)}</div>
+        <div class="pr-passos-barra" aria-hidden="true"><i style="width:${Math.round(100 * ps.feitos / Math.max(1, ps.total))}%"></i></div>
         <p class="pr-passos-conta" aria-hidden="true"><b>${ps.feitos}</b>/${ps.total}</p>
         ${ps.andou ? '' : h`<p class="pr-nada" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>Seu progresso não andou hoje</p>`}
       </section>` : ''}
