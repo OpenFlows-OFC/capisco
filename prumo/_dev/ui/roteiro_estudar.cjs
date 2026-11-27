@@ -136,7 +136,7 @@ async function roteiro(motor, tema) {
     confere(/Fase \d+ liberada/.test(await U.texto(pg)), 'Pronto: a próxima fase liberada');
     await cap(pg, 'passou-fase', true);
     await foto('pronto');
-    confere(await tem('Se quiser, pode continuar estudando por conta própria.'), 'Pronto: convite neutro ao estudo livre');
+    confere(await tem('Continuar estudando') && !(await tem('por conta própria')), 'Pronto: só o link de estudo livre');
     // "Amanhã começa por aqui" (só o enunciado) e "quando e onde" (vira o lembrete e aparece em Hoje)
     confere(!(await tem('Amanhã começa por aqui')), 'Pronto: sem a pergunta de amanhã (tela enxuta)');
     await pg.click('.quando-detalhes > summary');

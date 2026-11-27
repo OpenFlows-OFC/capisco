@@ -1388,3 +1388,15 @@ form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data 
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .raspa-cartao { --raspa-tinta: #4a505c; --raspa-texto: #c9ced8; } :root:not([data-theme="light"]) .raspa-dourado { color: #f2c94c; } }
 :root[data-theme="dark"] .raspa-cartao { --raspa-tinta: #4a505c; --raspa-texto: #c9ced8; }
 :root[data-theme="dark"] .raspa-dourado { color: #f2c94c; }
+
+/* v17.5 - Pronto encerrado antes: barra de passos e o X */
+.pr-passos { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--space-2) var(--space-3); --vermelho: #c62828; }
+.pr-passos-barra { display: flex; gap: 4px; }
+.pr-passos-barra i { flex: 1; height: 12px; border-radius: 6px; background: var(--pauta); }
+.pr-passos-barra i.cheio { background: var(--tinta); }
+.pr-passos-conta { margin: 0; font: 700 18px/24px var(--font-numeros); color: var(--grafite-2); }
+.pr-passos-conta b { color: var(--grafite); }
+.pr-nada { grid-column: 1 / -1; margin: var(--space-2) 0 0; display: flex; align-items: center; gap: var(--space-2); font-weight: 700; color: var(--vermelho); }
+.pr-nada svg { width: 28px; height: 28px; flex: none; fill: var(--vermelho); stroke: var(--papel); stroke-width: 2.4; stroke-linecap: round; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pr-passos { --vermelho: #ff8a80; } }
+:root[data-theme="dark"] .pr-passos { --vermelho: #ff8a80; }

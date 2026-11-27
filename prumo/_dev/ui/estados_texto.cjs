@@ -22,8 +22,8 @@ const U = require('./comum.cjs');
     await pg.click('[data-folha="encerrar"]');
     await pg.click('#folha-raiz [data-ev="CONFIRMAR_ENCERRAR"]');
     await pg.waitForSelector('.colofao');
-    confere(await tem('Você encerrou no passo 1 de'), 'Pronto parcial: passo');
-    confere(await tem('O dia não conta como estudado'), 'Pronto parcial: não contou');   // "…: ele conta quando você responde…"
+    confere((await pg.$('.pr-passos-barra')) !== null && (await pg.textContent('.pr-passos-conta')).trim().startsWith('0/'), 'Pronto parcial: barra 0/N');
+    confere(await tem('Seu progresso não andou hoje'), 'Pronto parcial: X de progresso parado');   // "…: ele conta quando você responde…"
     await cap(pg, 'pronto-parcial', true);
     await pg.click('[data-ev="FECHAR"]');
     await pg.waitForSelector('.estado-texto');

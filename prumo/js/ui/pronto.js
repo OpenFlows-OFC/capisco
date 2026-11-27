@@ -94,8 +94,9 @@ export function telaPronto(ctx, vm) {
   const p = vm.proxima;
   // tópico de prática terminado: a trilha com todas as etapas feitas (o visto, ou o registro no estudo livre)
   const tr = vm.parcial ? null : trilhaDe(ctx, vm, 'encerramento');
+  // encerrou antes: a barra de passos e, se o dia não contou, o X; as frases ficam só para o leitor de tela
+  const ps = vm.passos;
   const frases = [
-    vm.parcial, vm.vazio, vm.naoContou,
     // só o que mudou de verdade; o comentário sobre o aquecimento sai
     ...(vm.mudancas || []).map(m => m.texto).filter(t => !/^Você fez o aquecimento/.test(t)),
     vm.semanaPassada,
@@ -107,6 +108,11 @@ export function telaPronto(ctx, vm) {
       <div class="linha-topo">${marca()}</div>
       ${tr ? trilha(['visto', 'registro'].includes(tr.fase) ? 'fim' : tr.fase, { livre: tr.livre }) : ''}
       <h1 class="manchete colofao-titulo" tabindex="-1" data-foco-inicial>${vm.titulo}</h1>
+      ${ps ? h`<section class="pr-passos" aria-label="${[vm.parcial, vm.vazio, vm.naoContou].filter(Boolean).join(' ')}">
+        <div class="pr-passos-barra" aria-hidden="true">${cada(Array.from({ length: ps.total }, (_, i) => i < ps.feitos), c => h`<i class="${c ? 'cheio' : ''}"></i>`)}</div>
+        <p class="pr-passos-conta" aria-hidden="true"><b>${ps.feitos}</b>/${ps.total}</p>
+        ${ps.andou ? '' : h`<p class="pr-nada" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>Seu progresso não andou hoje</p>`}
+      </section>` : ''}
       ${frases.length ? h`<ul class="pr-frases" aria-label="O que mudou hoje">${cada(frases, f => h`<li>${f}</li>`)}</ul>` : ''}
       ${vm.placar ? h`<section class="placar-partida" aria-labelledby="placar-t">
         <h2 id="placar-t" class="titulo-pequeno">Placar da partida</h2>
@@ -121,7 +127,7 @@ export function telaPronto(ctx, vm) {
       ${blocoPassou(passouDeFase(ctx.nucleo))}
       ${quando(vm.quando)}
       ${constancia(vm.constancia)}
-      ${vm.continuar ? h`<p class="continuar-livre">${vm.continuar.texto}</p><p class="links"><button type="button" class="link" data-acao="continuarEstudando">${vm.continuar.rotulo}</button></p>` : ''}
+      ${vm.continuar ? h`<p class="links"><button type="button" class="link" data-acao="continuarEstudando">${vm.continuar.rotulo}</button></p>` : ''}
       ${vm.copia ? h`<p><button type="button" class="link" data-acao="salvarCopia">${vm.copia.rotulo}</button></p>` : ''}
       <div class="fechar"><button type="button" class="botao botao-largo" data-ev="${vm.acao.evento}">${vm.acao.rotulo}</button></div>
     </main>`,

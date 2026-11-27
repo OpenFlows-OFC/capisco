@@ -1085,6 +1085,7 @@ export class Nucleo {
       nivelAnimado: ultimaRodada && ultimaRodada.venceu && !ultimaRodada.extra ? { cap: ultimaRodada.cap, de: ultimaRodada.caixaAntes, para: ultimaRodada.caixaDepois, nome: rotuloNivel(ultimaRodada.caixaDepois), rotulo: rotuloNivel(ultimaRodada.caixaDepois) } : null,
       parcial: m.parcial ? `Você encerrou no passo ${m.encerradoNoPasso} de ${m.passos.length}. O que já tinha fechado hoje continua; o resto não mudou nenhum nível.` : null,
       vazio: soAntes ? this._vazioPronto(m) : null,
+      passos: m.parcial ? { feitos: Math.max(0, (m.encerradoNoPasso || 1) - 1), total: m.passos.length, andou: !!st.dias[d] } : null,
       naoContou: m.parcial && !st.dias[d] ? (m.tipo === 'topico' ? 'O dia não conta como estudado: ele conta quando você responde uma questão ou revisão, e o aquecimento não entra nessa conta.' : 'O dia não conta como estudado: ele conta quando você responde uma checagem, questão ou revisão.') : null,
       proxima: prox ? { texto: prox.texto, gancho: prox.gancho, porque: prox.porque, rotuloPorque: 'Por quê?' } : null,
       copia: umaVezPorSemana ? { rotulo: 'Salvar uma cópia do meu progresso' } : null,
