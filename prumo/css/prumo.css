@@ -1391,11 +1391,9 @@ form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data 
 
 /* v17.5 - Pronto encerrado antes: barra de passos e o X */
 .pr-passos { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--space-2) var(--space-3); --vermelho: #c62828; }
-.pr-passos-barra { position: relative; height: 18px; border-radius: 9px; background: var(--pauta); overflow: hidden; }
-.pr-passos-barra i { position: absolute; inset: 0 auto 0 0; min-width: 0; border-radius: 9px; background: var(--tinta); }
-.pr-passos-barra i::after { content: ''; position: absolute; top: 4px; left: 8px; right: 8px; height: 4px; border-radius: 2px; background: color-mix(in srgb, #fff 35%, transparent); }
-.pr-passos-barra i[style="width:0%"] { display: none; }
-.pr-passos-conta { margin: 0; font: 700 18px/24px var(--font-numeros); color: var(--grafite-2); }
+.pr-passos-barra { height: 16px; border-radius: 8px; background: var(--papel-2); overflow: hidden; }
+.pr-passos-barra i { display: block; height: 100%; border-radius: 8px; background: var(--marca-texto); }
+.pr-passos-conta { margin: 0; font: 600 16px/1 var(--font-numeros); color: var(--grafite-2); }
 .pr-passos-conta b { color: var(--grafite); }
 .pr-nada { grid-column: 1 / -1; margin: var(--space-2) 0 0; display: flex; align-items: center; gap: var(--space-2); font-weight: 700; color: var(--vermelho); }
 .pr-nada svg { width: 28px; height: 28px; flex: none; fill: var(--vermelho); stroke: var(--papel); stroke-width: 2.4; stroke-linecap: round; }
