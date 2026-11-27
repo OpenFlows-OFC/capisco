@@ -151,9 +151,7 @@ registrar({
         rotulo: chefe ? 'Chefão' : `Fase ${f.n}`,
         corpo: h`<div class="balao-fase fase-${f.estado}">
           <h2 class="titulo-pequeno">${f.titulo}</h2>
-          ${f.nivel && f.nivel.cheios ? nivel({ cheios: f.nivel.cheios, nome: f.nivel.rotulo }) : h`<p class="rotulo">${f.legenda}</p>`}
-          <p><strong>${f.estado === 'bloqueada' ? 'Para liberar:' : chefe ? 'Regra:' : f.estado === 'concluida' ? 'Situação:' : 'Objetivo:'}</strong> ${f.motivo}</p>
-          ${f.estado !== 'concluida' || chefe ? h`<p class="pr-recado"><strong>Você ganha:</strong> ${f.ganho}</p>` : ''}
+          ${f.nivel && f.nivel.cheios ? nivel({ cheios: f.nivel.cheios, nome: f.nivel.rotulo }) : ''}
         </div>`,
         pe: f.estado === 'bloqueada' ? '' : chefe && t.vm && t.vm.prova ? h`<button type="button" class="botao botao-largo" data-ev="${t.vm.prova.acao.evento}">Enfrentar o Chefão</button>`
           : h`<a class="botao botao-largo" href="${f.href}">${chefe ? 'Ver a Prova no Caderno' : f.estado === 'concluida' ? 'Abrir a fase' : 'Jogar esta fase'}</a>`,

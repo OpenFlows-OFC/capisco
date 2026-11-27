@@ -138,7 +138,6 @@ const RISCOS = '<path d="M6 5v14M10 5v14M14 5v14M18 5v14M3.5 15.5l17-7"/>';
 const SELO = '<circle cx="12" cy="12" r="8.5"/><path d="M8 12.3l2.7 2.7L16 9.5"/>';
 const GUIA = '<path d="M12 6.5C10.3 5.2 7.8 4.5 4 4.5v13c3.8 0 6.3.7 8 2 1.7-1.3 4.2-2 8-2v-13c-3.8 0-6.3.7-8 2z"/><path d="M12 6.5v13"/>';
 const SETA = '<path d="M7 10l5 5 5-5"/>';
-const AVISO = new Set(['pausa', 'folga', 'hojeNao', 'encerradoAntes', 'provaPassou', 'retorno', 'reta', 'firme']);
 
 /** A matéria da tela: a guardada neste aparelho; senão a primeira escolhida no perfil. */
 export function materiaAtual(tr) {
@@ -163,7 +162,6 @@ export function telaHoje(ctx, t) {
   if (!vm) return { chave: 'hoje:vazio', html: h`<p>Abrindo o caderno…</p>` };
   const tr = n.trilha(), a = materiaAtual(tr), c = vm.constancia || {}, selos = n.album().ganhos;
   const bolha = bolhaInicio(vm, a);
-  const aviso = (AVISO.has(vm.estado) && vm.texto) || (vm.recomeco && vm.recomeco.titulo) || '';
   return {
     chave: `hoje:${vm.dia}:${vm.estado}:${a.id}`,
     titulo: 'Trilha',
@@ -179,7 +177,6 @@ export function telaHoje(ctx, t) {
         </div>
         <button type="button" class="unidade-guia" data-folha="missao" aria-label="Detalhes da missão de hoje">${ic(GUIA)}</button>
       </section>
-      ${aviso ? h`<p class="jogo-aviso">${aviso}</p>` : ''}
       ${a.atual ? '' : h`<div class="jogo-solta">${bolha}</div>`}
       <div class="trilha-mapa jogo">
         <svg class="trilha-caminho" aria-hidden="true" focusable="false"></svg>

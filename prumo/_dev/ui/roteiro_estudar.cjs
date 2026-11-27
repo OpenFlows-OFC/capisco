@@ -85,7 +85,7 @@ async function roteiro(motor, tema) {
     const id = await pg.evaluate(() => window.__prumo.nucleo.prat.ids()[0]);
     await pg.click(`[data-folha="fase"][data-arg="${id}"]`);
     await pg.waitForSelector('.balao-fase');
-    confere(await tem('Você ganha:'), 'balão: o que se ganha');
+    confere(!(await tem('Você ganha:')) && !(await tem('Objetivo:')), 'balão: só título e botão');
     await pg.click('#folha-raiz a.botao');
     await pg.waitForSelector('[data-acao="estudarTopico"]');
     confere(!(await tem('Por que cai no Enem')) && !(await tem('O essencial')), 'tópico: sem textos de apoio (só o botão)');

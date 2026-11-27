@@ -113,7 +113,7 @@ async function parteA(motor, tema) {
         confere(await tem('data simulada'), `faixa com a data simulada (${chave})`);
         await cap(pg, `hoje-${chave}`, true);
         if (chave === 'folga') {
-          confere(await tem('Hoje é folga. Nada vence por isso.'), 'folga: texto');
+          confere(!(await tem('Nada vence por isso')), 'folga: sem frase de aviso');
           await pg.click('[data-ev="ESTUDAR_MESMO_ASSIM"]', { force: true });
           await pg.waitForTimeout(150);
           await cap(pg, 'hoje-folga-estudar-mesmo-assim', true);

@@ -1263,7 +1263,6 @@ form:has(#pf-tipo option:is([value="enem"], [value="naosei"]):checked) .pf-data 
   border: 2px solid color-mix(in srgb, var(--on-tinta) 45%, transparent); background: none; color: inherit; cursor: pointer;
 }
 .unidade-guia svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
-.jogo-aviso { margin: var(--space-3) 0 0; color: var(--grafite-2); font-size: 15px; line-height: 21px; }
 
 .jogo.trilha-mapa { margin-top: var(--space-6); padding-bottom: var(--space-6); }
 .jogo .trilha-fases { justify-items: center; gap: var(--space-5, 20px); }
